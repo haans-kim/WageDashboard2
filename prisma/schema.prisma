@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 직원 정보
+model Employee {
+  id                    String   @id @default(cuid())
+  employeeNumber        String   @unique // 사번
+  name                  String
+  department            String   // 부서
+  level                 String   // 직급 (Lv.1, Lv.2, Lv.3, Lv.4)
+  currentSalary         Int      // 현재 연봉 (원 단위)
+  hireDate              DateTime // 입사일
+  performanceRating     String?  // 성과 등급
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  salaryHistories       SalaryHistory[]
+  wageCalculations      WageCalculation[]
+}
+
+// 급여 이력
+model SalaryHistory {
+  id                    String   @id @default(cuid())
+  employeeId            String
+  effectiveDate         DateTime // 적용일
+  previousSalary        Int      // 이전 급여
+  newSalary             Int      // 새 급여
+  baseUpAmount          Int      // Base-up 금액
+  meritIncreaseAmount   Int      // Merit increase 금액
+  totalIncreaseAmount   Int      // 총 인상액
+  increasePercentage    Float    // 인상률
+  reason                String   // 인상 사유
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  employee              Employee @relation(fields: [employeeId], references: [id])
+  
+  @@index([employeeId])
+}
+
+// 임금 계산 설정
+model WageCalculation {
+  id                    String   @id @default(cuid())
+  employeeId            String
+  calculationDate       DateTime // 계산일
+  baseUpPercentage      Float    // Base-up 비율
+  meritIncreasePercentage Float  // Merit increase 비율
+  totalPercentage       Float    // 총 인상률
+  suggestedSalary       Int      // 제안 급여
+  status                String   // 상태 (draft, approved, applied)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  employee              Employee @relation(fields: [employeeId], references: [id])
+  
+  @@index([employeeId])
+}
+
+// 예산 정보
+model Budget {
+  id                    String   @id @default(cuid())
+  fiscalYear            Int      // 회계연도
+  totalBudget           BigInt   // 총 예산 (원 단위)
+  usedBudget            BigInt   // 사용 예산
+  department            String?  // 부서 (null이면 전체)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@unique([fiscalYear, department])
+}
+
+// AI 추천 설정
+model AIRecommendation {
+  id                    String   @id @default(cuid())
+  fiscalYear            Int      // 회계연도
+  baseUpPercentage      Float    // 추천 Base-up 비율
+  meritIncreasePercentage Float  // 추천 Merit increase 비율
+  minRange              Float    // 최소 범위
+  maxRange              Float    // 최대 범위
+  industry              String   // 산업군
+  companySize           String   // 회사 규모
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// 직급별 통계
+model LevelStatistics {
+  id                    String   @id @default(cuid())
+  level                 String   // 직급
+  fiscalYear            Int      // 회계연도
+  employeeCount         Int      // 직원 수
+  averageSalary         BigInt   // 평균 급여
+  totalSalary           BigInt   // 총 급여
+  avgBaseUpPercentage   Float    // 평균 Base-up 비율
+  avgMeritPercentage    Float    // 평균 Merit 비율
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@unique([level, fiscalYear])
+}

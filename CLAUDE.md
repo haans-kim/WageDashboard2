@@ -38,28 +38,36 @@ Since no code exists yet, here are recommended approaches for building this dash
 2. **Next.js** for server-side rendering and better SEO
 3. **Vue.js** with Vuetify for rapid development
 
-### Backend Options
-1. **Node.js + Express** for REST API
-2. **Python + FastAPI** for data processing capabilities
-3. **Java + Spring Boot** for enterprise-grade applications
+### Backend
+- **Next.js API Routes** for server-side functionality
+- **Prisma ORM** for database operations
 
 ### Database
-- PostgreSQL or MySQL for structured wage data
-- Redis for caching real-time calculations
+- **SQLite** for standalone application with embedded database
+- Simple deployment without external database server
 
 ### Visualization Libraries
 - Chart.js or Recharts for React
 - D3.js for custom visualizations
 - Apache ECharts for comprehensive charting
 
-## Development Setup Commands (To be updated when technology is chosen)
+## Development Setup Commands
 
 ```bash
-# After technology selection, add commands like:
-# npm install
-# npm run dev
-# npm test
-# npm run build
+# Install dependencies
+npm install
+
+# Database setup
+npm run db:generate  # Generate Prisma client
+npm run db:push      # Create/update database schema
+npm run db:seed      # Seed initial data
+
+# Development
+npm run dev          # Start development server (http://localhost:3000)
+
+# Build
+npm run build        # Build for production
+npm run start        # Start production server
 ```
 
 ## Data Structure Considerations
