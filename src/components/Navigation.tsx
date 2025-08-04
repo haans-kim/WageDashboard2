@@ -9,6 +9,8 @@ export function Navigation() {
   const navItems = [
     { href: '/', label: '대시보드' },
     { href: '/employees', label: '직원 관리' },
+    { href: '/simulation', label: '시뮬레이션' },
+    { href: '/analytics', label: '분석' },
   ]
 
   return (

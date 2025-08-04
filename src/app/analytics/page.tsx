@@ -1,0 +1,191 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { SalaryDistributionChart } from '@/components/analytics/SalaryDistributionChart'
+import { ProjectionChart } from '@/components/analytics/ProjectionChart'
+import { DepartmentComparisonChart } from '@/components/analytics/DepartmentComparisonChart'
+import { TenureAnalysisChart } from '@/components/analytics/TenureAnalysisChart'
+import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
+
+export default function AnalyticsPage() {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [])
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch('/api/analytics')
+      const result = await response.json()
+      setData(result)
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-1/4 mb-8"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow h-96"></div>
+              <div className="bg-white rounded-lg shadow h-96"></div>
+              <div className="bg-white rounded-lg shadow h-96"></div>
+              <div className="bg-white rounded-lg shadow h-96"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  if (!data) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <p className="text-center text-gray-500">분석 데이터를 불러올 수 없습니다.</p>
+        </div>
+      </main>
+    )
+  }
+
+  // 성과 등급별 평균 급여 계산
+  const performanceByRating = data.performanceAnalysis.reduce((acc: any, item: any) => {
+    if (!acc[item.performanceRating]) {
+      acc[item.performanceRating] = { total: 0, count: 0 }
+    }
+    acc[item.performanceRating].total += item.averageSalary * item.count
+    acc[item.performanceRating].count += item.count
+    return acc
+  }, {})
+
+  const performanceSummary = Object.entries(performanceByRating).map(([rating, data]: any) => ({
+    rating,
+    averageSalary: Math.round(data.total / data.count),
+    count: data.count,
+  }))
+
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">고급 분석</h1>
+          <p className="text-gray-600 mt-2">인건비 데이터에 대한 심층 분석 및 인사이트</p>
+        </header>
+
+        {/* 주요 지표 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-sm font-medium text-gray-600 mb-2">예산 활용률</h3>
+            <p className="text-3xl font-bold text-primary-600">
+              {formatPercentage(data.budgetUtilization.utilizationRate)}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {formatKoreanCurrency(Number(data.budgetUtilization.usedBudget), '억원')} / 
+              {formatKoreanCurrency(Number(data.budgetUtilization.totalBudget), '억원')}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-sm font-medium text-gray-600 mb-2">평균 급여 (전체)</h3>
+            <p className="text-3xl font-bold">
+              {formatKoreanCurrency(
+                data.departmentAnalysis.reduce((sum: number, dept: any) => 
+                  sum + dept.averageSalary * dept.employeeCount, 0
+                ) / data.departmentAnalysis.reduce((sum: number, dept: any) => 
+                  sum + dept.employeeCount, 0
+                ),
+                '만원'
+              )}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-sm font-medium text-gray-600 mb-2">급여 격차 (최대-최소)</h3>
+            <p className="text-3xl font-bold">
+              {formatKoreanCurrency(
+                Math.max(...data.departmentAnalysis.map((d: any) => d.maxSalary)) -
+                Math.min(...data.departmentAnalysis.map((d: any) => d.minSalary)),
+                '만원'
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* 차트 그리드 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <SalaryDistributionChart data={data.salaryDistribution} />
+          <DepartmentComparisonChart data={data.departmentAnalysis} />
+          <ProjectionChart data={data.projections} />
+          <TenureAnalysisChart data={data.tenureStats} />
+        </div>
+
+        {/* 성과 등급별 분석 */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h3 className="text-lg font-semibold mb-4">성과 등급별 평균 급여</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {performanceSummary.map((item) => (
+              <div key={item.rating} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-lg font-semibold">{item.rating}등급</span>
+                  <span className="text-sm text-gray-600">{item.count}명</span>
+                </div>
+                <p className="text-2xl font-bold text-primary-600">
+                  {formatKoreanCurrency(item.averageSalary, '만원')}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 인사이트 섹션 */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">주요 인사이트</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
+              <p className="text-gray-700">
+                현재 예산 활용률은 {formatPercentage(data.budgetUtilization.utilizationRate)}로, 
+                잔여 예산은 {formatKoreanCurrency(
+                  Number(data.budgetUtilization.totalBudget) - Number(data.budgetUtilization.usedBudget),
+                  '억원'
+                )}입니다.
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
+              <p className="text-gray-700">
+                부서별 평균 급여 격차가 가장 큰 곳은 {
+                  data.departmentAnalysis.reduce((max: any, dept: any) => 
+                    dept.salaryRange > (max?.salaryRange || 0) ? dept : max, null
+                  )?.department
+                }로, 최대 {formatKoreanCurrency(
+                  Math.max(...data.departmentAnalysis.map((d: any) => d.salaryRange)),
+                  '만원'
+                )}의 차이를 보입니다.
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
+              <p className="text-gray-700">
+                5% 인상 시 총 예산은 {formatKoreanCurrency(
+                  data.projections.find((p: any) => p.rate === 5)?.totalProjected || 0,
+                  '억원'
+                )}으로 증가하며, 추가 소요 예산은 {formatKoreanCurrency(
+                  data.projections.find((p: any) => p.rate === 5)?.increase || 0,
+                  '억원'
+                )}입니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
