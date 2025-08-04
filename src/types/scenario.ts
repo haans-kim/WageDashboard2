@@ -8,6 +8,7 @@ export interface Scenario {
     meritRate: number
     selectedFixedAmount: number
     levelRates: Record<string, { baseUp: number; merit: number }>
+    totalBudget?: number // 총예산 (억원 단위)
   }
 }
 

@@ -21,6 +21,7 @@ export default function Home() {
   const [baseUpRate, setBaseUpRate] = useState(3.2)
   const [meritRate, setMeritRate] = useState(2.5)
   const [selectedFixedAmount, setSelectedFixedAmount] = useState(100) // 정액 인상 선택값 (만원/연)
+  const [totalBudget, setTotalBudget] = useState<number | null>(null) // 총예산 (억원 단위)
   
   // 개별 레벨 인상률 상태
   const [levelRates, setLevelRates] = useState({
@@ -56,7 +57,8 @@ export default function Home() {
       baseUpRate,
       meritRate,
       selectedFixedAmount,
-      levelRates
+      levelRates,
+      totalBudget: totalBudget || undefined
     })
   }
   
@@ -68,6 +70,7 @@ export default function Home() {
       setMeritRate(scenarioData.meritRate)
       setSelectedFixedAmount(scenarioData.selectedFixedAmount)
       setLevelRates(scenarioData.levelRates)
+      setTotalBudget(scenarioData.totalBudget || null)
     }
   }
 
@@ -179,6 +182,8 @@ export default function Home() {
             levelRates={levelRates}
             levelStatistics={data?.levelStatistics || []}
             selectedFixedAmount={selectedFixedAmount}
+            customTotalBudget={totalBudget}
+            onTotalBudgetChange={setTotalBudget}
           />
         </div>
 

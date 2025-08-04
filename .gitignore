@@ -62,3 +62,6 @@ logs/
 # Claude
 .claude/settings.local.json
 /src/generated/prisma
+
+# Scenario data
+/data/scenarios/*.json

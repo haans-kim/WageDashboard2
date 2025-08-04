@@ -20,9 +20,11 @@ interface BudgetCardProps {
     averageSalary: string
   }>
   selectedFixedAmount?: number
+  customTotalBudget?: number | null
+  onTotalBudgetChange?: (value: number | null) => void
 }
 
-export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averageSalary, levelRates, levelStatistics, selectedFixedAmount = 100 }: BudgetCardProps) {
+export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averageSalary, levelRates, levelStatistics, selectedFixedAmount = 100, customTotalBudget, onTotalBudgetChange }: BudgetCardProps) {
   if (!data) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -32,7 +34,9 @@ export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averag
     )
   }
 
-  const totalBudget = BigInt(data.totalBudget)
+  const totalBudget = customTotalBudget !== null && customTotalBudget !== undefined 
+    ? BigInt(Math.round(customTotalBudget * 100000000)) 
+    : BigInt(data.totalBudget)
   
   // 1번: AI 적정 인상률 예산 계산
   let aiRecommendationBudget = 0
@@ -83,9 +87,25 @@ export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averag
         <div className="bg-primary-50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-700">총 예산</span>
-            <span className="text-2xl font-bold font-tabular text-gray-900">
-              {formatKoreanCurrency(Number(totalBudget), '억원')}
-            </span>
+            {onTotalBudgetChange ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={customTotalBudget || Number(data.totalBudget) / 100000000}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    onTotalBudgetChange(value ? parseFloat(value) : null)
+                  }}
+                  className="w-24 px-2 py-1 text-xl font-bold text-gray-900 bg-white border border-gray-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="0"
+                />
+                <span className="text-xl font-bold text-gray-900">억원</span>
+              </div>
+            ) : (
+              <span className="text-2xl font-bold font-tabular text-gray-900">
+                {formatKoreanCurrency(Number(totalBudget), '억원')}
+              </span>
+            )}
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">{isSimulated ? '시뮬레이션 사용 예산' : '사용 예산'}</span>

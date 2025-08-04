@@ -3,39 +3,49 @@
 import { useState, useEffect } from 'react'
 import { Scenario } from '@/types/scenario'
 
-const STORAGE_KEY = 'wage-dashboard-scenarios'
-
 export function useScenarios() {
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Load scenarios from localStorage on mount
+  // Load scenarios from API on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          setScenarios(parsed.scenarios || [])
-          setActiveScenarioId(parsed.activeScenarioId || null)
-        } catch (error) {
-          console.error('Failed to load scenarios:', error)
-        }
-      }
-    }
+    loadScenariosFromAPI()
   }, [])
 
-  // Save scenarios to localStorage whenever they change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        scenarios,
-        activeScenarioId
-      }))
+  const loadScenariosFromAPI = async () => {
+    try {
+      const response = await fetch('/api/scenarios')
+      if (response.ok) {
+        const data = await response.json()
+        setScenarios(data.scenarios || [])
+        setActiveScenarioId(data.activeScenarioId || null)
+      }
+    } catch (error) {
+      console.error('Failed to load scenarios:', error)
+    } finally {
+      setLoading(false)
     }
-  }, [scenarios, activeScenarioId])
+  }
 
-  const saveScenario = (name: string, data: Scenario['data']) => {
+  const saveToAPI = async (scenariosData: Scenario[], activeId: string | null) => {
+    try {
+      await fetch('/api/scenarios', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          scenarios: scenariosData,
+          activeScenarioId: activeId
+        })
+      })
+    } catch (error) {
+      console.error('Failed to save scenarios:', error)
+    }
+  }
+
+  const saveScenario = async (name: string, data: Scenario['data']) => {
     const newScenario: Scenario = {
       id: Date.now().toString(),
       name,
@@ -44,14 +54,29 @@ export function useScenarios() {
       data
     }
     
-    setScenarios(prev => [...prev, newScenario])
-    setActiveScenarioId(newScenario.id)
+    try {
+      const response = await fetch('/api/scenarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newScenario)
+      })
+      
+      if (response.ok) {
+        const updatedScenarios = [...scenarios, newScenario]
+        setScenarios(updatedScenarios)
+        setActiveScenarioId(newScenario.id)
+      }
+    } catch (error) {
+      console.error('Failed to save scenario:', error)
+    }
     
     return newScenario
   }
 
-  const updateScenario = (id: string, data: Partial<Scenario['data']>) => {
-    setScenarios(prev => prev.map(scenario => {
+  const updateScenario = async (id: string, data: Partial<Scenario['data']>) => {
+    const updatedScenarios = scenarios.map(scenario => {
       if (scenario.id === id) {
         return {
           ...scenario,
@@ -60,13 +85,27 @@ export function useScenarios() {
         }
       }
       return scenario
-    }))
+    })
+    
+    setScenarios(updatedScenarios)
+    await saveToAPI(updatedScenarios, activeScenarioId)
   }
 
-  const deleteScenario = (id: string) => {
-    setScenarios(prev => prev.filter(s => s.id !== id))
-    if (activeScenarioId === id) {
-      setActiveScenarioId(null)
+  const deleteScenario = async (id: string) => {
+    try {
+      const response = await fetch(`/api/scenarios?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        const updatedScenarios = scenarios.filter(s => s.id !== id)
+        const newActiveId = activeScenarioId === id ? null : activeScenarioId
+        
+        setScenarios(updatedScenarios)
+        setActiveScenarioId(newActiveId)
+      }
+    } catch (error) {
+      console.error('Failed to delete scenario:', error)
     }
   }
 
@@ -74,13 +113,14 @@ export function useScenarios() {
     const scenario = scenarios.find(s => s.id === id)
     if (scenario) {
       setActiveScenarioId(id)
+      saveToAPI(scenarios, id)
       return scenario.data
     }
     return null
   }
 
-  const renameScenario = (id: string, newName: string) => {
-    setScenarios(prev => prev.map(scenario => {
+  const renameScenario = async (id: string, newName: string) => {
+    const updatedScenarios = scenarios.map(scenario => {
       if (scenario.id === id) {
         return {
           ...scenario,
@@ -89,7 +129,10 @@ export function useScenarios() {
         }
       }
       return scenario
-    }))
+    })
+    
+    setScenarios(updatedScenarios)
+    await saveToAPI(updatedScenarios, activeScenarioId)
   }
 
   return {
@@ -100,6 +143,7 @@ export function useScenarios() {
     deleteScenario,
     loadScenario,
     renameScenario,
-    setActiveScenarioId
+    setActiveScenarioId,
+    loading
   }
 }
