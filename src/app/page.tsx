@@ -4,6 +4,11 @@ import { useDashboardData } from '@/hooks/useDashboardData'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetCard } from '@/components/dashboard/BudgetCard'
 import { LevelDistributionCard } from '@/components/dashboard/LevelDistributionCard'
+import { LevelPieChart } from '@/components/charts/LevelPieChart'
+import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
+import { DepartmentChart } from '@/components/charts/DepartmentChart'
+import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
+import { PerformanceChart } from '@/components/charts/PerformanceChart'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
@@ -67,34 +72,19 @@ export default function Home() {
           <BudgetCard data={data?.budget || null} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <LevelDistributionCard data={data?.levelStatistics || []} />
-          
-          {/* 부서별 분포 */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">부서별 직원 분포</h2>
-            <div className="space-y-3">
-              {data?.departmentDistribution.map(dept => {
-                const percentage = data.summary.totalEmployees > 0 
-                  ? (dept.count / data.summary.totalEmployees) * 100 
-                  : 0
-                return (
-                  <div key={dept.department} className="flex items-center justify-between">
-                    <span className="text-gray-700">{dept.department}</span>
-                    <div className="flex items-center gap-3">
-                      <div className="w-32 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-primary-500 h-2 rounded-full"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold w-12 text-right">{dept.count}명</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          <LevelPieChart data={data?.levelStatistics || []} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <BudgetBarChart data={data?.levelStatistics || []} />
+          <IncreaseTrendChart data={data?.levelStatistics || []} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <DepartmentChart data={data?.departmentDistribution || []} />
+          <PerformanceChart data={data?.performanceDistribution || []} />
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-500">
