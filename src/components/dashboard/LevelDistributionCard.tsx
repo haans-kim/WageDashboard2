@@ -47,32 +47,32 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
           const displayTotal = displayBaseUp + displayMerit
 
           return (
-            <div key={level.level} className="border rounded-lg p-3">
-              <div className="flex justify-between items-start mb-2">
+            <div key={level.level} className="border rounded-lg px-2 py-1.5">
+              <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-0.5 rounded-full text-sm font-semibold ${colorClass}`}>
                     {level.level}
                   </span>
                   <div>
-                    <p className="font-semibold">{level.employeeCount}명</p>
+                    <p className="font-semibold text-sm">{level.employeeCount}명</p>
                     <p className="text-xs text-gray-500">{formatPercentage(percentage)}의 직원</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-700 font-medium">평균 급여</p>
-                  <p className="font-bold font-tabular text-gray-900 text-base">
+                  <p className="font-bold font-tabular text-gray-900 text-sm">
                     {formatKoreanCurrency(Number(level.averageSalary), '만원')}
                   </p>
                 </div>
               </div>
 
               {hasIndividualControl ? (
-                <div className="space-y-2">
-                  <div className="text-center">
+                <div>
+                  <div className="text-center -mt-2 pb-2">
                     <p className="text-xs font-medium text-gray-700">총 인상률</p>
-                    <p className="text-xl font-bold text-purple-600">{formatPercentage(displayTotal)}</p>
+                    <p className="text-3xl font-bold text-purple-600">{formatPercentage(displayTotal)}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <div className="flex justify-between items-center">
                         <p className="text-xs font-medium text-gray-700">Base-up</p>
@@ -87,7 +87,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                         onChange={(e) => updateLevelRate(level.level, 'baseUp', parseFloat(e.target.value))}
                         className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-small slider-baseup"
                       />
-                      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                      <div className="flex justify-between text-xs text-gray-400">
                         <span>0%</span>
                         <span>10%</span>
                       </div>
@@ -106,7 +106,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                         onChange={(e) => updateLevelRate(level.level, 'merit', parseFloat(e.target.value))}
                         className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-small slider-merit"
                       />
-                      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                      <div className="flex justify-between text-xs text-gray-400">
                         <span>0%</span>
                         <span>10%</span>
                       </div>
