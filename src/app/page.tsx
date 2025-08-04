@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useDashboardData } from '@/hooks/useDashboardData'
+import { useScenarios } from '@/hooks/useScenarios'
+import { ScenarioManager } from '@/components/ScenarioManager'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetCard } from '@/components/dashboard/BudgetCard'
 import { LevelDistributionCard } from '@/components/dashboard/LevelDistributionCard'
@@ -28,6 +30,16 @@ export default function Home() {
     'Lv.4': { baseUp: 3.2, merit: 2.5 }
   })
   
+  // 시나리오 관리
+  const {
+    scenarios,
+    activeScenarioId,
+    saveScenario,
+    loadScenario,
+    deleteScenario,
+    renameScenario
+  } = useScenarios()
+  
   const updateLevelRate = (level: string, type: 'baseUp' | 'merit', value: number) => {
     setLevelRates(prev => ({
       ...prev,
@@ -36,6 +48,27 @@ export default function Home() {
         [type]: value
       }
     }))
+  }
+  
+  // 시나리오 저장 핸들러
+  const handleSaveScenario = (name: string) => {
+    saveScenario(name, {
+      baseUpRate,
+      meritRate,
+      selectedFixedAmount,
+      levelRates
+    })
+  }
+  
+  // 시나리오 불러오기 핸들러
+  const handleLoadScenario = (id: string) => {
+    const scenarioData = loadScenario(id)
+    if (scenarioData) {
+      setBaseUpRate(scenarioData.baseUpRate)
+      setMeritRate(scenarioData.meritRate)
+      setSelectedFixedAmount(scenarioData.selectedFixedAmount)
+      setLevelRates(scenarioData.levelRates)
+    }
   }
 
   if (loading) {
@@ -82,6 +115,14 @@ export default function Home() {
             <p className="text-gray-600 mt-2">실시간 인상률 조정 및 인건비 배분 최적화</p>
           </div>
           <div className="flex gap-3">
+            <ScenarioManager
+              scenarios={scenarios}
+              activeScenarioId={activeScenarioId}
+              onSave={handleSaveScenario}
+              onLoad={handleLoadScenario}
+              onDelete={deleteScenario}
+              onRename={renameScenario}
+            />
             <SimpleExportButton type="summary" />
             <button
               onClick={refresh}
