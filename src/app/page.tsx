@@ -9,6 +9,7 @@ import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
 import { DepartmentChart } from '@/components/charts/DepartmentChart'
 import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
 import { PerformanceChart } from '@/components/charts/PerformanceChart'
+import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
@@ -56,12 +57,15 @@ export default function Home() {
             <h1 className="text-3xl font-bold text-gray-900">인건비 대시보드</h1>
             <p className="text-gray-600 mt-2">실시간 인상률 조정 및 인건비 배분 최적화</p>
           </div>
-          <button
-            onClick={refresh}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            새로고침
-          </button>
+          <div className="flex gap-3">
+            <SimpleExportButton type="summary" />
+            <button
+              onClick={refresh}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              새로고침
+            </button>
+          </div>
         </header>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

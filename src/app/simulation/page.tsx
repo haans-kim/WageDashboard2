@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { SimulationResults } from '@/components/simulation/SimulationResults'
+import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function SimulationPage() {
   const [baseUp, setBaseUp] = useState(3.2)
@@ -194,19 +195,22 @@ export default function SimulationPage() {
           <>
             <SimulationResults results={results} />
             
-            <div className="mt-6 flex justify-end gap-4">
-              <button
-                onClick={() => setResults(null)}
-                className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-              >
-                결과 초기화
-              </button>
-              <button
-                onClick={() => setShowConfirmDialog(true)}
-                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                전체 적용
-              </button>
+            <div className="mt-6 flex justify-between">
+              <SimpleExportButton type="simulation" />
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setResults(null)}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                  결과 초기화
+                </button>
+                <button
+                  onClick={() => setShowConfirmDialog(true)}
+                  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                  전체 적용
+                </button>
+              </div>
             </div>
           </>
         )}
