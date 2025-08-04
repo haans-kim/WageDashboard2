@@ -38,3 +38,44 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* 슬라이더 스타일링 */
+@layer components {
+  .slider {
+    @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    @apply appearance-none w-5 h-5 bg-primary-600 rounded-full cursor-pointer transition-all hover:scale-110 hover:bg-primary-700 shadow-md;
+  }
+  
+  .slider::-moz-range-thumb {
+    @apply w-5 h-5 bg-primary-600 rounded-full cursor-pointer transition-all hover:scale-110 hover:bg-primary-700 shadow-md border-0;
+  }
+  
+  .slider::-webkit-slider-runnable-track {
+    @apply w-full h-2 cursor-pointer bg-gray-200 rounded-lg;
+  }
+  
+  .slider::-moz-range-track {
+    @apply w-full h-2 cursor-pointer bg-gray-200 rounded-lg;
+  }
+  
+  /* Base-up 슬라이더 */
+  .slider-baseup::-webkit-slider-thumb {
+    @apply bg-purple-600 hover:bg-purple-700;
+  }
+  
+  .slider-baseup::-moz-range-thumb {
+    @apply bg-purple-600 hover:bg-purple-700;
+  }
+  
+  /* Merit 슬라이더 */
+  .slider-merit::-webkit-slider-thumb {
+    @apply bg-pink-600 hover:bg-pink-700;
+  }
+  
+  .slider-merit::-moz-range-thumb {
+    @apply bg-pink-600 hover:bg-pink-700;
+  }
+}

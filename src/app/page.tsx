@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetCard } from '@/components/dashboard/BudgetCard'
@@ -13,6 +14,8 @@ import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
+  const [baseUpRate, setBaseUpRate] = useState(3.2)
+  const [meritRate, setMeritRate] = useState(2.5)
 
   if (loading) {
     return (
@@ -72,18 +75,48 @@ export default function Home() {
           <AIRecommendationCard 
             data={data?.aiRecommendation || null} 
             totalEmployees={data?.summary.totalEmployees || 0}
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+            onBaseUpChange={setBaseUpRate}
+            onMeritChange={setMeritRate}
+            onReset={() => {
+              setBaseUpRate(3.2)
+              setMeritRate(2.5)
+            }}
           />
-          <BudgetCard data={data?.budget || null} />
+          <BudgetCard 
+            data={data?.budget || null} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+            totalEmployees={data?.summary.totalEmployees || 0}
+            averageSalary={data?.summary.averageSalary || 0}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <LevelDistributionCard data={data?.levelStatistics || []} />
-          <LevelPieChart data={data?.levelStatistics || []} />
+          <LevelDistributionCard 
+            data={data?.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
+          <LevelPieChart 
+            data={data?.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BudgetBarChart data={data?.levelStatistics || []} />
-          <IncreaseTrendChart data={data?.levelStatistics || []} />
+          <BudgetBarChart 
+            data={data?.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
+          <IncreaseTrendChart 
+            data={data?.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
