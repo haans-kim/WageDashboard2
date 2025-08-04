@@ -13,9 +13,16 @@ interface BudgetCardProps {
   meritRate?: number
   totalEmployees?: number
   averageSalary?: number
+  levelRates?: Record<string, { baseUp: number; merit: number }>
+  levelStatistics?: Array<{
+    level: string
+    employeeCount: number
+    averageSalary: string
+  }>
+  selectedFixedAmount?: number
 }
 
-export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averageSalary }: BudgetCardProps) {
+export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averageSalary, levelRates, levelStatistics, selectedFixedAmount = 100 }: BudgetCardProps) {
   if (!data) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -26,16 +33,43 @@ export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averag
   }
 
   const totalBudget = BigInt(data.totalBudget)
-  let usedBudget = BigInt(data.usedBudget)
-  let usagePercentage = data.usagePercentage
   
-  // 시뮬레이션 값이 있을 경우 재계산
-  if (baseUpRate !== undefined && meritRate !== undefined && totalEmployees && averageSalary) {
+  // 1번: AI 적정 인상률 예산 계산
+  let aiRecommendationBudget = 0
+  let baseSalaryIncrease = 0
+  
+  if (levelRates && levelStatistics) {
+    // 레벨별로 계산
+    levelStatistics.forEach((level) => {
+      const levelRate = levelRates[level.level]
+      if (levelRate) {
+        const levelAvgSalary = parseFloat(level.averageSalary)
+        const levelBudget = (level.employeeCount * levelAvgSalary * (levelRate.baseUp + levelRate.merit) / 100) * 12 / 100000000
+        aiRecommendationBudget += levelBudget
+        baseSalaryIncrease += (level.employeeCount * levelAvgSalary * (levelRate.baseUp + levelRate.merit) / 100) * 12
+      }
+    })
+    aiRecommendationBudget = Math.round(aiRecommendationBudget)
+  } else if (baseUpRate !== undefined && meritRate !== undefined && totalEmployees && averageSalary) {
     const totalRate = (baseUpRate + meritRate) / 100
-    const estimatedUsedBudget = Math.round(totalEmployees * averageSalary * totalRate * 12)
-    usedBudget = BigInt(estimatedUsedBudget)
-    usagePercentage = Number(totalBudget) > 0 ? (estimatedUsedBudget / Number(totalBudget)) * 100 : 0
+    baseSalaryIncrease = totalEmployees * averageSalary * totalRate * 12
+    aiRecommendationBudget = Math.round(baseSalaryIncrease / 100000000)
   }
+  
+  // 2번: 정액 인상 (선택된 금액 * 인원수) - 연간 금액
+  const fixedIncreaseBudgetRounded = Math.round((selectedFixedAmount * (totalEmployees || 0)) / 10000) // 억원 단위
+  
+  // 3번: 간접비용 (기본급 인상분의 약 22.6%)
+  // 정액 인상도 간접비용에 포함되어야 함
+  const totalSalaryIncrease = baseSalaryIncrease + (fixedIncreaseBudgetRounded * 100000000)
+  const indirectCostBudget = Math.round(totalSalaryIncrease * 0.226 / 100000000)
+  
+  // 총 사용 예산
+  const totalUsedBudget = aiRecommendationBudget + fixedIncreaseBudgetRounded + indirectCostBudget
+  
+  
+  const usedBudget = BigInt(Math.round(totalUsedBudget * 100000000))
+  const usagePercentage = Number(totalBudget) > 0 ? (totalUsedBudget / (Number(totalBudget) / 100000000)) * 100 : 0
   
   const remainingBudget = totalBudget - usedBudget
   const isSimulated = baseUpRate !== undefined || meritRate !== undefined
@@ -58,6 +92,30 @@ export function BudgetCard({ data, baseUpRate, meritRate, totalEmployees, averag
             <span className={`font-semibold font-tabular text-lg ${isSimulated ? 'text-purple-600' : 'text-gray-900'}`}>
               {formatKoreanCurrency(Number(usedBudget), '억원')}
             </span>
+          </div>
+        </div>
+        
+        <div className="mt-3 space-y-1 text-sm">
+          <div className="flex justify-between items-center text-gray-600">
+            <span className="flex items-center gap-1">
+              <span className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold text-blue-600">1</span>
+              AI 적정 인상률
+            </span>
+            <span className="font-medium">{aiRecommendationBudget}억 원</span>
+          </div>
+          <div className="flex justify-between items-center text-gray-600">
+            <span className="flex items-center gap-1">
+              <span className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center text-xs font-semibold text-green-600">2</span>
+              정액 인상 ({selectedFixedAmount}만원)
+            </span>
+            <span className="font-medium">{fixedIncreaseBudgetRounded}억 원</span>
+          </div>
+          <div className="flex justify-between items-center text-gray-600">
+            <span className="flex items-center gap-1">
+              <span className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center text-xs font-semibold text-orange-600">3</span>
+              간접비용
+            </span>
+            <span className="font-medium">{indirectCostBudget}억 원</span>
           </div>
         </div>
 

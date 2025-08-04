@@ -5,7 +5,9 @@ import { useDashboardData } from '@/hooks/useDashboardData'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetCard } from '@/components/dashboard/BudgetCard'
 import { LevelDistributionCard } from '@/components/dashboard/LevelDistributionCard'
-import { LevelPieChart } from '@/components/charts/LevelPieChart'
+import { AIRecommendationDetailCard } from '@/components/dashboard/AIRecommendationDetailCard'
+import { FixedSalaryRangeCard } from '@/components/dashboard/FixedSalaryRangeCard'
+import { IndirectCostImpactCard } from '@/components/dashboard/IndirectCostImpactCard'
 import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
 import { DepartmentChart } from '@/components/charts/DepartmentChart'
 import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
@@ -16,6 +18,25 @@ export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
   const [baseUpRate, setBaseUpRate] = useState(3.2)
   const [meritRate, setMeritRate] = useState(2.5)
+  const [selectedFixedAmount, setSelectedFixedAmount] = useState(100) // 정액 인상 선택값 (만원/연)
+  
+  // 개별 레벨 인상률 상태
+  const [levelRates, setLevelRates] = useState({
+    'Lv.1': { baseUp: 3.2, merit: 2.5 },
+    'Lv.2': { baseUp: 3.2, merit: 2.5 },
+    'Lv.3': { baseUp: 3.2, merit: 2.5 },
+    'Lv.4': { baseUp: 3.2, merit: 2.5 }
+  })
+  
+  const updateLevelRate = (level: string, type: 'baseUp' | 'merit', value: number) => {
+    setLevelRates(prev => ({
+      ...prev,
+      [level]: {
+        ...prev[level as keyof typeof prev],
+        [type]: value
+      }
+    }))
+  }
 
   if (loading) {
     return (
@@ -77,11 +98,35 @@ export default function Home() {
             totalEmployees={data?.summary.totalEmployees || 0}
             baseUpRate={baseUpRate}
             meritRate={meritRate}
-            onBaseUpChange={setBaseUpRate}
-            onMeritChange={setMeritRate}
+            onBaseUpChange={(value) => {
+              setBaseUpRate(value)
+              // 전체 슬라이더 변경 시 모든 레벨 업데이트
+              setLevelRates({
+                'Lv.1': { baseUp: value, merit: levelRates['Lv.1'].merit },
+                'Lv.2': { baseUp: value, merit: levelRates['Lv.2'].merit },
+                'Lv.3': { baseUp: value, merit: levelRates['Lv.3'].merit },
+                'Lv.4': { baseUp: value, merit: levelRates['Lv.4'].merit }
+              })
+            }}
+            onMeritChange={(value) => {
+              setMeritRate(value)
+              // 전체 슬라이더 변경 시 모든 레벨 업데이트
+              setLevelRates({
+                'Lv.1': { ...levelRates['Lv.1'], merit: value },
+                'Lv.2': { ...levelRates['Lv.2'], merit: value },
+                'Lv.3': { ...levelRates['Lv.3'], merit: value },
+                'Lv.4': { ...levelRates['Lv.4'], merit: value }
+              })
+            }}
             onReset={() => {
               setBaseUpRate(3.2)
               setMeritRate(2.5)
+              setLevelRates({
+                'Lv.1': { baseUp: 3.2, merit: 2.5 },
+                'Lv.2': { baseUp: 3.2, merit: 2.5 },
+                'Lv.3': { baseUp: 3.2, merit: 2.5 },
+                'Lv.4': { baseUp: 3.2, merit: 2.5 }
+              })
             }}
           />
           <BudgetCard 
@@ -90,6 +135,9 @@ export default function Home() {
             meritRate={meritRate}
             totalEmployees={data?.summary.totalEmployees || 0}
             averageSalary={data?.summary.averageSalary || 0}
+            levelRates={levelRates}
+            levelStatistics={data?.levelStatistics || []}
+            selectedFixedAmount={selectedFixedAmount}
           />
         </div>
 
@@ -98,12 +146,34 @@ export default function Home() {
             data={data?.levelStatistics || []} 
             baseUpRate={baseUpRate}
             meritRate={meritRate}
+            levelRates={levelRates}
+            updateLevelRate={updateLevelRate}
           />
-          <LevelPieChart 
-            data={data?.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-          />
+          
+          <div className="space-y-6">
+            <AIRecommendationDetailCard
+              baseUpRate={baseUpRate}
+              meritRate={meritRate}
+              totalEmployees={data?.summary.totalEmployees || 0}
+              averageSalary={data?.summary.averageSalary || 0}
+              levelRates={levelRates}
+              levelStatistics={data?.levelStatistics || []}
+            />
+            <FixedSalaryRangeCard
+              baseUpRate={baseUpRate}
+              meritRate={meritRate}
+              selectedAmount={selectedFixedAmount}
+              onAmountSelect={setSelectedFixedAmount}
+            />
+            <IndirectCostImpactCard
+              baseUpRate={baseUpRate}
+              meritRate={meritRate}
+              totalEmployees={data?.summary.totalEmployees || 0}
+              averageSalary={data?.summary.averageSalary || 0}
+              levelRates={levelRates}
+              levelStatistics={data?.levelStatistics || []}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
