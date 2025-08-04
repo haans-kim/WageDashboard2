@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Navigation } from '@/components/Navigation'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <Navigation />
+        {children}
+      </body>
     </html>
   )
 }
