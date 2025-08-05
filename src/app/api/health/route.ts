@@ -5,7 +5,7 @@ export async function GET() {
   const checks = {
     database: false,
     dataIntegrity: false,
-    apiEndpoints: [],
+    apiEndpoints: [] as { name: string; path: string; status: string }[],
     totalEmployees: 0,
     totalBudget: '0',
     errors: [] as string[],

@@ -68,7 +68,7 @@ export async function GET() {
         totalBudget: budget.totalBudget.toString(),
         usedBudget: budget.usedBudget.toString(),
         remainingBudget: (budget.totalBudget - budget.usedBudget).toString(),
-        usagePercentage: Number((budget.usedBudget * 100n) / budget.totalBudget),
+        usagePercentage: Number((budget.usedBudget * BigInt(100)) / budget.totalBudget),
       } : null,
       levelStatistics: levelStats.map(stat => ({
         level: stat.level,

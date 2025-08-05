@@ -12,8 +12,6 @@ import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 export default function AnalyticsPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [baseUpRate, setBaseUpRate] = useState(3.2)
-  const [meritRate, setMeritRate] = useState(2.5)
 
   useEffect(() => {
     fetchAnalytics()
@@ -126,13 +124,9 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <BudgetBarChart 
             data={data.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
           />
           <IncreaseTrendChart 
             data={data.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
           />
         </div>
 

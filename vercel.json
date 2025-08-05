@@ -1,0 +1,13 @@
+{
+  "buildCommand": "prisma generate && prisma db push && next build",
+  "outputDirectory": ".next",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["icn1"],
+  "functions": {
+    "app/api/[...route]/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

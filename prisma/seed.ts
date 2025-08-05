@@ -28,8 +28,8 @@ async function main() {
   await prisma.budget.create({
     data: {
       fiscalYear: 2025,
-      totalBudget: 31900000000n, // 319억
-      usedBudget: 18900000000n,  // 189억
+      totalBudget: BigInt(31900000000), // 319억
+      usedBudget: BigInt(18900000000),  // 189억
       department: null, // 전체
     },
   })

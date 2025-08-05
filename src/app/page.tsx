@@ -73,7 +73,7 @@ export default function Home() {
       setBaseUpRate(scenarioData.baseUpRate)
       setMeritRate(scenarioData.meritRate)
       setSelectedFixedAmount(scenarioData.selectedFixedAmount)
-      setLevelRates(scenarioData.levelRates)
+      setLevelRates(scenarioData.levelRates as typeof levelRates)
       setTotalBudget(scenarioData.totalBudget || null)
       if (scenarioData.fixedSalaryRange) {
         setFixedSalaryRange(scenarioData.fixedSalaryRange)
@@ -185,7 +185,9 @@ export default function Home() {
             baseUpRate={baseUpRate}
             meritRate={meritRate}
             totalEmployees={data?.summary.totalEmployees || 0}
-            averageSalary={data?.summary.averageSalary || 0}
+            averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
+              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
+              (data?.summary.totalEmployees || 1)}
             levelRates={levelRates}
             levelStatistics={data?.levelStatistics || []}
             selectedFixedAmount={selectedFixedAmount}
@@ -208,7 +210,9 @@ export default function Home() {
               baseUpRate={baseUpRate}
               meritRate={meritRate}
               totalEmployees={data?.summary.totalEmployees || 0}
-              averageSalary={data?.summary.averageSalary || 0}
+              averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
+              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
+              (data?.summary.totalEmployees || 1)}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
               totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
@@ -227,7 +231,9 @@ export default function Home() {
               baseUpRate={baseUpRate}
               meritRate={meritRate}
               totalEmployees={data?.summary.totalEmployees || 0}
-              averageSalary={data?.summary.averageSalary || 0}
+              averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
+              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
+              (data?.summary.totalEmployees || 1)}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
               totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}

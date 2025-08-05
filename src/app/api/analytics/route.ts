@@ -133,7 +133,7 @@ export async function GET() {
       totalBudget: budget?.totalBudget.toString() || '0',
       usedBudget: budget?.usedBudget.toString() || '0',
       utilizationRate: budget 
-        ? Number((budget.usedBudget * 100n) / budget.totalBudget)
+        ? Number((budget.usedBudget * BigInt(100)) / budget.totalBudget)
         : 0,
     }
 

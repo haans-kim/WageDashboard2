@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
             값: budget?.usedBudget.toString() || '0',
           }, {
             항목: '예산 활용률',
-            값: budget ? `${Number((budget.usedBudget * 100n) / budget.totalBudget)}%` : '0%',
+            값: budget ? `${Number((budget.usedBudget * BigInt(100)) / budget.totalBudget)}%` : '0%',
           }],
           직급별통계: levelStats.map(stat => ({
             직급: stat.level,

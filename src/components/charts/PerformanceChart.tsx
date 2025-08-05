@@ -74,7 +74,7 @@ export function PerformanceChart({ data }: PerformanceChartProps) {
           <Legend 
             verticalAlign="bottom" 
             height={36}
-            formatter={(value, entry) => `${value} (${formatPercentage(entry.payload.percentage)})`}
+            formatter={(value, entry: any) => `${value} (${formatPercentage(entry.payload?.percentage || 0)})`}
           />
         </PieChart>
       </ResponsiveContainer>
