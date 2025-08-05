@@ -10,10 +10,6 @@ import { LevelDistributionCard } from '@/components/dashboard/LevelDistributionC
 import { AIRecommendationDetailCard } from '@/components/dashboard/AIRecommendationDetailCard'
 import { FixedSalaryRangeCard } from '@/components/dashboard/FixedSalaryRangeCard'
 import { IndirectCostImpactCard } from '@/components/dashboard/IndirectCostImpactCard'
-import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
-import { DepartmentChart } from '@/components/charts/DepartmentChart'
-import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
-import { PerformanceChart } from '@/components/charts/PerformanceChart'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function Home() {
@@ -22,6 +18,13 @@ export default function Home() {
   const [meritRate, setMeritRate] = useState(2.5)
   const [selectedFixedAmount, setSelectedFixedAmount] = useState(100) // 정액 인상 선택값 (만원/연)
   const [totalBudget, setTotalBudget] = useState<number | null>(null) // 총예산 (억원 단위)
+  
+  // 정액 인상 권장 범위 상태
+  const [fixedSalaryRange, setFixedSalaryRange] = useState({
+    minimum: 165,
+    average: 168,
+    maximum: 202
+  })
   
   // 개별 레벨 인상률 상태
   const [levelRates, setLevelRates] = useState({
@@ -58,7 +61,8 @@ export default function Home() {
       meritRate,
       selectedFixedAmount,
       levelRates,
-      totalBudget: totalBudget || undefined
+      totalBudget: totalBudget || undefined,
+      fixedSalaryRange
     })
   }
   
@@ -71,12 +75,15 @@ export default function Home() {
       setSelectedFixedAmount(scenarioData.selectedFixedAmount)
       setLevelRates(scenarioData.levelRates)
       setTotalBudget(scenarioData.totalBudget || null)
+      if (scenarioData.fixedSalaryRange) {
+        setFixedSalaryRange(scenarioData.fixedSalaryRange)
+      }
     }
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
@@ -93,7 +100,7 @@ export default function Home() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-600">데이터를 불러오는 중 오류가 발생했습니다: {error}</p>
@@ -110,7 +117,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-200">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8 flex justify-between items-start">
           <div>
@@ -204,12 +211,17 @@ export default function Home() {
               averageSalary={data?.summary.averageSalary || 0}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
+              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
             />
             <FixedSalaryRangeCard
               baseUpRate={baseUpRate}
               meritRate={meritRate}
               selectedAmount={selectedFixedAmount}
               onAmountSelect={setSelectedFixedAmount}
+              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
+              totalEmployees={data?.summary.totalEmployees || 0}
+              fixedSalaryRange={fixedSalaryRange}
+              onRangeChange={setFixedSalaryRange}
             />
             <IndirectCostImpactCard
               baseUpRate={baseUpRate}
@@ -218,27 +230,12 @@ export default function Home() {
               averageSalary={data?.summary.averageSalary || 0}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
+              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BudgetBarChart 
-            data={data?.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-          />
-          <IncreaseTrendChart 
-            data={data?.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-          />
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <DepartmentChart data={data?.departmentDistribution || []} />
-          <PerformanceChart data={data?.performanceDistribution || []} />
-        </div>
 
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>마지막 업데이트: {data ? new Date(data.summary.lastUpdated).toLocaleString('ko-KR') : '-'}</p>

@@ -13,6 +13,7 @@ interface AIRecommendationDetailCardProps {
     employeeCount: number
     averageSalary: string
   }>
+  totalBudget?: number // 총 예산 (억원 단위)
 }
 
 export function AIRecommendationDetailCard({ 
@@ -21,7 +22,8 @@ export function AIRecommendationDetailCard({
   totalEmployees,
   averageSalary,
   levelRates,
-  levelStatistics
+  levelStatistics,
+  totalBudget
 }: AIRecommendationDetailCardProps) {
   // 개별 레벨 인상률이 있으면 레벨별로 계산, 없으면 전체 평균 사용
   let baseUpBudget = 0
@@ -47,10 +49,12 @@ export function AIRecommendationDetailCard({
     meritBudget = Math.round((totalEmployees * averageSalary * meritRate / 100) * 12 / 100000000)
   }
   
-  const totalBudget = baseUpBudget + meritBudget
+  const totalRecommendationBudget = baseUpBudget + meritBudget
   
-  // 활용률 (예시: 총 예산 대비)
-  const utilizationRate = 54 // 예시 값
+  // 활용률 계산 (AI 적정 인상률 예산 / 전체 예산)
+  const utilizationRate = totalBudget && totalBudget > 0 
+    ? Math.round((totalRecommendationBudget / totalBudget) * 100)
+    : 0
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -78,7 +82,7 @@ export function AIRecommendationDetailCard({
         </div>
         <div className="bg-blue-50 rounded-lg p-4 text-center">
           <p className="text-sm text-gray-700 font-medium mb-1">Total</p>
-          <p className="text-3xl font-bold text-blue-600">{totalBudget}억</p>
+          <p className="text-3xl font-bold text-blue-600">{totalRecommendationBudget}억</p>
         </div>
       </div>
     </div>

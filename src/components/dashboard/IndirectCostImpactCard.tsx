@@ -13,6 +13,7 @@ interface IndirectCostImpactCardProps {
     employeeCount: number
     averageSalary: string
   }>
+  totalBudget?: number // 총 예산 (억원 단위)
 }
 
 export function IndirectCostImpactCard({ 
@@ -21,7 +22,8 @@ export function IndirectCostImpactCard({
   totalEmployees,
   averageSalary,
   levelRates,
-  levelStatistics
+  levelStatistics,
+  totalBudget
 }: IndirectCostImpactCardProps) {
   // 개별 레벨 인상률이 있으면 레벨별로 계산, 없으면 전체 평균 사용
   let baseSalaryBudget = 0
@@ -58,7 +60,10 @@ export function IndirectCostImpactCard({
   // 총 간접비용
   const totalIndirectCost = retirementProvision + socialInsurance + welfareBenefit
   
-  const utilizationRate = 12 // 예시 값
+  // 활용률 계산 (간접비용 / 전체 예산)
+  const utilizationRate = totalBudget && totalBudget > 0 
+    ? Math.round((totalIndirectCost / totalBudget) * 100)
+    : 0
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

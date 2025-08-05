@@ -5,11 +5,15 @@ import { SalaryDistributionChart } from '@/components/analytics/SalaryDistributi
 import { ProjectionChart } from '@/components/analytics/ProjectionChart'
 import { DepartmentComparisonChart } from '@/components/analytics/DepartmentComparisonChart'
 import { TenureAnalysisChart } from '@/components/analytics/TenureAnalysisChart'
+import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
+import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [baseUpRate, setBaseUpRate] = useState(3.2)
+  const [meritRate, setMeritRate] = useState(2.5)
 
   useEffect(() => {
     fetchAnalytics()
@@ -29,7 +33,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-200">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-300 rounded w-1/4 mb-8"></div>
@@ -47,7 +51,7 @@ export default function AnalyticsPage() {
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-gray-200">
         <div className="container mx-auto px-4 py-8">
           <p className="text-center text-gray-500">분석 데이터를 불러올 수 없습니다.</p>
         </div>
@@ -116,6 +120,20 @@ export default function AnalyticsPage() {
               )}
             </p>
           </div>
+        </div>
+
+        {/* 직급별 분석 차트 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <BudgetBarChart 
+            data={data.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
+          <IncreaseTrendChart 
+            data={data.levelStatistics || []} 
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
         </div>
 
         {/* 차트 그리드 */}

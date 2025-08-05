@@ -70,13 +70,13 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                 <div>
                   <div className="text-center -mt-2 pb-2">
                     <p className="text-xs font-medium text-gray-700">총 인상률</p>
-                    <p className="text-3xl font-bold text-purple-600">{formatPercentage(displayTotal)}</p>
+                    <p className="text-3xl font-bold text-gray-900">{formatPercentage(displayTotal)}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <div className="flex justify-between items-center">
                         <p className="text-xs font-medium text-gray-700">Base-up</p>
-                        <p className="text-xs font-bold text-purple-600">{formatPercentage(displayBaseUp)}</p>
+                        <p className="text-xs font-bold text-gray-900">{formatPercentage(displayBaseUp)}</p>
                       </div>
                       <input
                         type="range"
@@ -95,7 +95,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                     <div>
                       <div className="flex justify-between items-center">
                         <p className="text-xs font-medium text-gray-700">Merit</p>
-                        <p className="text-xs font-bold text-pink-600">{formatPercentage(displayMerit)}</p>
+                        <p className="text-xs font-bold text-gray-900">{formatPercentage(displayMerit)}</p>
                       </div>
                       <input
                         type="range"
@@ -117,19 +117,19 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                 <div className="grid grid-cols-3 gap-2">
                   <div className="text-center p-2 bg-gray-50 rounded">
                     <p className="text-gray-800 font-medium">Base-up</p>
-                    <p className={`font-bold text-base ${isSimulated ? 'text-purple-600' : 'text-gray-900'}`}>
+                    <p className={`font-bold text-base ${isSimulated ? 'text-gray-900' : 'text-gray-900'}`}>
                       {formatPercentage(displayBaseUp)}
                     </p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded">
                     <p className="text-gray-800 font-medium">Merit</p>
-                    <p className={`font-bold text-base ${isSimulated ? 'text-pink-600' : 'text-gray-900'}`}>
+                    <p className={`font-bold text-base ${isSimulated ? 'text-gray-900' : 'text-gray-900'}`}>
                       {formatPercentage(displayMerit)}
                     </p>
                   </div>
                   <div className="text-center p-2 bg-primary-50 rounded">
                     <p className="text-gray-800 font-medium">총 인상률</p>
-                    <p className={`font-bold text-base ${isSimulated ? 'text-purple-600' : 'text-primary-600'}`}>
+                    <p className={`font-bold text-base ${isSimulated ? 'text-gray-900' : 'text-primary-600'}`}>
                       {formatPercentage(displayTotal)}
                     </p>
                   </div>
