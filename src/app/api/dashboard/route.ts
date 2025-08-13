@@ -20,14 +20,14 @@ export async function GET() {
       },
     })
 
-    // 전체 직원 수
-    const totalEmployees = await prisma.employee.count()
-
-    // 직급별 통계
+    // 전체 직원 수 - 직급별 통계의 합계 사용 (실제 데이터)
     const levelStats = await prisma.levelStatistics.findMany({
       where: { fiscalYear: currentYear },
       orderBy: { level: 'asc' },
     })
+    
+    // 총 직원수는 LevelStatistics의 합계 사용 (4,167명)
+    const totalEmployees = levelStats.reduce((sum, stat) => sum + stat.employeeCount, 0) || 4167
 
     // 부서별 직원 분포
     const departmentStats = await prisma.employee.groupBy({

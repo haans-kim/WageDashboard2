@@ -33,48 +33,55 @@ async function main() {
     createdBands.push(created)
   }
 
-  // 직군×직급별 테스트 데이터 (pay_band_dashboard_spec.md 참조)
+  // 직군×직급별 실제 데이터 (총 4,167명 분배)
   const bandLevelData = [
-    // 생산기술
-    { band: '생산기술', level: 'Lv.1', headcount: 30, meanBasePay: 52000000, baseUpKRW: 700000, sblIndex: 98.2, caIndex: 95.7 },
-    { band: '생산기술', level: 'Lv.2', headcount: 35, meanBasePay: 68000000, baseUpKRW: 900000, sblIndex: 99.1, caIndex: 96.5 },
-    { band: '생산기술', level: 'Lv.3', headcount: 28, meanBasePay: 85000000, baseUpKRW: 1100000, sblIndex: 100.2, caIndex: 98.1 },
-    { band: '생산기술', level: 'Lv.4', headcount: 20, meanBasePay: 105000000, baseUpKRW: 1400000, sblIndex: 101.5, caIndex: 99.8 },
-    // Facility
-    { band: 'Facility', level: 'Lv.1', headcount: 22, meanBasePay: 51000000, baseUpKRW: 650000, sblIndex: 98.8, caIndex: 96.2 },
-    { band: 'Facility', level: 'Lv.2', headcount: 18, meanBasePay: 66000000, baseUpKRW: 850000, sblIndex: 99.3, caIndex: 97.1 },
-    { band: 'Facility', level: 'Lv.3', headcount: 15, meanBasePay: 82000000, baseUpKRW: 1050000, sblIndex: 99.8, caIndex: 97.8 },
-    { band: 'Facility', level: 'Lv.4', headcount: 12, meanBasePay: 100000000, baseUpKRW: 1300000, sblIndex: 100.5, caIndex: 98.5 },
-    // 경영지원
-    { band: '경영지원', level: 'Lv.1', headcount: 18, meanBasePay: 50000000, baseUpKRW: 600000, sblIndex: 99.0, caIndex: 97.0 },
-    { band: '경영지원', level: 'Lv.2', headcount: 22, meanBasePay: 65000000, baseUpKRW: 800000, sblIndex: 99.5, caIndex: 97.5 },
-    { band: '경영지원', level: 'Lv.3', headcount: 20, meanBasePay: 80000000, baseUpKRW: 1000000, sblIndex: 100.0, caIndex: 98.0 },
-    { band: '경영지원', level: 'Lv.4', headcount: 15, meanBasePay: 95000000, baseUpKRW: 1200000, sblIndex: 100.8, caIndex: 99.0 },
-    // 기획
-    { band: '기획', level: 'Lv.1', headcount: 15, meanBasePay: 53000000, baseUpKRW: 700000, sblIndex: 100.5, caIndex: 107.0 },
-    { band: '기획', level: 'Lv.2', headcount: 18, meanBasePay: 70000000, baseUpKRW: 950000, sblIndex: 101.2, caIndex: 108.5 },
-    { band: '기획', level: 'Lv.3', headcount: 16, meanBasePay: 88000000, baseUpKRW: 1150000, sblIndex: 102.1, caIndex: 109.2 },
-    { band: '기획', level: 'Lv.4', headcount: 10, meanBasePay: 110000000, baseUpKRW: 1500000, sblIndex: 103.5, caIndex: 110.0 },
-    // 구매&물류
-    { band: '구매&물류', level: 'Lv.1', headcount: 20, meanBasePay: 49500000, baseUpKRW: 600000, sblIndex: 98.0, caIndex: 96.0 },
-    { band: '구매&물류', level: 'Lv.2', headcount: 25, meanBasePay: 64000000, baseUpKRW: 800000, sblIndex: 98.5, caIndex: 96.8 },
-    { band: '구매&물류', level: 'Lv.3', headcount: 22, meanBasePay: 78000000, baseUpKRW: 980000, sblIndex: 99.0, caIndex: 97.2 },
-    { band: '구매&물류', level: 'Lv.4', headcount: 18, meanBasePay: 92000000, baseUpKRW: 1180000, sblIndex: 99.5, caIndex: 97.8 },
-    // 영업
-    { band: '영업', level: 'Lv.1', headcount: 25, meanBasePay: 54000000, baseUpKRW: 750000, sblIndex: 101.0, caIndex: 104.0 },
-    { band: '영업', level: 'Lv.2', headcount: 30, meanBasePay: 72000000, baseUpKRW: 1000000, sblIndex: 102.0, caIndex: 105.5 },
-    { band: '영업', level: 'Lv.3', headcount: 28, meanBasePay: 90000000, baseUpKRW: 1200000, sblIndex: 103.0, caIndex: 106.8 },
-    { band: '영업', level: 'Lv.4', headcount: 22, meanBasePay: 115000000, baseUpKRW: 1550000, sblIndex: 104.2, caIndex: 107.5 },
-    // 생산
-    { band: '생산', level: 'Lv.1', headcount: 40, meanBasePay: 48000000, baseUpKRW: 550000, sblIndex: 97.5, caIndex: 95.0 },
-    { band: '생산', level: 'Lv.2', headcount: 45, meanBasePay: 62000000, baseUpKRW: 750000, sblIndex: 98.0, caIndex: 95.5 },
-    { band: '생산', level: 'Lv.3', headcount: 38, meanBasePay: 75000000, baseUpKRW: 920000, sblIndex: 98.5, caIndex: 96.0 },
-    { band: '생산', level: 'Lv.4', headcount: 30, meanBasePay: 88000000, baseUpKRW: 1100000, sblIndex: 99.0, caIndex: 96.5 },
-    // 품질보증
-    { band: '품질보증', level: 'Lv.1', headcount: 28, meanBasePay: 50000000, baseUpKRW: 600000, sblIndex: 99.2, caIndex: 97.1 },
-    { band: '품질보증', level: 'Lv.2', headcount: 32, meanBasePay: 65000000, baseUpKRW: 800000, sblIndex: 99.8, caIndex: 97.8 },
-    { band: '품질보증', level: 'Lv.3', headcount: 26, meanBasePay: 80000000, baseUpKRW: 1000000, sblIndex: 100.3, caIndex: 98.5 },
-    { band: '품질보증', level: 'Lv.4', headcount: 20, meanBasePay: 95000000, baseUpKRW: 1200000, sblIndex: 101.0, caIndex: 99.2 },
+    // 생산기술 (1,648명 - 39.5%)
+    { band: '생산기술', level: 'Lv.1', headcount: 612, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '생산기술', level: 'Lv.2', headcount: 431, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '생산기술', level: 'Lv.3', headcount: 416, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '생산기술', level: 'Lv.4', headcount: 189, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 생산 (884명 - 21.2%)
+    { band: '생산', level: 'Lv.1', headcount: 328, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '생산', level: 'Lv.2', headcount: 231, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '생산', level: 'Lv.3', headcount: 223, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '생산', level: 'Lv.4', headcount: 102, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 품질보증 (410명 - 9.8%)
+    { band: '품질보증', level: 'Lv.1', headcount: 153, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '품질보증', level: 'Lv.2', headcount: 107, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '품질보증', level: 'Lv.3', headcount: 103, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '품질보증', level: 'Lv.4', headcount: 47, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // Facility (389명 - 9.3%)
+    { band: 'Facility', level: 'Lv.1', headcount: 145, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: 'Facility', level: 'Lv.2', headcount: 101, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: 'Facility', level: 'Lv.3', headcount: 98, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: 'Facility', level: 'Lv.4', headcount: 45, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 영업 (286명 - 6.9%)
+    { band: '영업', level: 'Lv.1', headcount: 107, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '영업', level: 'Lv.2', headcount: 74, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '영업', level: 'Lv.3', headcount: 72, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '영업', level: 'Lv.4', headcount: 33, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 구매&물류 (209명 - 5.0%)
+    { band: '구매&물류', level: 'Lv.1', headcount: 78, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '구매&물류', level: 'Lv.2', headcount: 54, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '구매&물류', level: 'Lv.3', headcount: 53, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '구매&물류', level: 'Lv.4', headcount: 24, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 경영지원 (173명 - 4.2%)
+    { band: '경영지원', level: 'Lv.1', headcount: 64, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '경영지원', level: 'Lv.2', headcount: 45, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '경영지원', level: 'Lv.3', headcount: 44, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '경영지원', level: 'Lv.4', headcount: 20, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
+    
+    // 기획 (168명 - 4.0%)
+    { band: '기획', level: 'Lv.1', headcount: 63, meanBasePay: 51977513, baseUpKRW: 1663280, sblIndex: 91.5, caIndex: 89.8 },
+    { band: '기획', level: 'Lv.2', headcount: 44, meanBasePay: 67376032, baseUpKRW: 2156033, sblIndex: 93.2, caIndex: 91.0 },
+    { band: '기획', level: 'Lv.3', headcount: 42, meanBasePay: 87599520, baseUpKRW: 2803185, sblIndex: 93.6, caIndex: 92.1 },
+    { band: '기획', level: 'Lv.4', headcount: 19, meanBasePay: 108469574, baseUpKRW: 3471026, sblIndex: 94.2, caIndex: 92.8 },
   ]
 
   // BandLevel 데이터 생성
@@ -99,42 +106,22 @@ async function main() {
         sblIndex: data.sblIndex,
         caIndex: data.caIndex,
         competitiveness,
-        fiscalYear
-      }
+        fiscalYear,
+      },
     })
   }
 
-  // 외부 벤치마크 데이터 생성
-  for (const data of bandLevelData) {
-    const bandId = bandMap.get(data.band)
-    if (!bandId) continue
+  // 총 예산 데이터 생성 (283억원)
+  await prisma.budget.create({
+    data: {
+      fiscalYear: 2025,
+      totalBudget: BigInt(283034052564),
+      usedBudget: BigInt(24484451897),
+      department: null, // 전체
+    },
+  })
 
-    // SBL 벤치마크
-    await prisma.externalBenchmark.create({
-      data: {
-        bandId,
-        level: data.level,
-        extRefType: 'SBL',
-        extMeanBasePay: BigInt(Math.round(data.meanBasePay / (data.sblIndex / 100))),
-        fiscalYear,
-        source: 'Market Survey 2025'
-      }
-    })
-
-    // CA 벤치마크
-    await prisma.externalBenchmark.create({
-      data: {
-        bandId,
-        level: data.level,
-        extRefType: 'CA',
-        extMeanBasePay: BigInt(Math.round(data.meanBasePay / (data.caIndex / 100))),
-        fiscalYear,
-        source: 'Competitor Analysis 2025'
-      }
-    })
-  }
-
-  // AI 추천 설정
+  // AI 추천 설정 생성
   await prisma.aIRecommendation.create({
     data: {
       fiscalYear: 2025,
@@ -147,90 +134,55 @@ async function main() {
     },
   })
 
-  // 예산 정보
-  await prisma.budget.create({
-    data: {
-      fiscalYear: 2025,
-      totalBudget: BigInt(31900000000), // 319억
-      usedBudget: BigInt(18900000000),  // 189억
-      department: null, // 전체
-    },
-  })
+  // 직급별 통계 생성 (실제 Pay 현황.png 데이터)
+  const levelStats = [
+    { level: 'Lv.1', employeeCount: 1548, averageSalary: BigInt(51977513), totalSalary: BigInt(80461149924) },
+    { level: 'Lv.2', employeeCount: 1089, averageSalary: BigInt(67376032), totalSalary: BigInt(73372498848) },
+    { level: 'Lv.3', employeeCount: 1051, averageSalary: BigInt(87599520), totalSalary: BigInt(92067095520) },
+    { level: 'Lv.4', employeeCount: 479, averageSalary: BigInt(108469574), totalSalary: BigInt(51956925946) },
+  ]
 
-  // 샘플 직원 데이터
-  const departments = ['영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
-  const levels = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
-  const levelSalaryRanges = {
-    'Lv.1': { min: 35000000, max: 50000000 },   // 3.5천만 ~ 5천만 (주니어)
-    'Lv.2': { min: 50000000, max: 80000000 },   // 5천만 ~ 8천만
-    'Lv.3': { min: 80000000, max: 120000000 },  // 8천만 ~ 1.2억
-    'Lv.4': { min: 120000000, max: 150000000 }, // 1.2억 ~ 1.5억 (부장급)
-  }
-
-  const employees = []
-  let employeeNumber = 10000
-
-  // 각 직급별로 직원 생성
-  for (const level of levels) {
-    const employeeCount = level === 'Lv.1' ? 92 : level === 'Lv.2' ? 171 : level === 'Lv.3' ? 43 : 39
-    
-    for (let i = 0; i < employeeCount; i++) {
-      const department = departments[Math.floor(Math.random() * departments.length)]
-      const salaryRange = levelSalaryRanges[level as keyof typeof levelSalaryRanges]
-      const salary = Math.floor(Math.random() * (salaryRange.max - salaryRange.min) + salaryRange.min)
-      
-      const employee = await prisma.employee.create({
-        data: {
-          employeeNumber: `E${employeeNumber++}`,
-          name: `직원${employeeNumber}`,
-          department,
-          level,
-          currentSalary: salary,
-          hireDate: new Date(2020 + Math.floor(Math.random() * 5), Math.floor(Math.random() * 12), 1),
-          performanceRating: ['S', 'A', 'B'][Math.floor(Math.random() * 3)],
-        },
-      })
-      
-      employees.push(employee)
-      
-      // 임금 계산 데이터 추가
-      await prisma.wageCalculation.create({
-        data: {
-          employeeId: employee.id,
-          calculationDate: new Date(2025, 5, 1),
-          baseUpPercentage: 3.2,
-          meritIncreasePercentage: 2.5,
-          totalPercentage: 5.7,
-          suggestedSalary: Math.floor(salary * 1.057),
-          status: 'draft',
-        },
-      })
-    }
-  }
-
-  // 직급별 통계 생성
-  for (const level of levels) {
-    const levelEmployees = await prisma.employee.findMany({
-      where: { level },
-    })
-    
-    const totalSalary = levelEmployees.reduce((sum, emp) => sum + emp.currentSalary, 0)
-    const avgSalary = Math.floor(totalSalary / levelEmployees.length)
-    
+  for (const stat of levelStats) {
     await prisma.levelStatistics.create({
       data: {
-        level,
+        level: stat.level,
         fiscalYear: 2025,
-        employeeCount: levelEmployees.length,
-        averageSalary: BigInt(avgSalary),
-        totalSalary: BigInt(totalSalary),
+        employeeCount: stat.employeeCount,
+        averageSalary: stat.averageSalary,
+        totalSalary: stat.totalSalary,
         avgBaseUpPercentage: 3.2,
         avgMeritPercentage: 2.5,
       },
     })
   }
 
-  console.log('시드 데이터가 성공적으로 생성되었습니다.')
+  // 샘플 직원 데이터 생성 (대표적인 몇 명만)
+  const employees = [
+    { employeeNumber: 'EMP001', name: '김철수', department: '생산기술', level: 'Lv.4', currentSalary: 115200000, performanceRating: 'A' },
+    { employeeNumber: 'EMP002', name: '이영희', department: '생산기술', level: 'Lv.3', currentSalary: 93600000, performanceRating: 'B+' },
+    { employeeNumber: 'EMP003', name: '박민수', department: '영업', level: 'Lv.3', currentSalary: 89500000, performanceRating: 'A-' },
+    { employeeNumber: 'EMP004', name: '최지원', department: '기획', level: 'Lv.4', currentSalary: 112000000, performanceRating: 'A' },
+    { employeeNumber: 'EMP005', name: '정현진', department: '품질보증', level: 'Lv.2', currentSalary: 68000000, performanceRating: 'B' },
+    { employeeNumber: 'EMP006', name: '강민지', department: 'Facility', level: 'Lv.2', currentSalary: 66500000, performanceRating: 'B+' },
+    { employeeNumber: 'EMP007', name: '윤서준', department: '생산', level: 'Lv.1', currentSalary: 52000000, performanceRating: 'B' },
+    { employeeNumber: 'EMP008', name: '조은비', department: '구매&물류', level: 'Lv.3', currentSalary: 85000000, performanceRating: 'A-' },
+    { employeeNumber: 'EMP009', name: '임도현', department: '경영지원', level: 'Lv.4', currentSalary: 105000000, performanceRating: 'A' },
+    { employeeNumber: 'EMP010', name: '한소연', department: '생산기술', level: 'Lv.1', currentSalary: 51000000, performanceRating: 'C+' },
+  ]
+
+  for (const emp of employees) {
+    await prisma.employee.create({
+      data: {
+        ...emp,
+        hireDate: new Date('2020-01-01'),
+      },
+    })
+  }
+
+  console.log('Seed data created successfully!')
+  console.log('총 인원: 4,167명')
+  console.log('총 예산: 283,034,052,564원')
+  console.log('8개 직군 데이터 생성 완료')
 }
 
 main()

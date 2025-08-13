@@ -6,26 +6,17 @@ import { useDashboardData } from '@/hooks/useDashboardData'
 import { useScenarios } from '@/hooks/useScenarios'
 import { ScenarioManager } from '@/components/ScenarioManager'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
-import { BudgetCard } from '@/components/dashboard/BudgetCard'
-import { LevelDistributionCard } from '@/components/dashboard/LevelDistributionCard'
-import { AIRecommendationDetailCard } from '@/components/dashboard/AIRecommendationDetailCard'
-import { FixedSalaryRangeCard } from '@/components/dashboard/FixedSalaryRangeCard'
-import { IndirectCostImpactCard } from '@/components/dashboard/IndirectCostImpactCard'
+import { BudgetResourceCard } from '@/components/dashboard/BudgetResourceCard'
+import { BudgetUtilizationDetail } from '@/components/dashboard/BudgetUtilizationDetail'
+import { GradeSalaryAdjustmentTable } from '@/components/dashboard/GradeSalaryAdjustmentTable'
+import { IndustryComparisonSection } from '@/components/dashboard/IndustryComparisonSection'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
   const [baseUpRate, setBaseUpRate] = useState(3.2)
   const [meritRate, setMeritRate] = useState(2.5)
-  const [selectedFixedAmount, setSelectedFixedAmount] = useState(100) // 정액 인상 선택값 (만원/연)
-  const [totalBudget, setTotalBudget] = useState<number | null>(null) // 총예산 (억원 단위)
-  
-  // 정액 인상 권장 범위 상태
-  const [fixedSalaryRange, setFixedSalaryRange] = useState({
-    minimum: 165,
-    average: 168,
-    maximum: 202
-  })
+  const [totalBudget, setTotalBudget] = useState<number | null>(300) // 총예산 300억원
   
   // 개별 레벨 인상률 상태
   const [levelRates, setLevelRates] = useState({
@@ -119,18 +110,18 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-200">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 flex justify-between items-start">
+      <div className="container mx-auto px-3 py-4">
+        <header className="mb-4 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">인건비 대시보드</h1>
-            <p className="text-gray-600 mt-2">실시간 인상률 조정 및 인건비 배분 최적화</p>
+            <h1 className="text-2xl font-bold text-gray-900">인건비 대시보드</h1>
+            <p className="text-sm text-gray-600 mt-1">실시간 인상률 조정 및 인건비 배분 최적화</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Link
               href={`/bands?baseUp=${baseUpRate}&merit=${meritRate}`}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
               Pay Band 분석
@@ -146,114 +137,98 @@ export default function Home() {
             <SimpleExportButton type="summary" />
             <button
               onClick={refresh}
-              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+              className="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
             >
               새로고침
             </button>
           </div>
         </header>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <AIRecommendationCard 
-            data={data?.aiRecommendation || null} 
-            totalEmployees={data?.summary.totalEmployees || 0}
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-            onBaseUpChange={(value) => {
-              setBaseUpRate(value)
-              // 전체 슬라이더 변경 시 모든 레벨 업데이트
-              setLevelRates({
-                'Lv.1': { baseUp: value, merit: levelRates['Lv.1'].merit },
-                'Lv.2': { baseUp: value, merit: levelRates['Lv.2'].merit },
-                'Lv.3': { baseUp: value, merit: levelRates['Lv.3'].merit },
-                'Lv.4': { baseUp: value, merit: levelRates['Lv.4'].merit }
-              })
-            }}
-            onMeritChange={(value) => {
-              setMeritRate(value)
-              // 전체 슬라이더 변경 시 모든 레벨 업데이트
-              setLevelRates({
-                'Lv.1': { ...levelRates['Lv.1'], merit: value },
-                'Lv.2': { ...levelRates['Lv.2'], merit: value },
-                'Lv.3': { ...levelRates['Lv.3'], merit: value },
-                'Lv.4': { ...levelRates['Lv.4'], merit: value }
-              })
-            }}
-            onReset={() => {
-              setBaseUpRate(3.2)
-              setMeritRate(2.5)
-              setLevelRates({
-                'Lv.1': { baseUp: 3.2, merit: 2.5 },
-                'Lv.2': { baseUp: 3.2, merit: 2.5 },
-                'Lv.3': { baseUp: 3.2, merit: 2.5 },
-                'Lv.4': { baseUp: 3.2, merit: 2.5 }
-              })
-            }}
-          />
-          <BudgetCard 
-            data={data?.budget || null} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-            totalEmployees={data?.summary.totalEmployees || 0}
-            averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
-              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
-              (data?.summary.totalEmployees || 1)}
-            levelRates={levelRates}
-            levelStatistics={data?.levelStatistics || []}
-            selectedFixedAmount={selectedFixedAmount}
-            customTotalBudget={totalBudget}
-            onTotalBudgetChange={setTotalBudget}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <LevelDistributionCard 
-            data={data?.levelStatistics || []} 
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-            levelRates={levelRates}
-            updateLevelRate={updateLevelRate}
-          />
-          
-          <div className="space-y-6">
-            <AIRecommendationDetailCard
+        {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-4">
+            {/* AI 제안 적정인상률 */}
+            <AIRecommendationCard 
+              data={data?.aiRecommendation || null} 
+              totalEmployees={4167}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
-              totalEmployees={data?.summary.totalEmployees || 0}
-              averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
-              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
-              (data?.summary.totalEmployees || 1)}
+              onBaseUpChange={(value) => {
+                setBaseUpRate(value)
+                // 전체 슬라이더 변경 시 모든 레벨 업데이트
+                setLevelRates({
+                  'Lv.1': { baseUp: value, merit: levelRates['Lv.1'].merit },
+                  'Lv.2': { baseUp: value, merit: levelRates['Lv.2'].merit },
+                  'Lv.3': { baseUp: value, merit: levelRates['Lv.3'].merit },
+                  'Lv.4': { baseUp: value, merit: levelRates['Lv.4'].merit }
+                })
+              }}
+              onMeritChange={(value) => {
+                setMeritRate(value)
+                // 전체 슬라이더 변경 시 모든 레벨 업데이트
+                setLevelRates({
+                  'Lv.1': { ...levelRates['Lv.1'], merit: value },
+                  'Lv.2': { ...levelRates['Lv.2'], merit: value },
+                  'Lv.3': { ...levelRates['Lv.3'], merit: value },
+                  'Lv.4': { ...levelRates['Lv.4'], merit: value }
+                })
+              }}
+              onReset={() => {
+                setBaseUpRate(3.2)
+                setMeritRate(2.5)
+                setLevelRates({
+                  'Lv.1': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.2': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.3': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.4': { baseUp: 3.2, merit: 2.5 }
+                })
+              }}
+            />
+            
+            {/* 인상재원예산현황 */}
+            <BudgetResourceCard
+              totalBudget={30000000000}
+              baseUpRate={baseUpRate}
+              meritRate={meritRate}
+              totalEmployees={4167}
+              averageSalary={67906000}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
-              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
-            />
-            <FixedSalaryRangeCard
-              baseUpRate={baseUpRate}
-              meritRate={meritRate}
-              selectedAmount={selectedFixedAmount}
-              onAmountSelect={setSelectedFixedAmount}
-              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
-              totalEmployees={data?.summary.totalEmployees || 0}
-              fixedSalaryRange={fixedSalaryRange}
-              onRangeChange={setFixedSalaryRange}
-            />
-            <IndirectCostImpactCard
-              baseUpRate={baseUpRate}
-              meritRate={meritRate}
-              totalEmployees={data?.summary.totalEmployees || 0}
-              averageSalary={(data?.levelStatistics?.reduce((sum, level) => 
-              sum + Number(level.averageSalary) * level.employeeCount, 0) || 0) / 
-              (data?.summary.totalEmployees || 1)}
-              levelRates={levelRates}
-              levelStatistics={data?.levelStatistics || []}
-              totalBudget={totalBudget || (data?.budget ? Number(data.budget.totalBudget) / 100000000 : undefined)}
+              customTotalBudget={totalBudget}
+              onTotalBudgetChange={setTotalBudget}
             />
           </div>
+          
+          {/* 예산활용내역상세 */}
+          <BudgetUtilizationDetail
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+            totalEmployees={4167}
+            averageSalary={67906000}
+            levelStatistics={data?.levelStatistics || []}
+          />
+        </div>
+        
+        {/* 중앙: 직급별 고정급 인상률 조정 테이블 */}
+        <div className="mb-4">
+          <GradeSalaryAdjustmentTable
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+            onRateChange={updateLevelRate}
+          />
+        </div>
+        
+        {/* 하단: 동종업계 대비 비교 */}
+        <div className="mb-4">
+          <IndustryComparisonSection
+            baseUpRate={baseUpRate}
+            meritRate={meritRate}
+          />
         </div>
 
 
 
-        <div className="mt-6 text-center text-xs text-gray-500">
+        <div className="mt-3 text-center text-xs text-gray-500">
           <p>마지막 업데이트: {data ? new Date(data.summary.lastUpdated).toLocaleString('ko-KR') : '-'}</p>
         </div>
       </div>
