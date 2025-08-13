@@ -46,6 +46,7 @@ export default function BandDashboard() {
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
+  const [bandBudgetImpacts, setBandBudgetImpacts] = useState<{ [key: string]: number }>({})
   
   // 메인 대시보드에서 전달받은 인상률
   const initialBaseUp = parseFloat(searchParams.get('baseUp') || '3.2')
@@ -83,10 +84,12 @@ export default function BandDashboard() {
   }
 
 
-  // 요약 계산
+  // 요약 계산 - 업데이트된 예산 영향 포함
   const summary = {
     totalHeadcount: bands.reduce((sum, band) => sum + band.totalHeadcount, 0),
-    totalBudgetImpact: bands.reduce((sum, band) => sum + band.totalBudgetImpact, 0),
+    totalBudgetImpact: Object.keys(bandBudgetImpacts).length > 0 
+      ? Object.values(bandBudgetImpacts).reduce((sum, impact) => sum + impact, 0)
+      : bands.reduce((sum, band) => sum + band.totalBudgetImpact, 0),
     avgBaseUpRate: bands.length > 0 
       ? bands.reduce((sum, band) => sum + band.avgBaseUpRate * band.totalHeadcount, 0) / 
         bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
@@ -176,8 +179,11 @@ export default function BandDashboard() {
               initialBaseUp={initialBaseUp}
               initialMerit={initialMerit}
               onRateChange={(bandId, data) => {
-                // 인상률 변경 시 처리 (필요한 경우)
-                console.log(`Band ${bandId} rates changed:`, data)
+                // 인상률 변경 시 예산 영향 업데이트
+                setBandBudgetImpacts(prev => ({
+                  ...prev,
+                  [bandId]: data.budgetImpact || 0
+                }))
               }}
             />
           ))}

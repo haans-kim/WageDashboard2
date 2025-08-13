@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   LineChart,
   Line,
@@ -27,14 +27,19 @@ interface PayBandLineChartProps {
 }
 
 export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
-  // Y축 범위 계산 - 조정된 값도 포함
-  const allValues = data.flatMap(d => [
-    d.sblMedian, 
-    d.sblMedianAdjusted || d.sblMedian,
-    d.caMedian
-  ])
-  const yMin = Math.min(...allValues) * 0.9
-  const yMax = Math.max(...allValues) * 1.1
+  // Y축 범위 계산 - 고정된 범위로 설정
+  const yAxisDomain = useMemo(() => {
+    // 초기 데이터의 모든 값을 기준으로 계산
+    const allValues = data.flatMap(d => [
+      d.sblMedian,
+      d.caMedian,
+      // 조정 후 값이 있다면 최대 20% 인상까지 고려
+      d.sblMedian * 1.2
+    ])
+    const maxValue = Math.max(...allValues)
+    // 최소값은 0, 최대값은 가장 큰 값의 1.3배로 여유 있게 설정
+    return [0, Math.ceil(maxValue * 1.3 / 10000000) * 10000000]
+  }, [data[0]?.sblMedian]) // 초기 데이터 기준으로만 계산
 
   // 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -76,7 +81,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
 
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={350}>
         <LineChart
           data={data}
           margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
@@ -90,7 +95,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           />
           
           <YAxis 
-            domain={[yMin, yMax]}
+            domain={yAxisDomain}
             tickFormatter={(value) => `${(value / 10000).toFixed(0)}`}
             tick={{ fontSize: 11 }}
             axisLine={{ stroke: '#9ca3af' }}

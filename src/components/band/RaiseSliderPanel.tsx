@@ -36,7 +36,7 @@ export function RaiseSliderPanel({
         <div className="flex justify-between items-center mb-2">
           <label className="text-sm font-semibold text-gray-700">Base-up (전체)</label>
           <span className="text-sm font-bold text-primary-600">
-            {formatPercentage(baseUpRate)}
+            {formatPercentage(baseUpRate * 100)}
           </span>
         </div>
         <input
@@ -60,7 +60,7 @@ export function RaiseSliderPanel({
         <div className="flex justify-between items-center mb-2">
           <label className="text-sm font-semibold text-gray-700">추가인상 (전체)</label>
           <span className="text-sm font-bold text-green-600">
-            {formatPercentage(additionalRate)}
+            {formatPercentage(additionalRate * 100)}
           </span>
         </div>
         <input

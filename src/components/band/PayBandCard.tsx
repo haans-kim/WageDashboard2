@@ -113,6 +113,18 @@ export function PayBandCard({
     }
   }, [baseUpRate, additionalRate, meritMultipliers])
 
+  // 초기 마운트 시에도 예산 영향 전달
+  useEffect(() => {
+    if (onRateChange) {
+      onRateChange(bandId, {
+        baseUpRate,
+        additionalRate,
+        meritMultipliers,
+        budgetImpact: calculateBudgetImpact()
+      })
+    }
+  }, [])
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       {/* 헤더 */}
@@ -130,13 +142,20 @@ export function PayBandCard({
           {/* 꺾은선 차트 */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-semibold text-gray-700 mb-2">중위수 비교</h4>
-            <PayBandLineChart data={chartData} bandName={bandName} />
+            <PayBandLineChart 
+              key={`chart-${baseUpRate}-${additionalRate}-${JSON.stringify(meritMultipliers)}`}
+              data={chartData} 
+              bandName={bandName} 
+            />
           </div>
 
           {/* 비교 테이블 */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-semibold text-gray-700 mb-3">상세 비교</h4>
-            <ComparisonTable data={tableData} />
+            <ComparisonTable 
+              key={`table-${baseUpRate}-${additionalRate}-${JSON.stringify(meritMultipliers)}`}
+              data={tableData} 
+            />
           </div>
         </div>
 
