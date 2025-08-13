@@ -110,3 +110,79 @@ model LevelStatistics {
   
   @@unique([level, fiscalYear])
 }
+
+// 직군 정보
+model Band {
+  id                    String   @id @default(cuid())
+  name                  String   @unique // 직군명 (생산기술, Facility, 경영지원, 기획, 구매&물류, 영업, 생산, 품질보증)
+  description           String?  // 직군 설명
+  displayOrder          Int      // 표시 순서
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  bandLevels            BandLevel[]
+  benchmarks            ExternalBenchmark[]
+}
+
+// 직군×직급별 데이터
+model BandLevel {
+  id                    String   @id @default(cuid())
+  bandId                String   // 직군 ID
+  level                 String   // 직급 (Lv.1, Lv.2, Lv.3, Lv.4)
+  headcount             Int      // 인원수
+  meanBasePay           BigInt   // 평균 고정급 (원 단위)
+  baseUpKRW             BigInt   // Base-up 금액 (원 단위)
+  baseUpRate            Float    // Base-up 비율
+  sblIndex              Float    // SBL 경쟁력 지수
+  caIndex               Float    // CA 경쟁력 지수
+  competitiveness       Float    // 보상경쟁력 지수 (선택된 지표 기준)
+  fiscalYear            Int      // 회계연도
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  band                  Band     @relation(fields: [bandId], references: [id])
+  
+  @@unique([bandId, level, fiscalYear])
+  @@index([bandId])
+}
+
+// 외부 벤치마크 데이터
+model ExternalBenchmark {
+  id                    String   @id @default(cuid())
+  bandId                String   // 직군 ID
+  level                 String   // 직급
+  extRefType            String   // 벤치마크 유형 (SBL, CA)
+  extMeanBasePay        BigInt   // 외부 평균 고정급
+  fiscalYear            Int      // 회계연도
+  source                String?  // 데이터 출처
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  band                  Band     @relation(fields: [bandId], references: [id])
+  
+  @@unique([bandId, level, extRefType, fiscalYear])
+  @@index([bandId])
+}
+
+// Pay Band 시나리오
+model PayBandScenario {
+  id                    String   @id @default(cuid())
+  scenarioId            String   @unique // 시나리오 고유 ID
+  scenarioName          String   // 시나리오 이름
+  currency              String   @default("KRW") // 통화
+  rounding              Int      @default(100) // 반올림 단위
+  weightPerf            Float    @default(0.6) // 성과 가중치
+  weightBase            Float    @default(0.4) // 기본급 가중치
+  budgetCap             BigInt?  // 예산 상한 (원 단위)
+  avgIncreaseSBL        Float?   // SBL 기준 평균 인상률
+  avgIncreaseCA         Float?   // CA 기준 평균 인상률
+  competitivenessTarget String   @default("SBL") // 경쟁력 기준 (SBL/CA)
+  fiscalYear            Int      // 회계연도
+  createdBy             String?  // 생성자
+  note                  String?  // 비고
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

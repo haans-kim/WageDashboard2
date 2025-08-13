@@ -90,4 +90,13 @@
   .slider-small::-moz-range-thumb {
     @apply w-3 h-3;
   }
+  
+  /* Pay Band 슬라이더 */
+  .slider-thumb-primary::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-primary-500 rounded-full cursor-pointer hover:bg-primary-600;
+  }
+
+  .slider-thumb-primary::-moz-range-thumb {
+    @apply w-4 h-4 bg-primary-500 rounded-full cursor-pointer hover:bg-primary-600 border-0;
+  }
 }
