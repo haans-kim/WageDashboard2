@@ -20,7 +20,7 @@ interface AIRecommendationCardProps {
 
 export function AIRecommendationCard({ 
   data, 
-  totalEmployees = 4167, // 실제 인원 반영
+  totalEmployees = 4925, // 실제 인원 반영
   baseUpRate = 3.2, 
   meritRate = 2.5,
   onBaseUpChange,

@@ -171,7 +171,7 @@ export default function Home() {
             {/* AI 제안 적정인상률 */}
             <AIRecommendationCard 
               data={data?.aiRecommendation || null} 
-              totalEmployees={4167}
+              totalEmployees={4925}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
               onBaseUpChange={(value) => {
@@ -211,8 +211,8 @@ export default function Home() {
               totalBudget={30000000000}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
-              totalEmployees={4167}
-              averageSalary={67906000}
+              totalEmployees={4925}
+              averageSalary={57465000}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
               customTotalBudget={totalBudget}
@@ -224,8 +224,8 @@ export default function Home() {
           <BudgetUtilizationDetail
             baseUpRate={baseUpRate}
             meritRate={meritRate}
-            totalEmployees={4167}
-            averageSalary={67906000}
+            totalEmployees={4925}
+            totalSalaryBase={283034052564}
             levelStatistics={data?.levelStatistics || []}
             promotionBudgets={promotionBudgets}
             onPromotionBudgetChange={updatePromotionBudget}
