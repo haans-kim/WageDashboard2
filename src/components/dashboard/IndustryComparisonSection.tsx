@@ -82,6 +82,18 @@ export function IndustryComparisonSection({
     competitivenessToBe: item.competitivenessToBe
   }))
   
+  // 차트 Y축 범위 동적 계산
+  const allChartValues = chartData.flatMap(item => [
+    item['C사'], 
+    item['우리회사(현재)'], 
+    item['우리회사(인상후)']
+  ])
+  const chartMinValue = Math.min(...allChartValues)
+  const chartMaxValue = Math.max(...allChartValues)
+  const chartPadding = (chartMaxValue - chartMinValue) * 0.1 // 10% 여백
+  const chartYMin = Math.max(0, Math.floor(chartMinValue - chartPadding))
+  const chartYMax = Math.ceil(chartMaxValue + chartPadding)
+  
   // 경쟁력 트렌드 데이터 (꺾은선 그래프용)
   const trendData = [
     { year: '2023', ourCompany: 91.2, cCompany: 100 },
@@ -236,7 +248,7 @@ export function IndustryComparisonSection({
               />
               <YAxis 
                 hide={true}
-                domain={[50, 110]} 
+                domain={[chartYMin, chartYMax]} 
                 type="number"
               />
               <Tooltip 
