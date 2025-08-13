@@ -26,6 +26,14 @@ export default function Home() {
     'Lv.4': { baseUp: 3.2, merit: 2.5 }
   })
   
+  // 예산활용내역 상세를 위한 상태
+  const [promotionBudgets, setPromotionBudgets] = useState({
+    lv2: 263418542,
+    lv3: 119262338,
+    lv4: 32662484
+  })
+  const [additionalBudget, setAdditionalBudget] = useState(4499898100)
+  
   // 시나리오 관리
   const {
     scenarios,
@@ -44,6 +52,19 @@ export default function Home() {
         [type]: value
       }
     }))
+  }
+  
+  // 승급/승진 예산 업데이트 핸들러
+  const updatePromotionBudget = (level: string, value: number) => {
+    setPromotionBudgets(prev => ({
+      ...prev,
+      [level]: value
+    }))
+  }
+  
+  // 추가 인상 예산 업데이트 핸들러
+  const updateAdditionalBudget = (value: number) => {
+    setAdditionalBudget(value)
   }
   
   // 시나리오 저장 핸들러
@@ -205,8 +226,11 @@ export default function Home() {
             meritRate={meritRate}
             totalEmployees={4167}
             averageSalary={67906000}
-            totalBudget={(totalBudget || 300) * 100000000}
             levelStatistics={data?.levelStatistics || []}
+            promotionBudgets={promotionBudgets}
+            onPromotionBudgetChange={updatePromotionBudget}
+            additionalBudget={additionalBudget}
+            onAdditionalBudgetChange={updateAdditionalBudget}
           />
         </div>
         

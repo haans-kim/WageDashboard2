@@ -32,24 +32,11 @@ export function AIRecommendationCard({
   const displayMerit = meritRate
   const displayTotal = displayBaseUp + displayMerit
 
-  const isSimulated = baseUpRate !== 3.2 || meritRate !== 2.5
-  const showControls = onBaseUpChange && onMeritChange
-
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-semibold">
-          AI 제안 적정 인상률
-        </h2>
-        {isSimulated && onReset && (
-          <button
-            onClick={onReset}
-            className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            초기값으로 리셋
-          </button>
-        )}
-      </div>
+      <h2 className="text-lg font-semibold mb-3">
+        AI 제안 적정 인상률
+      </h2>
       
       {/* 중앙 상단: 총 인원 표시 */}
       <div className="text-center mb-6 pb-4 border-b">
@@ -65,7 +52,7 @@ export function AIRecommendationCard({
         {/* 좌측: 최적 인상률 */}
         <div className="bg-blue-50 rounded-lg p-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">최적 인상률</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">최적 인상률</p>
             <p className="text-4xl font-bold text-blue-600 font-tabular">
               {formatPercentage(displayTotal)}
             </p>
@@ -79,44 +66,22 @@ export function AIRecommendationCard({
         <div className="space-y-3">
           {/* Base-up */}
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700">Base-up</span>
-              <span className="font-bold text-purple-600 font-tabular">
+              <span className="text-lg font-bold text-purple-600 font-tabular">
                 {formatPercentage(displayBaseUp)}
               </span>
             </div>
-            {showControls && (
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.1"
-                value={displayBaseUp}
-                onChange={(e) => onBaseUpChange(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-            )}
           </div>
           
           {/* 성과인상률 */}
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700">성과인상률</span>
-              <span className="font-bold text-pink-600 font-tabular">
+              <span className="text-lg font-bold text-pink-600 font-tabular">
                 {formatPercentage(displayMerit)}
               </span>
             </div>
-            {showControls && (
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.1"
-                value={displayMerit}
-                onChange={(e) => onMeritChange(parseFloat(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-            )}
           </div>
         </div>
       </div>
