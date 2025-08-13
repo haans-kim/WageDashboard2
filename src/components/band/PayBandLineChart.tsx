@@ -120,10 +120,10 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           <Line
             type="monotone"
             dataKey="sblMedian"
-            stroke="#fca5a5"
+            stroke="#6b7280"
             strokeWidth={2}
             strokeDasharray="5 5"
-            dot={{ r: 4, fill: '#fca5a5' }}
+            dot={{ r: 4, fill: '#6b7280' }}
             activeDot={{ r: 6 }}
             name="SBL사 (현재)"
           />
@@ -133,9 +133,9 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             <Line
               type="monotone"
               dataKey="sblMedianAdjusted"
-              stroke="#ef4444"
+              stroke="#2563eb"
               strokeWidth={3}
-              dot={{ r: 6, fill: '#ef4444' }}
+              dot={{ r: 6, fill: '#2563eb' }}
               activeDot={{ r: 8 }}
               name="SBL사 (조정 후)"
             />
@@ -145,9 +145,9 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           <Line
             type="monotone"
             dataKey="caMedian"
-            stroke="#3b82f6"
+            stroke="#059669"
             strokeWidth={2.5}
-            dot={{ r: 5, fill: '#3b82f6' }}
+            dot={{ r: 5, fill: '#059669' }}
             activeDot={{ r: 7 }}
             name="C사"
           />
