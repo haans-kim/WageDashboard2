@@ -205,6 +205,7 @@ export default function Home() {
             meritRate={meritRate}
             totalEmployees={4167}
             averageSalary={67906000}
+            totalBudget={(totalBudget || 300) * 100000000}
             levelStatistics={data?.levelStatistics || []}
           />
         </div>
