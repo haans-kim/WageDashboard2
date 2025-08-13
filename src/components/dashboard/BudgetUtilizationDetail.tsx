@@ -60,7 +60,7 @@ export function BudgetUtilizationDetail({
   const indirectTotal = laborCost + taxCost + otherCost
   
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4">예산활용내역상세</h2>
       
       <div className="grid grid-cols-1 gap-4">
