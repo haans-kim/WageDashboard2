@@ -198,26 +198,26 @@ function BandDashboardContent() {
         <div className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
             <div>
-              <p className="text-base text-gray-600">회계연도</p>
-              <p className="text-3xl font-bold text-gray-900">{fiscalYear}</p>
+              <p className="text-xs md:text-base text-gray-600">회계연도</p>
+              <p className="text-lg md:text-3xl font-bold text-gray-900">{fiscalYear}</p>
             </div>
             <div>
-              <p className="text-base text-gray-600">총 인원</p>
-              <p className="text-3xl font-bold text-gray-900">{summary.totalHeadcount.toLocaleString()}명</p>
+              <p className="text-xs md:text-base text-gray-600">총 인원</p>
+              <p className="text-lg md:text-3xl font-bold text-gray-900">{summary.totalHeadcount.toLocaleString()}명</p>
             </div>
             <div>
-              <p className="text-base text-gray-600">기본 Base-up</p>
-              <p className="text-3xl font-bold text-primary-600">{initialBaseUp}%</p>
-              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
+              <p className="text-xs md:text-base text-gray-600">기본 Base-up</p>
+              <p className="text-lg md:text-3xl font-bold text-primary-600">{initialBaseUp}%</p>
+              <p className="text-xs md:text-sm text-gray-500 mt-1">메인 대시보드 값</p>
             </div>
             <div>
-              <p className="text-base text-gray-600">기본 Merit</p>
-              <p className="text-3xl font-bold text-blue-600">{initialMerit}%</p>
-              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
+              <p className="text-xs md:text-base text-gray-600">기본 Merit</p>
+              <p className="text-lg md:text-3xl font-bold text-blue-600">{initialMerit}%</p>
+              <p className="text-xs md:text-sm text-gray-500 mt-1">메인 대시보드 값</p>
             </div>
             <div>
-              <p className="text-base text-gray-600">총 예산 영향</p>
-              <p className="text-3xl font-bold text-yellow-600">
+              <p className="text-xs md:text-base text-gray-600">총 예산 영향</p>
+              <p className="text-lg md:text-3xl font-bold text-yellow-600">
                 {formatKoreanCurrency(summary.totalBudgetImpact, '억원', 100000000)}
               </p>
             </div>

@@ -300,7 +300,7 @@ export function GradeSalaryAdjustmentTable({
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-gray-50">
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center text-sm font-semibold">
+              <th rowSpan={2} className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm font-semibold">
                 직급
               </th>
               <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50 text-sm font-semibold">
@@ -315,7 +315,7 @@ export function GradeSalaryAdjustmentTable({
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-blue-50 text-sm font-semibold">
                 총계 (①+③)%
               </th>
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center text-sm font-semibold">
+              <th rowSpan={2} className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm font-semibold">
                 총 금액
               </th>
             </tr>
@@ -337,29 +337,29 @@ export function GradeSalaryAdjustmentTable({
           <tbody>
             {/* 전체 합계 행 */}
             <tr className="bg-gray-50 font-semibold">
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-base font-bold">전체</div>
                 <span className="text-sm font-normal text-gray-600">
                   {employeeData.totalCount.toLocaleString()}명
                 </span>
               </td>
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-sm text-gray-600">Base-up</div>
                 <div className="text-base font-semibold text-blue-600">{totalSummary.avgBaseUp.toFixed(2)}%</div>
               </td>
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-sm text-gray-600">성과 인상률</div>
                 <div className="text-base font-semibold text-blue-600">{totalSummary.avgMerit.toFixed(2)}%</div>
               </td>
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-sm text-gray-600">승급 인상률</div>
                 <div className="text-base font-semibold text-orange-600">{totalSummary.avgPromotion.toFixed(2)}%</div>
               </td>
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-sm text-gray-600">승격 인상률</div>
                 <div className="text-base font-semibold text-orange-600">{totalSummary.avgAdvancement.toFixed(2)}%</div>
               </td>
-              <td className="border border-gray-300 px-3 py-2 text-center">
+              <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                 <div className="text-sm text-gray-600">추가 인상률</div>
                 <div className="text-base font-semibold text-orange-600">{totalSummary.avgAdditional.toFixed(2)}%</div>
               </td>
@@ -380,7 +380,7 @@ export function GradeSalaryAdjustmentTable({
               
               return (
                 <tr key={level}>
-                  <td className="border border-gray-300 px-3 py-2 text-center">
+                  <td className="border border-gray-300 px-2 md:px-3 py-1 md:py-2 text-center text-xs md:text-sm">
                     <div className="text-base font-semibold">{level}</div>
                     <span className="text-sm text-gray-600">
                       {levelData.headcount.toLocaleString()}명

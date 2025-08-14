@@ -35,18 +35,18 @@ export function AIRecommendationCard({
   const displayTotal = data?.totalPercentage ?? 5.7
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="bg-white rounded-lg shadow p-4 md:p-6 h-full flex flex-col">
+      <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4">
         AI 제안 적정 인상률
       </h2>
       
       {/* 중앙 상단: 총 인원 표시 */}
-      <div className="text-center mb-8 pb-6 border-b">
-        <span className="text-base text-gray-600">총 인원</span>
-        <p className="text-3xl font-bold text-gray-900 mt-1">
+      <div className="text-center mb-4 md:mb-8 pb-4 md:pb-6 border-b">
+        <span className="text-sm md:text-base text-gray-600">총 인원</span>
+        <p className="text-xl md:text-3xl font-bold text-gray-900 mt-1">
           {totalEmployees.toLocaleString('ko-KR')}명
         </p>
-        <span className="text-sm text-gray-500">(2025.06.07 기준)</span>
+        <span className="text-xs md:text-sm text-gray-500">(2025.06.07 기준)</span>
       </div>
       
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}
