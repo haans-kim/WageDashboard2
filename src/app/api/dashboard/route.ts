@@ -74,6 +74,7 @@ export async function GET() {
         rating: perf.performanceRating,
         count: perf._count.id,
       })),
+      industryComparison: dashboardSummary.industryComparison,
     }
 
     return NextResponse.json(dashboardData)

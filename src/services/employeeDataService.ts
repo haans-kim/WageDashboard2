@@ -307,8 +307,8 @@ export async function getDashboardSummary() {
     maxRange: 5.9
   }
   
-  // 예산 정보
-  const totalBudget = totalSalary * 0.057 // 5.7% 인상 예산
+  // 예산 정보 (AI 설정값 기반으로 동적 계산)
+  const totalBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
   
   return {
     summary: {
@@ -320,14 +320,14 @@ export async function getDashboardSummary() {
     aiRecommendation,
     budget: {
       totalBudget,
-      baseUpBudget: totalSalary * 0.032,
-      meritBudget: totalSalary * 0.025,
+      baseUpBudget: totalSalary * (aiRecommendation.baseUpPercentage / 100),
+      meritBudget: totalSalary * (aiRecommendation.meritIncreasePercentage / 100),
       usedBudget: 0,
       remainingBudget: totalBudget
     },
     levelStatistics: levelStats,
     industryComparison: {
-      ourCompany: 5.7,
+      ourCompany: aiRecommendation.totalPercentage,
       competitor: 4.2,
       industry: 4.5
     }

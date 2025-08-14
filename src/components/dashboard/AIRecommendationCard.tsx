@@ -29,10 +29,10 @@ export function AIRecommendationCard({
   onMeritChange,
   onReset
 }: AIRecommendationCardProps) {
-  // 하드코딩된 표시값 사용
-  const displayBaseUp = 3.2
-  const displayMerit = 2.5
-  const displayTotal = 5.7
+  // 엑셀에서 가져온 AI 설정 데이터 사용 (fallback으로 기본값 사용)
+  const displayBaseUp = data?.baseUpPercentage ?? 3.2
+  const displayMerit = data?.meritIncreasePercentage ?? 2.5
+  const displayTotal = data?.totalPercentage ?? 5.7
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
