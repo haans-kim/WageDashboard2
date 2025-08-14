@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadEmployeeExcel } from '@/services/employeeDataService'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +27,23 @@ export async function POST(request: NextRequest) {
     const result = await uploadEmployeeExcel(file)
     
     if (result.success) {
+      // 성공한 경우 파일을 temp 폴더에 저장
+      try {
+        const tempPath = path.join(process.cwd(), 'temp')
+        
+        // temp 폴더가 없으면 생성
+        await fs.mkdir(tempPath, { recursive: true })
+        
+        // 현재 업로드된 파일을 current_data.xlsx로 저장
+        const targetPath = path.join(tempPath, 'current_data.xlsx')
+        const arrayBuffer = await file.arrayBuffer()
+        await fs.writeFile(targetPath, Buffer.from(arrayBuffer))
+        
+        console.log('업로드된 파일 저장 완료:', targetPath)
+      } catch (saveError) {
+        console.log('파일 저장 실패 (캐시만 사용):', saveError)
+      }
+      
       return NextResponse.json({
         success: true,
         message: result.message,

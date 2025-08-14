@@ -61,8 +61,8 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
     console.error('엑셀 파일 로드 실패:', error)
   }
   
-  // 파일 로드 실패 시 더미 데이터 생성
-  console.log('더미 데이터 생성 중...')
+  // 파일 로드 실패 시 기본 데이터 생성
+  console.log('기본 데이터 생성 중...')
   const employees = generateEmployeeData(4925)
   cachedEmployeeData = employees
   return employees
@@ -76,7 +76,98 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
     return cachedEmployeeData
   }
   
-  return loadEmployeeDataFromExcel()
+  // 서버 사이드에서만 파일 시스템 접근 가능
+  // 클라이언트에서는 API를 통해 데이터를 가져옴
+  if (typeof window === 'undefined') {
+    // 서버 사이드 코드
+    try {
+      const fs = await import('fs').then(m => m.promises)
+      const path = await import('path')
+      const XLSX = await import('xlsx')
+      
+      // 먼저 temp 폴더의 current_data.xlsx 확인
+      const tempPath = path.join(process.cwd(), 'temp', 'current_data.xlsx')
+      try {
+        await fs.access(tempPath)
+        const fileBuffer = await fs.readFile(tempPath)
+        const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
+        
+        // AI설정 시트 읽기
+        if (workbook.SheetNames.includes('AI설정')) {
+          const aiSheet = workbook.Sheets['AI설정']
+          const aiData = XLSX.utils.sheet_to_json(aiSheet)
+          
+          cachedAISettings = {
+            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
+            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
+            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
+            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
+            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+          }
+        }
+        
+        // 직원 데이터 읽기
+        const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
+          ? '직원기본정보' 
+          : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+        
+        const worksheet = workbook.Sheets[employeeSheetName]
+        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+        
+        const employees = convertFromExcelFormat(jsonData)
+        cachedEmployeeData = employees
+        console.log('저장된 데이터 파일에서 로드 완료:', employees.length, '명')
+        return employees
+      } catch {
+        // temp 파일이 없으면 기본 파일 시도
+      }
+      
+      // 초기 로드 시 public 폴더의 기본 파일 시도
+      const publicPath = path.join(process.cwd(), 'public', 'data', 'default_employee_data.xlsx')
+      try {
+        await fs.access(publicPath)
+        const fileBuffer = await fs.readFile(publicPath)
+        const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
+        
+        // AI설정 시트 읽기
+        if (workbook.SheetNames.includes('AI설정')) {
+          const aiSheet = workbook.Sheets['AI설정']
+          const aiData = XLSX.utils.sheet_to_json(aiSheet)
+          
+          cachedAISettings = {
+            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
+            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
+            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
+            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
+            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+          }
+        }
+        
+        // 직원 데이터 읽기
+        const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
+          ? '직원기본정보' 
+          : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+        
+        const worksheet = workbook.Sheets[employeeSheetName]
+        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+        
+        const employees = convertFromExcelFormat(jsonData)
+        cachedEmployeeData = employees
+        console.log('기본 Excel 파일에서 데이터 로드 완료:', employees.length, '명')
+        return employees
+      } catch {
+        console.log('파일 로드 실패, 생성된 데이터 사용')
+      }
+    } catch (error) {
+      console.log('서버 사이드 파일 로드 오류:', error)
+    }
+  }
+  
+  // Excel 파일이 없으면 기본 데이터 생성
+  console.log('기본 데이터 생성 중...')
+  const employees = generateEmployeeData(4925)
+  cachedEmployeeData = employees
+  return employees
 }
 
 /**
@@ -262,6 +353,8 @@ export async function uploadEmployeeExcel(file: File): Promise<{
         message: `${invalidRows.length}개 행에 필수 데이터가 누락되었습니다.`
       }
     }
+    
+    // 파일 저장은 API 라우트에서 처리 (서버 사이드에서만 가능)
     
     return {
       success: true,

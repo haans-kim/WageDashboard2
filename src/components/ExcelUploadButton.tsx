@@ -17,9 +17,10 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
   const [loadedFileName, setLoadedFileName] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 초기 로드 시 기본 파일명 설정
+  // 초기 로드 시 localStorage에서 파일명 가져오기
   useEffect(() => {
-    setLoadedFileName('employee_data_dummy.xlsx')
+    const savedFileName = localStorage.getItem('loadedExcelFile')
+    setLoadedFileName(savedFileName || 'default_employee_data.xlsx')
   }, [])
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +48,9 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
           message: result.message
         })
         
-        // 파일명 저장
+        // 파일명 저장 (localStorage에도 저장)
         setLoadedFileName(file.name)
+        localStorage.setItem('loadedExcelFile', file.name)
         
         // 성공 시 콜백 실행 (페이지 새로고침 등)
         if (onUploadSuccess) {

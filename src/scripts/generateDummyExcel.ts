@@ -192,10 +192,10 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true })
 }
 
-const outputPath = path.join(outputDir, 'employee_data_dummy.xlsx')
+const outputPath = path.join(outputDir, 'default_employee_data.xlsx')
 XLSX.writeFile(wb, outputPath)
 
-console.log('✅ 더미 엑셀 파일 생성 완료!')
+console.log('✅ 기본 엑셀 파일 생성 완료!')
 console.log(`📁 파일 위치: ${outputPath}`)
 console.log('\n📊 데이터 요약:')
 console.log(`- 총 직원 수: ${employees.length}명`)
@@ -209,6 +209,6 @@ bandSummaryData.forEach(band => {
 })
 
 // JSON 파일로도 저장 (개발용)
-const jsonPath = path.join(outputDir, 'employee_data_dummy.json')
+const jsonPath = path.join(outputDir, 'default_employee_data.json')
 fs.writeFileSync(jsonPath, JSON.stringify(employees, null, 2))
 console.log(`\n📄 JSON 파일도 생성: ${jsonPath}`)
