@@ -13,6 +13,7 @@ interface AIRecommendationCardProps {
   totalEmployees?: number
   baseUpRate?: number
   meritRate?: number
+  meritWeightedAverage?: number  // 성과인상률 가중평균
   onBaseUpChange?: (value: number) => void
   onMeritChange?: (value: number) => void
   onReset?: () => void
@@ -23,14 +24,15 @@ export function AIRecommendationCard({
   totalEmployees = 4925, // 실제 인원 반영
   baseUpRate = 3.2, 
   meritRate = 2.5,
+  meritWeightedAverage,
   onBaseUpChange,
   onMeritChange,
   onReset
 }: AIRecommendationCardProps) {
-  // Use simulation values if provided, otherwise use default values
-  const displayBaseUp = baseUpRate
-  const displayMerit = meritRate
-  const displayTotal = displayBaseUp + displayMerit
+  // 하드코딩된 표시값 사용
+  const displayBaseUp = 3.2
+  const displayMerit = 2.5
+  const displayTotal = 5.7
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
@@ -55,9 +57,6 @@ export function AIRecommendationCard({
             <p className="text-base font-medium text-gray-700 mb-2">최적 인상률</p>
             <p className="text-4xl font-bold text-blue-600 font-tabular">
               {formatPercentage(displayTotal)}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Range: {formatPercentage(5.7)}~{formatPercentage(5.9)}
             </p>
           </div>
         </div>

@@ -54,6 +54,7 @@ export default function Home() {
     'Lv.4': 6.80
   })
   const [weightedAverageRate, setWeightedAverageRate] = useState(7.2)
+  const [meritWeightedAverage, setMeritWeightedAverage] = useState(2.5) // 성과인상률 가중평균
   
   // 시나리오 관리
   const {
@@ -72,7 +73,7 @@ export default function Home() {
     // 필요시 여기서 추가 처리 가능
   }
   
-  // 승급/승진 예산 업데이트 핸들러
+  // 승급/승격 예산 업데이트 핸들러
   const updatePromotionBudget = (level: string, value: number) => {
     setPromotionBudgets(prev => ({
       ...prev,
@@ -192,6 +193,7 @@ export default function Home() {
               totalEmployees={4925}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
+              meritWeightedAverage={meritWeightedAverage}
               onBaseUpChange={(value) => {
                 setBaseUpRate(value)
                 // 전체 슬라이더 변경 시 모든 레벨 업데이트
@@ -243,6 +245,7 @@ export default function Home() {
           <BudgetUtilizationDetail
             baseUpRate={baseUpRate}
             meritRate={meritRate}
+            meritWeightedAverage={meritWeightedAverage}
             totalEmployees={4925}
             totalSalaryBase={283034052564}
             totalBudget={totalBudget || 30000000000} // 원 단위 그대로 사용
@@ -273,6 +276,7 @@ export default function Home() {
               setLevelTotalRates(rates)
               setWeightedAverageRate(avgRate)
             }}
+            onMeritWeightedAverageChange={setMeritWeightedAverage}
           />
         </div>
         

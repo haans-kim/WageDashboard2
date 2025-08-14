@@ -31,7 +31,7 @@ export function IndustryComparisonSection({
   const yAxisMax = Math.ceil(maxValue + 1) // 최대값보다 1 큰 정수로 설정
   const tickCount = yAxisMax + 1 // 0부터 yAxisMax까지의 눈금 개수
   
-  // 직급별 경쟁력 데이터 (직급별 조정된 인상률 사용)
+  // 직급별 경쟁력 데이터 (직급별 조정된 인상률 사용) - Lv.1이 맨 왼쪽
   const competitivenessData = [
     {
       level: 'Lv.1',
@@ -240,7 +240,7 @@ export function IndustryComparisonSection({
                   </tr>
                 </thead>
                 <tbody>
-                  {competitivenessData.map((row) => (
+                  {[...competitivenessData].reverse().map((row) => (
                     <tr key={row.level} className="border-b border-gray-300 hover:bg-white transition-colors">
                       <td className="py-3 px-1 font-semibold text-gray-700">{row.level}</td>
                       <td className="py-3 px-1 text-right font-medium text-gray-600">{(row.cCompany * 1000).toLocaleString('ko-KR')}원</td>

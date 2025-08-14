@@ -32,6 +32,7 @@ interface GradeSalaryAdjustmentTableProps {
   enableAdditionalIncrease?: boolean  // 추가 인상 활성화 여부
   onAdditionalBudgetChange?: (additionalBudget: number) => void  // 추가 인상 총액 콜백
   onLevelTotalRatesChange?: (levelRates: {[key: string]: number}, weightedAverage: number) => void  // 직급별 총 인상률 및 가중평균 콜백
+  onMeritWeightedAverageChange?: (weightedAverage: number) => void  // 성과인상률 가중평균 콜백
 }
 
 // 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
@@ -97,7 +98,8 @@ export function GradeSalaryAdjustmentTable({
   onTotalBudgetChange,
   enableAdditionalIncrease = true,
   onAdditionalBudgetChange,
-  onLevelTotalRatesChange
+  onLevelTotalRatesChange,
+  onMeritWeightedAverageChange
 }: GradeSalaryAdjustmentTableProps) {
   
   // 직급별 인상률 상태 관리
@@ -238,6 +240,25 @@ export function GradeSalaryAdjustmentTable({
       onLevelTotalRatesChange(levelTotalRates, weightedAverage)
     }
   }, [rates, employeeData]) // onLevelTotalRatesChange를 의존성에서 제거
+  
+  // 성과인상률 가중평균 계산 및 상위 컴포넌트에 알림
+  useEffect(() => {
+    if (onMeritWeightedAverageChange) {
+      let meritWeightedSum = 0
+      let totalHeadcount = 0
+      
+      Object.entries(rates).forEach(([level, rate]) => {
+        const data = employeeData.levels[level]
+        if (data) {
+          meritWeightedSum += rate.merit * data.headcount
+          totalHeadcount += data.headcount
+        }
+      })
+      
+      const meritWeightedAverage = totalHeadcount > 0 ? meritWeightedSum / totalHeadcount : 0
+      onMeritWeightedAverageChange(meritWeightedAverage)
+    }
+  }, [rates, employeeData]) // onMeritWeightedAverageChange를 의존성에서 제거
   
   const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   

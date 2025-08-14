@@ -44,7 +44,7 @@ export function BudgetResourceCard({
   
   // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
   let aiRecommendationBudget = budgetDetails?.aiRecommendation || 16132940996 // 카드 1: AI 적정 인상률 예산
-  let promotionBudget = budgetDetails?.promotion || 151924823 // 카드 2: 승급/승진 예산
+  let promotionBudget = budgetDetails?.promotion || 151924823 // 카드 2: 승급/승격 예산
   let additionalBudget = budgetDetails?.additional || 4499898100 // 카드 3: 추가 인상
   let indirectCostBudget = budgetDetails?.indirect || 3699687978 // 카드 4: 간접비용
   
@@ -142,7 +142,7 @@ export function BudgetResourceCard({
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-green-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
                   2
                 </div>
-                <span className="text-sm text-gray-600">승급/승진 인상</span>
+                <span className="text-sm text-gray-600">승급/승격 인상</span>
                 <div className="text-right">
                   <span className="font-semibold text-gray-900 text-sm">
                     {formatKoreanCurrency(promotionBudget, '백만원', 1000000)}
