@@ -84,7 +84,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
       <ResponsiveContainer width="100%" height={450}>
         <LineChart
           data={data}
-          margin={{ top: 5, right: 20, left: 40, bottom: 20 }}
+          margin={{ top: 5, right: 20, left: 25, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           
@@ -98,13 +98,14 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           <YAxis 
             domain={yAxisDomain}
             tickFormatter={(value) => `${(value / 10000).toFixed(0)}`}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 10 }}
             axisLine={{ stroke: '#9ca3af' }}
             label={{ 
-              value: '연봉(만원)', 
+              value: '만원', 
               angle: -90, 
               position: 'insideLeft',
-              style: { fontSize: 11, fill: '#6b7280' }
+              style: { fontSize: 10, fill: '#6b7280' },
+              offset: -5
             }}
           />
           
