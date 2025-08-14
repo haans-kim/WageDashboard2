@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { searchEmployees } from '@/services/employeeDataService'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -9,45 +9,33 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const level = searchParams.get('level')
-    const department = searchParams.get('department')
-    const search = searchParams.get('search')
+    const level = searchParams.get('level') || undefined
+    const department = searchParams.get('department') || undefined
+    const search = searchParams.get('search') || undefined
 
-    // 필터 조건 구성
-    const where: any = {}
-    if (level) where.level = level
-    if (department) where.department = department
-    if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { employeeNumber: { contains: search } },
-      ]
-    }
-
-    // 전체 개수
-    const total = await prisma.employee.count({ where })
-
-    // 페이지네이션된 데이터
-    const employees = await prisma.employee.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: [
-        { level: 'asc' },
-        { employeeNumber: 'asc' },
-      ],
-      include: {
-        wageCalculations: {
-          where: {
-            status: 'draft',
-          },
-          orderBy: {
-            calculationDate: 'desc',
-          },
-          take: 1,
-        },
-      },
+    // employeeDataService의 검색 기능 사용
+    const result = await searchEmployees({
+      page,
+      limit,
+      level,
+      department,
+      search
     })
+
+    // API 응답 형식에 맞게 변환
+    const employees = result.employees.map(emp => ({
+      id: emp.employeeId,
+      employeeNumber: emp.employeeId,
+      name: emp.name,
+      department: emp.department,
+      level: emp.level,
+      currentSalary: emp.currentSalary,
+      hireDate: emp.joinDate,
+      performanceRating: emp.performanceRating || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      wageCalculations: []
+    }))
 
     // 응답 데이터 포맷
     const formattedEmployees = employees.map(emp => ({
@@ -58,17 +46,17 @@ export async function GET(request: NextRequest) {
       level: emp.level,
       currentSalary: emp.currentSalary,
       performanceRating: emp.performanceRating,
-      hireDate: emp.hireDate.toISOString(),
-      latestCalculation: emp.wageCalculations[0] || null,
+      hireDate: emp.hireDate,
+      latestCalculation: null,
     }))
 
     return NextResponse.json({
       data: formattedEmployees,
       pagination: {
-        page,
+        page: result.page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: result.total,
+        totalPages: result.totalPages,
       },
     })
   } catch (error) {

@@ -21,6 +21,9 @@ let cachedAISettings: {
   maxRange: number
 } | null = null
 
+// 메모리 내 수정된 데이터 저장
+let modifiedEmployeeData: EmployeeRecord[] | null = null
+
 /**
  * 캐시 초기화 (서버 사이드에서만 사용)
  */
@@ -83,6 +86,11 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
  * 캐시된 직원 데이터 가져오기
  */
 export async function getEmployeeData(): Promise<EmployeeRecord[]> {
+  // 수정된 데이터가 있으면 우선 반환
+  if (modifiedEmployeeData) {
+    return modifiedEmployeeData
+  }
+  
   if (cachedEmployeeData) {
     return cachedEmployeeData
   }
@@ -382,4 +390,194 @@ export async function uploadEmployeeExcel(file: File): Promise<{
       message: `파일 처리 중 오류가 발생했습니다: ${error}`
     }
   }
+}
+
+/**
+ * 직원 데이터 업데이트
+ */
+export async function updateEmployee(id: string, updates: Partial<EmployeeRecord>): Promise<EmployeeRecord | null> {
+  const employees = await getEmployeeData()
+  const index = employees.findIndex(emp => emp.employeeId === id)
+  
+  if (index === -1) {
+    return null
+  }
+  
+  // 수정된 데이터가 없으면 원본 복사
+  if (!modifiedEmployeeData) {
+    modifiedEmployeeData = [...employees]
+  }
+  
+  // 업데이트
+  modifiedEmployeeData[index] = {
+    ...modifiedEmployeeData[index],
+    ...updates
+  }
+  
+  return modifiedEmployeeData[index]
+}
+
+/**
+ * 직원 검색
+ */
+export async function searchEmployees(params: {
+  page?: number
+  limit?: number
+  level?: string
+  department?: string
+  search?: string
+}): Promise<{
+  employees: EmployeeRecord[]
+  total: number
+  page: number
+  totalPages: number
+}> {
+  const employees = await getEmployeeData()
+  
+  // 필터링
+  let filtered = employees
+  
+  if (params.level) {
+    filtered = filtered.filter(emp => emp.level === params.level)
+  }
+  
+  if (params.department) {
+    filtered = filtered.filter(emp => emp.department === params.department)
+  }
+  
+  if (params.search) {
+    const searchLower = params.search.toLowerCase()
+    filtered = filtered.filter(emp => 
+      emp.name.toLowerCase().includes(searchLower) ||
+      emp.employeeId.toLowerCase().includes(searchLower)
+    )
+  }
+  
+  // 페이지네이션
+  const page = params.page || 1
+  const limit = params.limit || 20
+  const start = (page - 1) * limit
+  const end = start + limit
+  
+  const paginatedEmployees = filtered.slice(start, end)
+  
+  return {
+    employees: paginatedEmployees,
+    total: filtered.length,
+    page,
+    totalPages: Math.ceil(filtered.length / limit)
+  }
+}
+
+/**
+ * 직원별 급여 계산
+ */
+export async function calculateEmployeeSalary(
+  employeeId: string,
+  baseUpPercentage: number,
+  meritPercentage: number
+): Promise<{
+  currentSalary: number
+  baseUpAmount: number
+  meritAmount: number
+  suggestedSalary: number
+  totalIncreasePercentage: number
+} | null> {
+  const employees = await getEmployeeData()
+  const employee = employees.find(emp => emp.employeeId === employeeId)
+  
+  if (!employee) {
+    return null
+  }
+  
+  const baseUpAmount = Math.round(employee.currentSalary * (baseUpPercentage / 100))
+  const meritAmount = Math.round(employee.currentSalary * (meritPercentage / 100))
+  const suggestedSalary = employee.currentSalary + baseUpAmount + meritAmount
+  const totalIncreasePercentage = ((suggestedSalary - employee.currentSalary) / employee.currentSalary) * 100
+  
+  return {
+    currentSalary: employee.currentSalary,
+    baseUpAmount,
+    meritAmount,
+    suggestedSalary,
+    totalIncreasePercentage
+  }
+}
+
+/**
+ * 급여 시뮬레이션
+ */
+export async function simulateSalaryIncrease(params: {
+  level?: string
+  department?: string
+  baseUpPercentage: number
+  meritIncreasePercentage: number
+}): Promise<{
+  affectedEmployees: number
+  currentTotal: number
+  projectedTotal: number
+  totalIncrease: number
+  averageIncreasePercentage: number
+  details: Array<{
+    employeeId: string
+    name: string
+    level: string
+    department: string
+    currentSalary: number
+    suggestedSalary: number
+    increaseAmount: number
+    increasePercentage: number
+  }>
+}> {
+  const employees = await getEmployeeData()
+  
+  // 필터링
+  let filtered = employees
+  if (params.level) {
+    filtered = filtered.filter(emp => emp.level === params.level)
+  }
+  if (params.department) {
+    filtered = filtered.filter(emp => emp.department === params.department)
+  }
+  
+  // 시뮬레이션
+  const details = filtered.map(emp => {
+    const baseUpAmount = Math.round(emp.currentSalary * (params.baseUpPercentage / 100))
+    const meritAmount = Math.round(emp.currentSalary * (params.meritIncreasePercentage / 100))
+    const suggestedSalary = emp.currentSalary + baseUpAmount + meritAmount
+    const increaseAmount = suggestedSalary - emp.currentSalary
+    const increasePercentage = (increaseAmount / emp.currentSalary) * 100
+    
+    return {
+      employeeId: emp.employeeId,
+      name: emp.name,
+      level: emp.level,
+      department: emp.department,
+      currentSalary: emp.currentSalary,
+      suggestedSalary,
+      increaseAmount,
+      increasePercentage
+    }
+  })
+  
+  const currentTotal = details.reduce((sum, d) => sum + d.currentSalary, 0)
+  const projectedTotal = details.reduce((sum, d) => sum + d.suggestedSalary, 0)
+  const totalIncrease = projectedTotal - currentTotal
+  const averageIncreasePercentage = currentTotal > 0 ? (totalIncrease / currentTotal) * 100 : 0
+  
+  return {
+    affectedEmployees: details.length,
+    currentTotal,
+    projectedTotal,
+    totalIncrease,
+    averageIncreasePercentage,
+    details
+  }
+}
+
+/**
+ * 현재 메모리의 데이터를 엑셀로 내보내기
+ */
+export function exportCurrentData(): EmployeeRecord[] {
+  return modifiedEmployeeData || cachedEmployeeData || []
 }

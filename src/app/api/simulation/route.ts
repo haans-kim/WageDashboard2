@@ -1,63 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { simulateSalaryIncrease } from '@/services/employeeDataService'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { baseUpPercentage, meritIncreasePercentage, filters } = body
+    const { baseUpPercentage = 3.2, meritIncreasePercentage = 2.5, filters } = body
 
-    // 필터 조건 구성
-    const where: any = {}
-    if (filters?.level) where.level = filters.level
-    if (filters?.department) where.department = filters.department
-    if (filters?.performanceRating) where.performanceRating = filters.performanceRating
-
-    // 직원 데이터 가져오기
-    const employees = await prisma.employee.findMany({
-      where,
-      include: {
-        wageCalculations: {
-          where: {
-            status: 'draft',
-          },
-          orderBy: {
-            calculationDate: 'desc',
-          },
-          take: 1,
-        },
-      },
+    // employeeDataService의 시뮬레이션 기능 사용
+    const simulation = await simulateSalaryIncrease({
+      level: filters?.level,
+      department: filters?.department,
+      baseUpPercentage,
+      meritIncreasePercentage
     })
 
-    // 시뮬레이션 결과 계산
-    const results = employees.map(employee => {
-      const currentSalary = employee.currentSalary
-      const totalPercentage = baseUpPercentage + meritIncreasePercentage
-      const suggestedSalary = Math.round(currentSalary * (1 + totalPercentage / 100))
-      const increaseAmount = suggestedSalary - currentSalary
-
-      return {
-        employeeId: employee.id,
-        employeeNumber: employee.employeeNumber,
-        name: employee.name,
-        department: employee.department,
-        level: employee.level,
-        performanceRating: employee.performanceRating,
-        currentSalary,
-        suggestedSalary,
-        increaseAmount,
-        baseUpAmount: Math.round(currentSalary * baseUpPercentage / 100),
-        meritAmount: Math.round(currentSalary * meritIncreasePercentage / 100),
-        totalPercentage,
-      }
-    })
-
-    // 통계 계산
-    const totalCurrentSalary = results.reduce((sum, r) => sum + r.currentSalary, 0)
-    const totalSuggestedSalary = results.reduce((sum, r) => sum + r.suggestedSalary, 0)
-    const totalIncreaseAmount = totalSuggestedSalary - totalCurrentSalary
+    // API 응답 형식에 맞게 변환
+    const results = simulation.details.map(detail => ({
+      employeeId: detail.employeeId,
+      employeeNumber: detail.employeeId,
+      name: detail.name,
+      department: detail.department,
+      level: detail.level,
+      performanceRating: null,
+      currentSalary: detail.currentSalary,
+      suggestedSalary: detail.suggestedSalary,
+      increaseAmount: detail.increaseAmount,
+      baseUpAmount: Math.round(detail.currentSalary * baseUpPercentage / 100),
+      meritAmount: Math.round(detail.currentSalary * meritIncreasePercentage / 100),
+      totalPercentage: baseUpPercentage + meritIncreasePercentage,
+    }))
 
     // 직급별 통계
-    const levelStats = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
+    const levelStats = Array.from(new Set(results.map(r => r.level))).map(level => {
       const levelEmployees = results.filter(r => r.level === level)
       const count = levelEmployees.length
       const currentTotal = levelEmployees.reduce((sum, r) => sum + r.currentSalary, 0)
@@ -95,11 +72,11 @@ export async function POST(request: NextRequest) {
         baseUpPercentage,
         meritIncreasePercentage,
         totalPercentage: baseUpPercentage + meritIncreasePercentage,
-        employeeCount: results.length,
-        totalCurrentSalary,
-        totalSuggestedSalary,
-        totalIncreaseAmount,
-        averageIncreaseAmount: results.length > 0 ? Math.round(totalIncreaseAmount / results.length) : 0,
+        employeeCount: simulation.affectedEmployees,
+        totalCurrentSalary: simulation.currentTotal,
+        totalSuggestedSalary: simulation.projectedTotal,
+        totalIncreaseAmount: simulation.totalIncrease,
+        averageIncreaseAmount: simulation.affectedEmployees > 0 ? Math.round(simulation.totalIncrease / simulation.affectedEmployees) : 0,
       },
       levelStatistics: levelStats,
       departmentStatistics: departmentStats,
@@ -114,81 +91,49 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 시뮬레이션 결과 저장
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { employees, applyToAll } = body
+    const { wageCalculations } = body
 
-    if (applyToAll) {
-      // 모든 직원에게 적용
-      for (const emp of employees) {
-        // 임금 계산 기록 생성
-        await prisma.wageCalculation.create({
-          data: {
-            employeeId: emp.employeeId,
-            calculationDate: new Date(),
-            baseUpPercentage: emp.baseUpAmount * 100 / emp.currentSalary,
-            meritIncreasePercentage: emp.meritAmount * 100 / emp.currentSalary,
-            totalPercentage: emp.totalPercentage,
-            suggestedSalary: emp.suggestedSalary,
-            status: 'approved',
-          },
-        })
-
-        // 급여 이력 생성
-        await prisma.salaryHistory.create({
-          data: {
-            employeeId: emp.employeeId,
-            effectiveDate: new Date(),
-            previousSalary: emp.currentSalary,
-            newSalary: emp.suggestedSalary,
-            baseUpAmount: emp.baseUpAmount,
-            meritIncreaseAmount: emp.meritAmount,
-            totalIncreaseAmount: emp.increaseAmount,
-            increasePercentage: emp.totalPercentage,
-            reason: `${new Date().getFullYear()}년 정기 인상 (일괄 적용)`,
-          },
-        })
-
-        // 직원 급여 업데이트
-        await prisma.employee.update({
-          where: { id: emp.employeeId },
-          data: { currentSalary: emp.suggestedSalary },
-        })
-      }
-
-      return NextResponse.json({
-        success: true,
-        appliedCount: employees.length,
-        message: `${employees.length}명의 직원에게 인상률이 적용되었습니다.`,
-      })
-    } else {
-      // 시뮬레이션 결과만 저장 (draft 상태)
-      for (const emp of employees) {
-        await prisma.wageCalculation.create({
-          data: {
-            employeeId: emp.employeeId,
-            calculationDate: new Date(),
-            baseUpPercentage: emp.baseUpAmount * 100 / emp.currentSalary,
-            meritIncreasePercentage: emp.meritAmount * 100 / emp.currentSalary,
-            totalPercentage: emp.totalPercentage,
-            suggestedSalary: emp.suggestedSalary,
-            status: 'draft',
-          },
-        })
-      }
-
-      return NextResponse.json({
-        success: true,
-        savedCount: employees.length,
-        message: `${employees.length}명의 시뮬레이션 결과가 저장되었습니다.`,
-      })
+    if (!wageCalculations || !Array.isArray(wageCalculations)) {
+      return NextResponse.json(
+        { error: 'Invalid data format' },
+        { status: 400 }
+      )
     }
+
+    // 시뮬레이션 적용 (메모리에만 저장)
+    const results = []
+    for (const calc of wageCalculations) {
+      if (calc.applyCalculation) {
+        // employeeDataService의 updateEmployee 사용
+        const { updateEmployee } = await import('@/services/employeeDataService')
+        const updatedEmployee = await updateEmployee(calc.employeeId, {
+          currentSalary: calc.suggestedSalary
+        })
+        
+        if (updatedEmployee) {
+          results.push({
+            employeeId: calc.employeeId,
+            previousSalary: calc.currentSalary,
+            newSalary: calc.suggestedSalary,
+            status: 'applied'
+          })
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      appliedCount: results.length,
+      results,
+      message: `${results.length}명의 급여가 업데이트되었습니다 (메모리에만 저장됨).`
+    })
   } catch (error) {
-    console.error('Simulation Save Error:', error)
+    console.error('Simulation Apply Error:', error)
     return NextResponse.json(
-      { error: 'Failed to save simulation' },
+      { error: 'Failed to apply simulation' },
       { status: 500 }
     )
   }
