@@ -1,10 +1,27 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
+    // 빌드 시에는 더미 응답 반환
+    if (process.env.NODE_ENV === 'production' && !global.prisma) {
+      return NextResponse.json({
+        salaryDistribution: [],
+        departmentAnalysis: [],
+        projections: [],
+        performanceAnalysis: [],
+        tenureStats: [],
+        budgetUtilization: {
+          totalBudget: '0',
+          usedBudget: '0',
+          utilizationRate: 0,
+        }
+      })
+    }
+
+    const { prisma } = await import('@/lib/prisma')
     const currentYear = new Date().getFullYear()
 
     // 1. 급여 분포 분석
