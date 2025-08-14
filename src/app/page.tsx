@@ -256,15 +256,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-200">
-      <div className="container mx-auto px-3 py-4">
-        <header className="mb-2">
-          <div className="flex justify-between items-center mb-3">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">인건비 대시보드</h1>
-              <p className="text-sm text-gray-600 mt-1">실시간 인상률 조정 및 인건비 배분 최적화</p>
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end mb-2">
+      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2">
             <ScenarioManager
               scenarios={scenarios}
               activeScenarioId={activeScenarioId}
@@ -272,6 +267,7 @@ export default function Home() {
               onLoad={handleLoadScenario}
               onDelete={deleteScenario}
               onRename={renameScenario}
+              isNavigation={true}
             />
             <button
               onClick={() => {
@@ -306,19 +302,20 @@ export default function Home() {
                   'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
                 })
               }}
-              className="px-5 py-2.5 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2 font-medium"
+              className="h-9 px-4 text-sm font-medium bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
               초기화
             </button>
             <SimpleExportButton 
               exportData={exportData}
               scenarioName={currentScenarioName}
+              isNavigation={true}
             />
           </div>
-        </header>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-3 py-4">
         
         {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">

@@ -2,8 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { ReactNode } from 'react'
 
-export function Navigation() {
+interface NavigationProps {
+  children?: ReactNode
+}
+
+export function Navigation({ children }: NavigationProps) {
   const pathname = usePathname()
 
   const navItems = [
@@ -36,6 +41,12 @@ export function Navigation() {
               ))}
             </div>
           </div>
+          {/* 우측 버튼 영역 - 대시보드 페이지에서만 표시 */}
+          {pathname === '/' && children && (
+            <div className="flex items-center gap-2">
+              {children}
+            </div>
+          )}
         </div>
       </div>
     </nav>

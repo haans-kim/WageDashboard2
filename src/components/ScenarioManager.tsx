@@ -10,6 +10,7 @@ interface ScenarioManagerProps {
   onLoad: (id: string) => void
   onDelete: (id: string) => void
   onRename: (id: string, newName: string) => void
+  isNavigation?: boolean // 네비게이션 바에서 사용하는지 여부
 }
 
 export function ScenarioManager({
@@ -18,7 +19,8 @@ export function ScenarioManager({
   onSave,
   onLoad,
   onDelete,
-  onRename
+  onRename,
+  isNavigation = false
 }: ScenarioManagerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [newScenarioName, setNewScenarioName] = useState('')
@@ -40,21 +42,17 @@ export function ScenarioManager({
     }
   }
 
+  const buttonClass = isNavigation 
+    ? "h-9 px-4 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    : "h-10 px-4 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className={buttonClass}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-        <span className="font-medium">시나리오</span>
-        {scenarios.length > 0 && (
-          <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">
-            {scenarios.length}
-          </span>
-        )}
+        시나리오{scenarios.length > 0 && ` (${scenarios.length})`}
       </button>
 
       {isOpen && (
