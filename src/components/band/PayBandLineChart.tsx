@@ -84,7 +84,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
       <ResponsiveContainer width="100%" height={350}>
         <LineChart
           data={data}
-          margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
+          margin={{ top: 10, right: 30, left: 40, bottom: 30 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           

@@ -86,7 +86,7 @@ export function RaiseSliderPanel({
       <div className="p-3 bg-blue-50 rounded-lg">
         <h4 className="text-base font-semibold text-gray-700 mb-3">성과인상 배수 (직급별)</h4>
         <div className="space-y-3">
-          {Object.entries(meritMultipliers).map(([level, multiplier]) => (
+          {Object.entries(meritMultipliers).reverse().map(([level, multiplier]) => (
             <div key={level}>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-sm font-medium text-gray-600">{level}</label>
