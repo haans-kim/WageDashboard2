@@ -98,7 +98,7 @@ export function BudgetResourceCard({
                   </div>
                 ) : (
                   <span className="text-2xl font-bold text-gray-900">
-                    {formatKoreanCurrency(actualBudget, '억')}
+                    {formatKoreanCurrency(actualBudget, '억원')}
                   </span>
                 )}
               </div>
@@ -107,7 +107,7 @@ export function BudgetResourceCard({
             <div className="flex justify-between items-center">
               <span className="text-lg text-gray-700">사용 예산</span>
               <span className="text-xl font-bold text-blue-600">
-                {formatKoreanCurrency(totalUsedBudget, '억')}
+                {formatKoreanCurrency(totalUsedBudget, '억원')}
               </span>
             </div>
             

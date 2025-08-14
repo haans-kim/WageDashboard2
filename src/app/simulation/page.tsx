@@ -196,7 +196,7 @@ export default function SimulationPage() {
             <SimulationResults results={results} />
             
             <div className="mt-6 flex justify-between">
-              <SimpleExportButton type="simulation" />
+              <SimpleExportButton />
               <div className="flex gap-4">
                 <button
                   onClick={() => setResults(null)}

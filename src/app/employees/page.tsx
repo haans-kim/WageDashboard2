@@ -19,7 +19,7 @@ export default function EmployeesPage() {
             <h1 className="text-3xl font-bold text-gray-900">직원 관리</h1>
             <p className="text-gray-600 mt-2">직원별 급여 정보 및 인상률 계산</p>
           </div>
-          <SimpleExportButton type="employees" />
+          <SimpleExportButton />
         </header>
 
         <div className="mb-6 bg-white rounded-lg shadow p-6">

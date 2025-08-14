@@ -186,12 +186,6 @@ export default function BandDashboard() {
               isNavigation={true}
             />
             <SimpleExportButton 
-              data={{
-                bands: bands,
-                summary: summary,
-                initialBaseUp: initialBaseUp,
-                initialMerit: initialMerit
-              }}
               isNavigation={true}
             />
           </div>

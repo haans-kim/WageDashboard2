@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // 최종 데이터 구성
     const bands = bandLevelData.map((band, index) => {
       // 직급별 데이터 정리
-      const levels = band.levels.filter(l => l.level !== '신입') // 신입 제외
+      const levels = band.levels.filter((l: any) => l.level !== '신입') // 신입 제외
       
       return {
         id: band.id,
