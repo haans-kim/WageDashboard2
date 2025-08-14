@@ -65,6 +65,11 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
           setTimeout(() => {
             onUploadSuccess()
           }, 1500)
+        } else {
+          // onUploadSuccess가 없으면 페이지 강제 새로고침
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
         }
       } else {
         setUploadStatus({

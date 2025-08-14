@@ -24,6 +24,9 @@ let cachedAISettings: {
 // 메모리 내 수정된 데이터 저장
 let modifiedEmployeeData: EmployeeRecord[] | null = null
 
+// 업로드된 데이터를 임시로 저장 (Vercel 서버리스 환경)
+const uploadedDataCache = new Map<string, EmployeeRecord[]>()
+
 /**
  * 캐시 초기화 (서버 사이드에서만 사용)
  */
@@ -92,7 +95,8 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
     return modifiedEmployeeData
   }
   
-  if (cachedEmployeeData) {
+  // Vercel 환경에서는 캐시를 짧게 유지
+  if (cachedEmployeeData && process.env.VERCEL !== '1') {
     return cachedEmployeeData
   }
   
@@ -105,8 +109,9 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
       const path = await import('path')
       const XLSX = await import('xlsx')
       
-      // 먼저 temp 폴더의 current_data.xlsx 확인
-      const tempPath = path.join(process.cwd(), 'temp', 'current_data.xlsx')
+      // 먼저 temp 폴더의 current_data.xlsx 확인 (Vercel에서는 /tmp 사용)
+      const tempDir = process.env.VERCEL === '1' ? '/tmp' : path.join(process.cwd(), 'temp')
+      const tempPath = path.join(tempDir, 'current_data.xlsx')
       try {
         await fs.access(tempPath)
         const fileBuffer = await fs.readFile(tempPath)
