@@ -66,6 +66,12 @@ export function PayBandCard({
         caMedian: level.competitor.median
       }
     })
+    .sort((a, b) => {
+      // Lv.1, Lv.2, Lv.3, Lv.4 순서로 정렬
+      const levelOrder = { 'Lv.1': 1, 'Lv.2': 2, 'Lv.3': 3, 'Lv.4': 4 }
+      return (levelOrder[a.level as keyof typeof levelOrder] || 0) - 
+             (levelOrder[b.level as keyof typeof levelOrder] || 0)
+    })
 
   // 테이블 데이터 준비 - 인상률 적용
   const tableData = levels
