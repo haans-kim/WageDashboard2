@@ -22,6 +22,17 @@ let cachedAISettings: {
 } | null = null
 
 /**
+ * 캐시 초기화 (서버 사이드에서만 사용)
+ */
+export function clearCache() {
+  if (typeof window === 'undefined') {
+    cachedEmployeeData = null
+    cachedAISettings = null
+    console.log('서버 사이드 캐시가 초기화되었습니다.')
+  }
+}
+
+/**
  * 엑셀 파일에서 직원 데이터 읽기
  */
 export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRecord[]> {

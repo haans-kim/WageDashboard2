@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { uploadEmployeeExcel } from '@/services/employeeDataService'
 
 interface ExcelUploadButtonProps {
   onUploadSuccess?: () => void
@@ -40,7 +39,16 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
     setUploadStatus({ type: null, message: '' })
 
     try {
-      const result = await uploadEmployeeExcel(file)
+      // Use API route instead of direct service call
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      const result = await response.json()
       
       if (result.success) {
         setUploadStatus({

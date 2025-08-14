@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadEmployeeExcel } from '@/services/employeeDataService'
+import { uploadEmployeeExcel, clearCache } from '@/services/employeeDataService'
 import { promises as fs } from 'fs'
 import path from 'path'
 
@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
     const result = await uploadEmployeeExcel(file)
     
     if (result.success) {
+      // 서버 사이드 캐시 초기화 (새로운 데이터로 다시 로드되도록)
+      clearCache()
+      
       // 성공한 경우 파일을 temp 폴더에 저장
       try {
         const tempPath = path.join(process.cwd(), 'temp')
