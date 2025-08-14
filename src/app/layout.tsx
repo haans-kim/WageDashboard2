@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="font-sans antialiased min-w-[320px]">
+      <body className="font-sans antialiased">
         <Navigation />
         <main className="min-h-screen">
           {children}

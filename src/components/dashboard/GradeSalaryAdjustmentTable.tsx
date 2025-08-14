@@ -297,7 +297,7 @@ export function GradeSalaryAdjustmentTable({
       </div>
       
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <table className="w-full border-collapse min-w-[800px]">
+        <table className="w-full border-collapse md:min-w-[800px]">
           <thead>
             <tr className="bg-gray-50">
               <th rowSpan={2} className="border border-gray-300 px-1 md:px-3 py-0.5 md:py-2 text-center text-xs md:text-sm font-semibold">

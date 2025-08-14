@@ -24,7 +24,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
 
   return (
     <div className="w-full overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
-      <table className="w-full text-base min-w-[600px]">
+      <table className="w-full text-xs md:text-base md:min-w-[600px]">
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-2 px-3 font-semibold text-gray-700">구분</th>

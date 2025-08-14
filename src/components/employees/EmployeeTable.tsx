@@ -101,32 +101,32 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+            <table className="w-full md:min-w-[800px] text-xs md:text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     사번
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     이름
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     부서
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     직급
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     현재 급여
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     성과
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     예상 인상률
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     작업
                   </th>
                 </tr>
@@ -134,35 +134,35 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {employees.map((employee) => (
                   <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-gray-900">
                       {employee.employeeNumber}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
                       {employee.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500">
                       {employee.department}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
+                      <span className={`px-1 md:px-2 py-0.5 md:py-1 text-xs font-semibold rounded-full ${
                         levelColors[employee.level as keyof typeof levelColors] || 'bg-gray-100'
                       }`}>
                         {employee.level}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-tabular">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
                       {formatKoreanCurrency(employee.currentSalary, '만원')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
                       {employee.performanceRating && (
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        <span className={`px-1 md:px-2 py-0.5 md:py-1 text-xs font-semibold rounded-full ${
                           ratingColors[employee.performanceRating as keyof typeof ratingColors] || 'bg-gray-100'
                         }`}>
                           {employee.performanceRating}
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
                       {employee.latestCalculation ? (
                         <span className="font-semibold text-primary-600">
                           {formatPercentage(employee.latestCalculation.totalPercentage)}
@@ -171,12 +171,12 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium">
                       <Link
                         href={`/employees/${employee.id}`}
                         className="text-primary-600 hover:text-primary-900"
                       >
-                        상세보기
+                        상세
                       </Link>
                     </td>
                   </tr>

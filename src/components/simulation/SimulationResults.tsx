@@ -91,33 +91,33 @@ export function SimulationResults({ results }: SimulationResultsProps) {
       {/* 직급별 통계 */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">직급별 시뮬레이션 결과</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+          <table className="w-full md:min-w-[700px] text-xs md:text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">직급</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">인원</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">현재 총액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">예상 총액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">인상액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">평균 인상액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase">직급</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">인원</th>
+                <th className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">현재 총액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">예상 총액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">인상액</th>
+                <th className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">평균 인상액</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {levelStatistics.map((stat) => (
                 <tr key={stat.level}>
-                  <td className="px-4 py-3 font-medium">{stat.level}</td>
-                  <td className="px-4 py-3 text-right">{stat.employeeCount}명</td>
-                  <td className="px-4 py-3 text-right font-tabular">
+                  <td className="px-2 md:px-4 py-2 md:py-3 font-medium">{stat.level}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-right">{stat.employeeCount}명</td>
+                  <td className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right font-tabular">
                     {formatKoreanCurrency(stat.currentTotal, '억원')}
                   </td>
-                  <td className="px-4 py-3 text-right font-tabular font-semibold">
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-right font-tabular font-semibold">
                     {formatKoreanCurrency(stat.suggestedTotal, '억원')}
                   </td>
-                  <td className="px-4 py-3 text-right font-tabular text-green-600">
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-right font-tabular text-green-600">
                     +{formatKoreanCurrency(stat.increaseAmount, '만원')}
                   </td>
-                  <td className="px-4 py-3 text-right font-tabular">
+                  <td className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right font-tabular">
                     {formatKoreanCurrency(stat.averageIncrease, '만원')}
                   </td>
                 </tr>
@@ -130,23 +130,23 @@ export function SimulationResults({ results }: SimulationResultsProps) {
       {/* 부서별 통계 */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">부서별 시뮬레이션 결과</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+          <table className="w-full md:min-w-[700px] text-xs md:text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">부서</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">인원</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">현재 총액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">예상 총액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">인상액</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">평균 인상액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase">부서</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">인원</th>
+                <th className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">현재 총액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">예상 총액</th>
+                <th className="px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">인상액</th>
+                <th className="hidden md:table-cell px-2 md:px-4 py-2 md:py-3 text-right text-xs font-medium text-gray-500 uppercase">평균 인상액</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {departmentStatistics.map((stat) => (
                 <tr key={stat.department}>
-                  <td className="px-4 py-3 font-medium">{stat.department}</td>
-                  <td className="px-4 py-3 text-right">{stat.employeeCount}명</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 font-medium">{stat.department}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-right">{stat.employeeCount}명</td>
                   <td className="px-4 py-3 text-right font-tabular">
                     {formatKoreanCurrency(stat.currentTotal, '만원')}
                   </td>

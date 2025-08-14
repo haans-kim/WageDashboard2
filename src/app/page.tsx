@@ -348,7 +348,7 @@ export default function Home() {
                   'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
                 })
               }}
-              className="h-9 px-4 text-sm font-medium bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               초기화
             </button>
