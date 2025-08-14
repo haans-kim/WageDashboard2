@@ -1,16 +1,25 @@
 'use client'
 
 import { formatPercentage } from '@/lib/utils'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line, ComposedChart, ReferenceLine } from 'recharts'
 
 interface IndustryComparisonSectionProps {
   baseUpRate?: number
   meritRate?: number
+  levelTotalRates?: {[key: string]: number}  // 직급별 총 인상률
+  weightedAverageRate?: number  // 가중평균 인상률
 }
 
 export function IndustryComparisonSection({
   baseUpRate = 3.2,
-  meritRate = 2.5
+  meritRate = 2.5,
+  levelTotalRates = {
+    'Lv.1': 7.77,
+    'Lv.2': 8.43,
+    'Lv.3': 6.60,
+    'Lv.4': 6.80
+  },
+  weightedAverageRate = 7.2
 }: IndustryComparisonSectionProps) {
   
   // C사 데이터
@@ -22,39 +31,39 @@ export function IndustryComparisonSection({
   const yAxisMax = Math.ceil(maxValue + 1) // 최대값보다 1 큰 정수로 설정
   const tickCount = yAxisMax + 1 // 0부터 yAxisMax까지의 눈금 개수
   
-  // 직급별 경쟁력 데이터 (사용자 제공 데이터)
+  // 직급별 경쟁력 데이터 (직급별 조정된 인상률 사용)
   const competitivenessData = [
     {
       level: 'Lv.1',
       cCompany: 56000, // C사 평균 (천원)
       ourCompany: 51977.513, // SBL (천원)
       competitiveness: 93, // 보상경쟁력%
-      ourCompanyToBe: 51977.513 * (1 + companyIncrease / 100), // 인상 후 연봉
-      competitivenessToBe: Math.round((51977.513 * (1 + companyIncrease / 100)) / 56000 * 100) // 인상 후 경쟁력
+      ourCompanyToBe: 51977.513 * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100), // 조정된 인상률로 계산
+      competitivenessToBe: Math.round((51977.513 * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100)) / 56000 * 100) // 인상 후 경쟁력
     },
     {
       level: 'Lv.2',
       cCompany: 70000,
       ourCompany: 67376.032,
       competitiveness: 96,
-      ourCompanyToBe: 67376.032 * (1 + companyIncrease / 100),
-      competitivenessToBe: Math.round((67376.032 * (1 + companyIncrease / 100)) / 70000 * 100)
+      ourCompanyToBe: 67376.032 * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((67376.032 * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100)) / 70000 * 100)
     },
     {
       level: 'Lv.3',
       cCompany: 80000,
       ourCompany: 87599.520,
       competitiveness: 109,
-      ourCompanyToBe: 87599.520 * (1 + companyIncrease / 100),
-      competitivenessToBe: Math.round((87599.520 * (1 + companyIncrease / 100)) / 80000 * 100)
+      ourCompanyToBe: 87599.520 * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((87599.520 * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100)) / 80000 * 100)
     },
     {
       level: 'Lv.4',
       cCompany: 100000,
       ourCompany: 108469.574,
       competitiveness: 108,
-      ourCompanyToBe: 108469.574 * (1 + companyIncrease / 100),
-      competitivenessToBe: Math.round((108469.574 * (1 + companyIncrease / 100)) / 100000 * 100)
+      ourCompanyToBe: 108469.574 * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((108469.574 * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100)) / 100000 * 100)
     }
   ]
   
@@ -113,11 +122,16 @@ export function IndustryComparisonSection({
       <h2 className="text-lg font-semibold mb-3">동종업계 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="bg-blue-50 rounded-lg p-3 text-center">
-          <p className="text-sm text-gray-600">우리 회사</p>
+          <p className="text-sm text-gray-600">우리 회사(AI제안)</p>
           <p className="text-2xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
           <p className="text-xs text-gray-500">Base-up {formatPercentage(baseUpRate)} + Merit {formatPercentage(meritRate)}</p>
+        </div>
+        <div className="bg-purple-50 rounded-lg p-3 text-center">
+          <p className="text-sm text-gray-600">우리 회사(조정)</p>
+          <p className="text-2xl font-bold text-purple-600">{formatPercentage(weightedAverageRate)}</p>
+          <p className="text-xs text-gray-500">직급별 가중평균</p>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
           <p className="text-sm text-gray-600">C사 평균</p>
@@ -132,7 +146,7 @@ export function IndustryComparisonSection({
         <div className="bg-gray-50 rounded-lg p-3 col-span-2">
           <h3 className="text-sm font-bold text-gray-800 mb-3">인상률 비교</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={increaseComparisonData} margin={{ top: 10, right: 2, left: 2, bottom: 5 }}>
+            <ComposedChart data={increaseComparisonData} margin={{ top: 20, right: 2, left: 2, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
               <XAxis 
                 dataKey="name" 
@@ -143,8 +157,8 @@ export function IndustryComparisonSection({
                 tick={{ fontSize: 11, fontWeight: 'bold' }} 
                 tickFormatter={(value) => `${value}%`}
                 axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
-                domain={[0, yAxisMax]}
-                tickCount={tickCount}
+                domain={[0, Math.max(yAxisMax, Math.ceil(weightedAverageRate + 1))]}
+                tickCount={Math.max(yAxisMax, Math.ceil(weightedAverageRate + 1)) + 1}
                 width={30}
                 type="number"
               />
@@ -172,7 +186,21 @@ export function IndustryComparisonSection({
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
-            </BarChart>
+              {/* 조정된 인상률 점선 표시 */}
+              <ReferenceLine 
+                y={weightedAverageRate} 
+                stroke="#9333EA" 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                label={{ 
+                  value: `조정: ${weightedAverageRate.toFixed(1)}%`,
+                  position: 'right',
+                  fill: '#9333EA',
+                  fontSize: 11,
+                  fontWeight: 'bold'
+                }}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         

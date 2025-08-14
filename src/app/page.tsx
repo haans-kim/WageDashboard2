@@ -46,6 +46,15 @@ export default function Home() {
   // 추가 인상 총액 상태 (GradeSalaryAdjustmentTable에서 계산)
   const [calculatedAdditionalBudget, setCalculatedAdditionalBudget] = useState(0)
   
+  // 직급별 총 인상률 및 가중평균 상태
+  const [levelTotalRates, setLevelTotalRates] = useState<{[key: string]: number}>({
+    'Lv.1': 7.77,
+    'Lv.2': 8.43,
+    'Lv.3': 6.60,
+    'Lv.4': 6.80
+  })
+  const [weightedAverageRate, setWeightedAverageRate] = useState(7.2)
+  
   // 시나리오 관리
   const {
     scenarios,
@@ -260,6 +269,10 @@ export default function Home() {
             }}
             enableAdditionalIncrease={enableAdditionalIncrease}
             onAdditionalBudgetChange={setCalculatedAdditionalBudget}
+            onLevelTotalRatesChange={(rates, avgRate) => {
+              setLevelTotalRates(rates)
+              setWeightedAverageRate(avgRate)
+            }}
           />
         </div>
         
@@ -268,6 +281,8 @@ export default function Home() {
           <IndustryComparisonSection
             baseUpRate={baseUpRate}
             meritRate={meritRate}
+            levelTotalRates={levelTotalRates}
+            weightedAverageRate={weightedAverageRate}
           />
         </div>
 
