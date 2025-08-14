@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBandLevelDetails } from '@/services/employeeDataService'
 
+export const dynamic = 'force-dynamic'
+
 // GET: 모든 직군 및 직급별 데이터 조회
 export async function GET(request: NextRequest) {
   try {

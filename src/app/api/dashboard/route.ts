@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getDashboardSummary } from '@/services/employeeDataService'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     // 현재 회계연도
