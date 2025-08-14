@@ -1,238 +1,402 @@
 'use client'
 
+import React, { useState, useEffect, useMemo } from 'react'
 import { formatKoreanCurrency } from '@/lib/utils'
-import { useState, useEffect } from 'react'
 
-interface GradeSalaryAdjustmentTableProps {
-  baseUpRate?: number
-  meritRate?: number
-  onRateChange?: (level: string, type: 'baseUp' | 'merit', value: number) => void
+// 엑셀 업로드를 위한 인터페이스 (추후 확장 가능)
+interface EmployeeData {
+  totalCount: number
+  levels: {
+    [level: string]: {
+      headcount: number
+      averageSalary: number
+    }
+  }
 }
 
-interface LevelData {
-  level: string
-  headcount: number
-  aiOptimalBudget: number
-  promotionBudget: number
-  additionalBudget: number
-  totalBudget: number
-  totalAmount: number
+// 직급별 인상률 인터페이스
+interface LevelRates {
+  baseUp: number      // Base-up (고정 3.20%)
+  merit: number       // 성과 인상률 (수정가능)
+  promotion: number   // 승급 인상률 (수정가능)
+  advancement: number // 승격 인상률 (수정가능)
+  additional: number  // 추가 인상률 (수정가능)
+}
+
+interface GradeSalaryAdjustmentTableProps {
+  baseUpRate?: number         // AI 제안 Base-up (고정값)
+  meritRate?: number          // AI 제안 성과인상률 기본값
+  employeeData?: EmployeeData // 추후 엑셀에서 import된 데이터
+  onRateChange?: (level: string, rates: LevelRates) => void
+  onTotalBudgetChange?: (totalBudget: number) => void
+}
+
+// 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
+const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
+  totalCount: 4925,
+  levels: {
+    'Lv.4': { 
+      headcount: 61, 
+      averageSalary: 108426000  // 예시값
+    },
+    'Lv.3': { 
+      headcount: 475, 
+      averageSalary: 75000000   // 예시값
+    },
+    'Lv.2': { 
+      headcount: 1506, 
+      averageSalary: 55000000   // 예시값
+    },
+    'Lv.1': { 
+      headcount: 2634, 
+      averageSalary: 45000000   // 예시값
+    }
+  }
+}
+
+// 초기 인상률 값
+const DEFAULT_RATES: { [key: string]: LevelRates } = {
+  'Lv.4': {
+    baseUp: 3.20,
+    merit: 2.50,
+    promotion: 0.60,
+    advancement: 0.00,
+    additional: 1.00
+  },
+  'Lv.3': {
+    baseUp: 3.20,
+    merit: 2.25,
+    promotion: 0.00,
+    advancement: 3.50,
+    additional: 1.15
+  },
+  'Lv.2': {
+    baseUp: 3.20,
+    merit: 3.00,
+    promotion: 0.00,
+    advancement: 0.80,
+    additional: 1.43
+  },
+  'Lv.1': {
+    baseUp: 3.20,
+    merit: 2.75,
+    promotion: 0.00,
+    advancement: 0.00,
+    additional: 1.82
+  }
 }
 
 export function GradeSalaryAdjustmentTable({
-  baseUpRate = 3.2,
-  meritRate = 2.5,
-  onRateChange
+  baseUpRate = 3.20,
+  meritRate = 2.50,
+  employeeData = DEFAULT_EMPLOYEE_DATA,
+  onRateChange,
+  onTotalBudgetChange
 }: GradeSalaryAdjustmentTableProps) {
   
-  // 직급별 데이터 (Pay 현황.png 기반)
-  const initialData: LevelData[] = [
-    {
-      level: '전체',
-      headcount: 4167,
-      aiOptimalBudget: 161.3,
-      promotionBudget: 4.2,
-      additionalBudget: 45.0,
-      totalBudget: 206.3,
-      totalAmount: 210.5
-    },
-    {
-      level: 'Lv.4',
-      headcount: 479,
-      aiOptimalBudget: 26.2,
-      promotionBudget: 2.3,
-      additionalBudget: 7.3,
-      totalBudget: 33.5,
-      totalAmount: 35.8
-    },
-    {
-      level: 'Lv.3',
-      headcount: 1051,
-      aiOptimalBudget: 46.0,
-      promotionBudget: 1.2,
-      additionalBudget: 12.8,
-      totalBudget: 58.8,
-      totalAmount: 60.0
-    },
-    {
-      level: 'Lv.2',
-      headcount: 1089,
-      aiOptimalBudget: 36.7,
-      promotionBudget: 0.6,
-      additionalBudget: 10.2,
-      totalBudget: 46.9,
-      totalAmount: 47.5
-    },
-    {
-      level: 'Lv.1',
-      headcount: 1548,
-      aiOptimalBudget: 40.2,
-      promotionBudget: 0.0,
-      additionalBudget: 11.2,
-      totalBudget: 51.4,
-      totalAmount: 51.4
-    }
-  ]
+  // 직급별 인상률 상태 관리
+  const [rates, setRates] = useState<{ [key: string]: LevelRates }>(DEFAULT_RATES)
   
-  const [levelData, setLevelData] = useState(initialData)
-  const [levelRates, setLevelRates] = useState({
-    'Lv.4': { baseUp: baseUpRate, merit: meritRate },
-    'Lv.3': { baseUp: baseUpRate, merit: meritRate },
-    'Lv.2': { baseUp: baseUpRate, merit: meritRate },
-    'Lv.1': { baseUp: baseUpRate, merit: meritRate }
-  })
-  
-  // 인상률 변경 시 예산 재계산
+  // AI 제안값이 변경되면 merit 기본값 업데이트
   useEffect(() => {
-    const recalculateData = () => {
-      const newData = [...initialData]
-      
-      // 각 레벨별로 재계산
-      let totalAiBudget = 0
-      let totalAdditionalBudget = 0
-      
-      for (let i = 1; i < newData.length; i++) {
-        const level = newData[i].level
-        const rate = levelRates[level as keyof typeof levelRates]
-        if (rate) {
-          // AI 예산 재계산 (기본 값에 비율 적용)
-          const rateMultiplier = (rate.baseUp + rate.merit) / 5.7
-          newData[i].aiOptimalBudget = Math.round(initialData[i].aiOptimalBudget * rateMultiplier * 10) / 10
-          
-          // 추가 예산도 비례적으로 조정
-          newData[i].additionalBudget = Math.round(initialData[i].additionalBudget * rateMultiplier * 10) / 10
-          
-          // 총계 재계산
-          newData[i].totalBudget = newData[i].aiOptimalBudget + newData[i].additionalBudget
-          newData[i].totalAmount = newData[i].totalBudget + newData[i].promotionBudget
-          
-          totalAiBudget += newData[i].aiOptimalBudget
-          totalAdditionalBudget += newData[i].additionalBudget
+    setRates(prev => {
+      const updated = { ...prev }
+      Object.keys(updated).forEach(level => {
+        updated[level] = {
+          ...updated[level],
+          baseUp: baseUpRate, // Base-up은 항상 AI 제안값으로 고정
+        }
+      })
+      return updated
+    })
+  }, [baseUpRate, meritRate])
+  
+  // 직급별 총계 계산 (① + ③)
+  const calculateLevelTotal = (levelRates: LevelRates): number => {
+    // Base-up + 성과 + 추가 (승급/승격은 제외)
+    return levelRates.baseUp + levelRates.merit + levelRates.additional
+  }
+  
+  // 직급별 총 금액 계산
+  const calculateLevelAmount = (level: string): number => {
+    const data = employeeData.levels[level]
+    if (!data) return 0
+    
+    const total = calculateLevelTotal(rates[level])
+    return data.headcount * data.averageSalary * (total / 100)
+  }
+  
+  // 전체 가중평균 계산
+  const calculateWeightedAverage = (field: keyof LevelRates): number => {
+    let weightedSum = 0
+    let totalHeadcount = 0
+    
+    Object.entries(rates).forEach(([level, rate]) => {
+      const data = employeeData.levels[level]
+      if (data) {
+        weightedSum += rate[field] * data.headcount
+        totalHeadcount += data.headcount
+      }
+    })
+    
+    return totalHeadcount > 0 ? weightedSum / totalHeadcount : 0
+  }
+  
+  // 전체 합계 계산
+  const totalSummary = useMemo(() => {
+    const avgBaseUp = calculateWeightedAverage('baseUp')
+    const avgMerit = calculateWeightedAverage('merit')
+    const avgPromotion = calculateWeightedAverage('promotion')
+    const avgAdvancement = calculateWeightedAverage('advancement')
+    const avgAdditional = calculateWeightedAverage('additional')
+    
+    const totalRate = avgBaseUp + avgMerit + avgAdditional // ① + ③
+    
+    let totalAmount = 0
+    Object.keys(rates).forEach(level => {
+      totalAmount += calculateLevelAmount(level)
+    })
+    
+    return {
+      avgBaseUp,
+      avgMerit,
+      avgPromotion,
+      avgAdvancement,
+      avgAdditional,
+      totalRate,
+      totalAmount
+    }
+  }, [rates, employeeData])
+  
+  // 인상률 변경 핸들러
+  const handleRateChange = (level: string, field: keyof LevelRates, value: string) => {
+    const numValue = parseFloat(value) || 0
+    
+    setRates(prev => {
+      const updated = {
+        ...prev,
+        [level]: {
+          ...prev[level],
+          [field]: numValue
         }
       }
       
-      // 전체 합계 업데이트
-      newData[0].aiOptimalBudget = Math.round(totalAiBudget * 10) / 10
-      newData[0].additionalBudget = Math.round(totalAdditionalBudget * 10) / 10
-      newData[0].totalBudget = newData[0].aiOptimalBudget + newData[0].additionalBudget
-      newData[0].totalAmount = newData[0].totalBudget + newData[0].promotionBudget
-      
-      setLevelData(newData)
-    }
-    
-    recalculateData()
-  }, [levelRates])
-  
-  const handleRateChange = (level: string, type: 'baseUp' | 'merit', value: number) => {
-    setLevelRates(prev => ({
-      ...prev,
-      [level]: {
-        ...prev[level as keyof typeof prev],
-        [type]: value
+      if (onRateChange) {
+        onRateChange(level, updated[level])
       }
-    }))
-    
-    if (onRateChange) {
-      onRateChange(level, type, value)
-    }
+      
+      return updated
+    })
   }
+  
+  // 총 예산 변경 시 상위 컴포넌트에 알림
+  useEffect(() => {
+    if (onTotalBudgetChange) {
+      onTotalBudgetChange(totalSummary.totalAmount)
+    }
+  }, [totalSummary.totalAmount, onTotalBudgetChange])
+  
+  const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-lg font-semibold mb-3">직급별 고정급 인상률 조정</h2>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-semibold">직급별 고정급 인상률 조정</h2>
+        {/* 추후 엑셀 업로드 버튼 추가 위치 */}
+      </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-gray-50">
-              <th className="border border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center">
                 직급
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                인원수
+              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+                ① AI 적정 인상률 예산
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                1. AI 적정<br/>인상률 예산
+              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+                ② 승급/승격 인상
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                2. 승급/승격<br/>인상
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+                ③ 추가 인상
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                3. 추가<br/>인상
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-blue-50">
+                총계 (①+③)%
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700 bg-blue-50">
-                총계<br/>(1+3)
-              </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700 bg-yellow-50">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center">
                 총 금액
               </th>
-              <th className="border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                인상률 조정
+            </tr>
+            <tr className="bg-gray-50">
+              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+                Base-up
+              </th>
+              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+                성과 인상률
+              </th>
+              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+                승급 인상률
+              </th>
+              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+                승격 인상률
               </th>
             </tr>
           </thead>
           <tbody>
-            {levelData.map((row, index) => (
-              <tr key={row.level} className={index === 0 ? 'bg-gray-50 font-semibold' : ''}>
-                <td className="border border-gray-200 px-4 py-3 text-sm">
-                  {row.level}
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-center">
-                  {row.headcount.toLocaleString()}명
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-right">
-                  {row.aiOptimalBudget}억
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-right">
-                  {row.promotionBudget}억
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-right">
-                  {row.additionalBudget}억
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-right bg-blue-50 font-semibold">
-                  {row.totalBudget}억
-                </td>
-                <td className="border border-gray-200 px-4 py-3 text-sm text-right bg-yellow-50 font-semibold">
-                  {row.totalAmount}억
-                </td>
-                <td className="border border-gray-200 px-4 py-3">
-                  {index > 0 && (
-                    <div className="flex gap-2 justify-center">
-                      <div className="text-xs">
-                        <label className="text-gray-600">Base</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.1"
-                          value={levelRates[row.level as keyof typeof levelRates]?.baseUp || baseUpRate}
-                          onChange={(e) => handleRateChange(row.level, 'baseUp', parseFloat(e.target.value))}
-                          className="w-14 px-1 py-1 text-xs border rounded text-center"
-                        />
-                      </div>
-                      <div className="text-xs">
-                        <label className="text-gray-600">Merit</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.1"
-                          value={levelRates[row.level as keyof typeof levelRates]?.merit || meritRate}
-                          onChange={(e) => handleRateChange(row.level, 'merit', parseFloat(e.target.value))}
-                          className="w-14 px-1 py-1 text-xs border rounded text-center"
-                        />
-                      </div>
+            {/* 전체 합계 행 */}
+            <tr className="bg-gray-50 font-semibold">
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                전체<br/>
+                <span className="text-xs font-normal">
+                  {employeeData.totalCount.toLocaleString()}명
+                </span>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                <div className="text-xs text-gray-600">Base-up</div>
+                <div className="text-blue-600">{totalSummary.avgBaseUp.toFixed(2)}%</div>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                <div className="text-xs text-gray-600">성과 인상률</div>
+                <div className="text-blue-600">{totalSummary.avgMerit.toFixed(2)}%</div>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                <div className="text-xs text-gray-600">승급 인상률</div>
+                <div className="text-orange-600">{totalSummary.avgPromotion.toFixed(2)}%</div>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                <div className="text-xs text-gray-600">승격 인상률</div>
+                <div className="text-orange-600">{totalSummary.avgAdvancement.toFixed(2)}%</div>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center">
+                <div className="text-xs text-gray-600">추가 인상률</div>
+                <div className="text-orange-600">{totalSummary.avgAdditional.toFixed(2)}%</div>
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-center bg-blue-50">
+                {totalSummary.totalRate.toFixed(2)}%
+              </td>
+              <td className="border border-gray-300 px-3 py-2 text-right">
+                {formatKoreanCurrency(Math.round(totalSummary.totalAmount))}
+              </td>
+            </tr>
+            
+            {/* 각 직급별 행 */}
+            {levels.map(level => {
+              const levelData = employeeData.levels[level]
+              const levelRates = rates[level]
+              const levelTotal = calculateLevelTotal(levelRates)
+              const levelAmount = calculateLevelAmount(level)
+              
+              return (
+                <tr key={level}>
+                  <td className="border border-gray-300 px-3 py-2 text-center">
+                    {level}<br/>
+                    <span className="text-xs text-gray-600">
+                      {levelData.headcount.toLocaleString()}명
+                    </span>
+                  </td>
+                  
+                  {/* Base-up (고정) */}
+                  <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
+                    <div className="text-xs text-gray-500 mb-1">Base-up</div>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="text"
+                        value={`${levelRates.baseUp.toFixed(2)}%`}
+                        disabled
+                        className="w-16 px-1 py-1 text-center text-xs bg-gray-100 border border-gray-300 rounded"
+                      />
                     </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  
+                  {/* 성과 인상률 */}
+                  <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
+                    <div className="text-xs text-gray-500 mb-1">성과 인상률</div>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="number"
+                        value={levelRates.merit}
+                        onChange={(e) => handleRateChange(level, 'merit', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        max="10"
+                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                      />
+                      <span className="ml-1 text-xs">%</span>
+                    </div>
+                  </td>
+                  
+                  {/* 승급 인상률 */}
+                  <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
+                    <div className="text-xs text-gray-500 mb-1">승급 인상률</div>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="number"
+                        value={levelRates.promotion}
+                        onChange={(e) => handleRateChange(level, 'promotion', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        max="10"
+                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                      />
+                      <span className="ml-1 text-xs">%</span>
+                    </div>
+                  </td>
+                  
+                  {/* 승격 인상률 */}
+                  <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
+                    <div className="text-xs text-gray-500 mb-1">승격 인상률</div>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="number"
+                        value={levelRates.advancement}
+                        onChange={(e) => handleRateChange(level, 'advancement', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        max="10"
+                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                      />
+                      <span className="ml-1 text-xs">%</span>
+                    </div>
+                  </td>
+                  
+                  {/* 추가 인상률 */}
+                  <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
+                    <div className="text-xs text-gray-500 mb-1">추가 인상률</div>
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="number"
+                        value={levelRates.additional}
+                        onChange={(e) => handleRateChange(level, 'additional', e.target.value)}
+                        step="0.01"
+                        min="0"
+                        max="10"
+                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                      />
+                      <span className="ml-1 text-xs">%</span>
+                    </div>
+                  </td>
+                  
+                  {/* 총계 */}
+                  <td className="border border-gray-300 px-3 py-2 text-center bg-blue-50 font-semibold">
+                    {levelTotal.toFixed(2)}%
+                  </td>
+                  
+                  {/* 총 금액 */}
+                  <td className="border border-gray-300 px-3 py-2 text-right">
+                    {formatKoreanCurrency(Math.round(levelAmount))}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
       
-      <div className="mt-4 text-xs text-gray-500">
-        * 금액 단위: 억원 | 총계는 AI 적정 인상률 예산과 추가 인상의 합계
+      <div className="mt-3 text-xs text-gray-500">
+        <p>* Base-up은 AI 제안값으로 고정되며, 나머지 인상률은 자유롭게 조정 가능합니다.</p>
+        <p>* 총계 = ① AI 적정 인상률(Base-up + 성과) + ③ 추가 인상 (승급/승격 제외)</p>
+        <p>* 추후 엑셀 파일 업로드를 통해 인원 및 급여 데이터를 업데이트할 수 있습니다.</p>
       </div>
     </div>
   )

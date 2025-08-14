@@ -53,14 +53,11 @@ export default function Home() {
     renameScenario
   } = useScenarios()
   
-  const updateLevelRate = (level: string, type: 'baseUp' | 'merit', value: number) => {
-    setLevelRates(prev => ({
-      ...prev,
-      [level]: {
-        ...prev[level as keyof typeof prev],
-        [type]: value
-      }
-    }))
+  // 새로운 인터페이스에 맞춰 수정
+  const updateLevelRate = (level: string, rates: any) => {
+    // 새로운 GradeSalaryAdjustmentTable에서 전체 rates 객체를 전달받음
+    console.log(`Level ${level} rates updated:`, rates)
+    // 필요시 여기서 추가 처리 가능
   }
   
   // 승급/승진 예산 업데이트 핸들러
@@ -254,6 +251,10 @@ export default function Home() {
             baseUpRate={baseUpRate}
             meritRate={meritRate}
             onRateChange={updateLevelRate}
+            onTotalBudgetChange={(totalBudget) => {
+              console.log('Total budget changed:', totalBudget)
+              // 필요시 다른 컴포넌트에 예산 정보 전달
+            }}
           />
         </div>
         
