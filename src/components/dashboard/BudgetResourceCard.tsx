@@ -126,8 +126,8 @@ export function BudgetResourceCard({
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-sm font-semibold text-gray-700 mb-3">고정급 인상</div>
             <div className="space-y-2">
-              <div className="flex justify-between items-center relative pl-8">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+              <div className="flex justify-between items-center relative pl-10">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
                   1
                 </div>
                 <span className="text-sm text-gray-600">AI 적정 인상률</span>
@@ -138,8 +138,8 @@ export function BudgetResourceCard({
                   <span className="text-xs text-gray-500 ml-1">{formatPercentage(aiPercent)}</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center relative pl-8">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+              <div className="flex justify-between items-center relative pl-10">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-green-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
                   2
                 </div>
                 <span className="text-sm text-gray-600">승급/승진 인상</span>
@@ -150,8 +150,8 @@ export function BudgetResourceCard({
                   <span className="text-xs text-gray-500 ml-1">{formatPercentage(promotionPercent)}</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center relative pl-8">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+              <div className="flex justify-between items-center relative pl-10">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-purple-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
                   3
                 </div>
                 <span className="text-sm text-gray-600">추가 인상</span>
@@ -166,11 +166,11 @@ export function BudgetResourceCard({
           </div>
           
           {/* 간접비용 인상 섹션 */}
-          <div className="bg-orange-50 rounded-lg p-4 relative pl-10">
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
-              4
-            </div>
-            <div className="flex justify-between items-center">
+          <div className="bg-orange-50 rounded-lg p-4">
+            <div className="flex justify-between items-center relative pl-10">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                4
+              </div>
               <span className="text-sm font-semibold text-gray-700">간접비용 인상</span>
               <div className="text-right">
                 <span className="font-bold text-orange-600 text-base">
