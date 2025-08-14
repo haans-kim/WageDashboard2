@@ -84,7 +84,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
       <ResponsiveContainer width="100%" height={450}>
         <LineChart
           data={data}
-          margin={{ top: 10, right: 30, left: 40, bottom: 30 }}
+          margin={{ top: 5, right: 20, left: 40, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           
@@ -112,9 +112,9 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           
           <Legend 
             verticalAlign="top" 
-            height={30}
+            height={20}
             iconType="line"
-            wrapperStyle={{ fontSize: '12px' }}
+            wrapperStyle={{ fontSize: '12px', paddingTop: '0px' }}
           />
           
           {/* SBL사 현재 중위수 (점선) */}
