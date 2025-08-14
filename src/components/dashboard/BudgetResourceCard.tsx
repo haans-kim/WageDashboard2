@@ -72,12 +72,12 @@ export function BudgetResourceCard({
   const indirectPercent = (indirectCostBudget / actualBudget) * 100
   
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">인상재원예산현황</h2>
+    <div className="bg-white rounded-lg shadow p-8">
+      <h2 className="text-xl font-semibold mb-6">인상재원예산현황</h2>
       
       {/* 상단: 총예산, 사용예산, 활용률 */}
-      <div className="bg-blue-50 rounded-lg p-5 mb-4">
-        <div className="space-y-3">
+      <div className="bg-blue-50 rounded-lg p-6 mb-6">
+        <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-base text-gray-700 font-medium">총 예산</span>
             <div className="flex items-center gap-2">
@@ -120,13 +120,13 @@ export function BudgetResourceCard({
       </div>
       
       {/* 하단: 고정급 인상(3줄), 간접비용 인상 */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* 고정급 인상 섹션 */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="text-sm font-semibold text-gray-700 mb-3">고정급 인상</div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
+        <div className="bg-gray-50 rounded-lg p-5">
+          <div className="text-sm font-semibold text-gray-700 mb-4">고정급 인상</div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center relative pl-9">
+              <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
                 ①
               </div>
               <span className="text-sm text-gray-600">AI 적정 인상률</span>
@@ -137,8 +137,8 @@ export function BudgetResourceCard({
                 <span className="text-xs text-gray-500 ml-1">{formatPercentage(aiPercent)}</span>
               </div>
             </div>
-            <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
+            <div className="flex justify-between items-center relative pl-9">
+              <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
                 ②
               </div>
               <span className="text-sm text-gray-600">승급/승진 인상</span>
@@ -149,8 +149,8 @@ export function BudgetResourceCard({
                 <span className="text-xs text-gray-500 ml-1">{formatPercentage(promotionPercent)}</span>
               </div>
             </div>
-            <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
+            <div className="flex justify-between items-center relative pl-9">
+              <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
                 ③
               </div>
               <span className="text-sm text-gray-600">추가 인상</span>
@@ -165,8 +165,8 @@ export function BudgetResourceCard({
         </div>
         
         {/* 간접비용 인상 섹션 */}
-        <div className="bg-orange-50 rounded-lg p-4 relative pl-9">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
+        <div className="bg-orange-50 rounded-lg p-5 relative pl-10">
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
             ④
           </div>
           <div className="flex justify-between items-center">
