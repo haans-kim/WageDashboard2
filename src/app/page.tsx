@@ -364,7 +364,7 @@ export default function Home() {
       <div className="container mx-auto px-3 md:px-4 py-4">
         
         {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 mb-2 md:mb-4">
           <div className="flex flex-col gap-4 h-full">
             {/* AI 제안 적정인상률 */}
             <AIRecommendationCard 

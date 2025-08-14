@@ -96,16 +96,16 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
   }
 
   const buttonClass = isNavigation 
-    ? `h-9 px-4 text-sm font-medium ${
+    ? `h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium ${
         isUploading 
           ? 'bg-gray-400 cursor-not-allowed' 
           : 'bg-blue-500 hover:bg-blue-600'
-      } text-white rounded-md transition-colors shadow-sm flex items-center gap-2 w-full md:w-auto justify-center`
-    : `h-10 px-4 text-sm font-medium ${
+      } text-white rounded-md transition-colors shadow-sm flex items-center gap-1 md:gap-2 w-full md:w-auto justify-center`
+    : `h-8 md:h-10 px-3 md:px-4 text-xs md:text-sm font-medium ${
         isUploading 
           ? 'bg-gray-400 cursor-not-allowed' 
           : 'bg-blue-500 hover:bg-blue-600'
-      } text-white rounded-md transition-colors shadow-sm flex items-center gap-2`
+      } text-white rounded-md transition-colors shadow-sm flex items-center gap-1 md:gap-2`
   
   return (
     <div className="flex items-center gap-2">

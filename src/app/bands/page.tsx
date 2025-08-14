@@ -227,13 +227,13 @@ function BandDashboardContent() {
         {/* 직군 네비게이션 메뉴 + 선택된 직군 카드 */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
-          <div className="w-full lg:w-80 bg-white rounded-lg shadow p-4">
+          <div className="w-full lg:w-80 bg-white rounded-lg shadow p-2 md:p-4 mb-4 lg:mb-0">
             <h2 className="text-xl font-bold text-gray-900 mb-4">직군별 분석</h2>
             <nav className="space-y-2">
               {/* 전체 보기 옵션 */}
               <button
                 onClick={() => setSelectedBand('all')}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
                   selectedBand === 'all'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'hover:bg-gray-100 text-gray-700'
@@ -255,7 +255,7 @@ function BandDashboardContent() {
                 <button
                   key={band.id}
                   onClick={() => setSelectedBand(band.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
                     selectedBand === band.id
                       ? 'bg-blue-500 text-white shadow-md'
                       : 'hover:bg-gray-100 text-gray-700'

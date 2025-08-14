@@ -79,12 +79,15 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
     return null
   }
 
+  // 화면 크기에 따른 차트 높이
+  const chartHeight = typeof window !== 'undefined' && window.innerWidth < 768 ? 250 : 400
+  
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={400} minHeight={250}>
+      <ResponsiveContainer width="100%" height={chartHeight} minHeight={200}>
         <LineChart
           data={data}
-          margin={{ top: 5, right: 10, left: 10, bottom: 20 }}
+          margin={{ top: 2, right: 5, left: 5, bottom: 10 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           
