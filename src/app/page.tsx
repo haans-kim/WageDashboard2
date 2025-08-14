@@ -16,7 +16,7 @@ export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
   const [baseUpRate, setBaseUpRate] = useState(3.2)
   const [meritRate, setMeritRate] = useState(2.5)
-  const [totalBudget, setTotalBudget] = useState<number | null>(300) // 총예산 300억원
+  const [totalBudget, setTotalBudget] = useState<number | null>(30000000000) // 총예산 300억원
   
   // 개별 레벨 인상률 상태
   const [levelRates, setLevelRates] = useState({
@@ -245,7 +245,7 @@ export default function Home() {
             meritRate={meritRate}
             totalEmployees={4925}
             totalSalaryBase={283034052564}
-            totalBudget={totalBudget ? totalBudget * 100000000 : 30000000000} // 억원 단위를 원 단위로 변환
+            totalBudget={totalBudget || 30000000000} // 원 단위 그대로 사용
             levelStatistics={data?.levelStatistics || []}
             promotionBudgets={promotionBudgets}
             onPromotionBudgetChange={updatePromotionBudget}

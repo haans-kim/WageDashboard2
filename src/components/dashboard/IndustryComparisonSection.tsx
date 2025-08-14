@@ -1,7 +1,7 @@
 'use client'
 
 import { formatPercentage } from '@/lib/utils'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line, ComposedChart, ReferenceLine } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line, ComposedChart, Scatter } from 'recharts'
 
 interface IndustryComparisonSectionProps {
   baseUpRate?: number
@@ -67,16 +67,18 @@ export function IndustryComparisonSection({
     }
   ]
   
-  // 인상률 비교 차트 데이터
+  // 인상률 비교 차트 데이터 (조정 인상률 마커용 데이터 추가)
   const increaseComparisonData = [
     {
       name: '우리 회사',
       value: companyIncrease,
+      adjustedValue: weightedAverageRate,
       color: '#3B82F6'
     },
     {
       name: 'C사',
       value: cCompanyIncrease,
+      adjustedValue: null,
       color: '#10B981'
     }
   ]
@@ -186,18 +188,35 @@ export function IndustryComparisonSection({
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
-              {/* 조정된 인상률 점선 표시 */}
-              <ReferenceLine 
-                y={weightedAverageRate} 
-                stroke="#9333EA" 
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                label={{ 
-                  value: `조정: ${weightedAverageRate.toFixed(1)}%`,
-                  position: 'right',
-                  fill: '#9333EA',
-                  fontSize: 11,
-                  fontWeight: 'bold'
+              {/* 조정된 인상률 마커 표시 */}
+              <Scatter 
+                dataKey="adjustedValue" 
+                fill="#9333EA"
+                shape={(props: any) => {
+                  const { cx, cy, payload } = props
+                  if (payload.adjustedValue === null) return null
+                  return (
+                    <g>
+                      <circle 
+                        cx={cx} 
+                        cy={cy} 
+                        r={8} 
+                        fill="#9333EA"
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                      />
+                      <text 
+                        x={cx} 
+                        y={cy - 16} 
+                        fill="#9333EA" 
+                        fontSize={11} 
+                        fontWeight="bold" 
+                        textAnchor="middle"
+                      >
+                        조정: {payload.adjustedValue.toFixed(1)}%
+                      </text>
+                    </g>
+                  )
                 }}
               />
             </ComposedChart>

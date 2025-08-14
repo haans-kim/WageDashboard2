@@ -37,9 +37,9 @@ export function BudgetResourceCard({
   budgetDetails
 }: BudgetResourceCardProps) {
   
-  // customTotalBudget이 억원 단위가 아닌 원 단위로 처리
+  // customTotalBudget을 그대로 사용 (원 단위)
   const actualBudget = customTotalBudget !== null && customTotalBudget !== undefined 
-    ? (customTotalBudget < 1000000 ? customTotalBudget * 100000000 : customTotalBudget) // 1백만 미만이면 억원으로 간주, 이상이면 원으로 간주
+    ? customTotalBudget
     : totalBudget
   
   // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
