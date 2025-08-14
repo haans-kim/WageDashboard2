@@ -81,7 +81,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
 
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={450}>
         <LineChart
           data={data}
           margin={{ top: 10, right: 30, left: 40, bottom: 30 }}
@@ -92,6 +92,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             dataKey="level" 
             tick={{ fontSize: 12 }}
             axisLine={{ stroke: '#9ca3af' }}
+            padding={{ left: 30, right: 30 }}
           />
           
           <YAxis 

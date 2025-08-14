@@ -138,7 +138,7 @@ export function PayBandCard({
       {/* 메인 컨텐츠 */}
       <div className="grid grid-cols-12 gap-4">
         {/* 좌측: 차트와 테이블 - 더 넓게 */}
-        <div className="col-span-7 space-y-4">
+        <div className="col-span-8 space-y-4">
           {/* 꺾은선 차트 */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <h4 className="text-base font-semibold text-gray-700 mb-2">중위수 비교</h4>
@@ -159,8 +159,8 @@ export function PayBandCard({
           </div>
         </div>
 
-        {/* 우측: 슬라이더 패널 - 더 넓게 */}
-        <div className="col-span-5">
+        {/* 우측: 슬라이더 패널 - 더 좁게 */}
+        <div className="col-span-4">
           <div className="sticky top-4">
             <h4 className="text-base font-semibold text-gray-700 mb-3">인상률 조정</h4>
             <RaiseSliderPanel
