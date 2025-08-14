@@ -113,7 +113,12 @@ export function ScenarioManager({
                         <div className="flex-1">
                           <h4 className="font-medium text-sm">{scenario.name}</h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            Base-up: {scenario.data.baseUpRate}%, Merit: {scenario.data.meritRate}%
+                            전체 인상률: {(scenario.data.weightedAverageRate || (scenario.data.baseUpRate + scenario.data.meritRate)).toFixed(1)}%
+                            {scenario.data.totalBudget && (
+                              <span className="ml-2">
+                                | 총 예산: {(scenario.data.totalBudget / 100000000).toFixed(0)}억원
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-gray-400">
                             {new Date(scenario.updatedAt).toLocaleString('ko-KR', {
@@ -127,11 +132,20 @@ export function ScenarioManager({
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
+                            // 기본 시나리오는 삭제 불가
+                            if (scenario.id === 'default') {
+                              alert('기본 초기화 시나리오는 삭제할 수 없습니다.')
+                              return
+                            }
                             if (confirm(`"${scenario.name}" 시나리오를 삭제하시겠습니까?`)) {
                               onDelete(scenario.id)
                             }
                           }}
-                          className="p-1 text-gray-400 hover:text-red-600 ml-2"
+                          className={`p-1 ml-2 ${
+                            scenario.id === 'default' 
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-400 hover:text-red-600'
+                          }`}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

@@ -14,11 +14,11 @@ import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
-  const [baseUpRate, setBaseUpRate] = useState(3.2)
-  const [meritRate, setMeritRate] = useState(2.5)
-  const [totalBudget, setTotalBudget] = useState<number | null>(30000000000) // 총예산 300억원
+  const [baseUpRate, setBaseUpRate] = useState(3.2) // 3.2% 고정
+  const [meritRate, setMeritRate] = useState(2.5) // 2.5%로 설정 (3.2 + 2.5 = 5.7)
+  const [totalBudget, setTotalBudget] = useState<number | null>(30000000000) // 총예산 300억원 유지
   
-  // 개별 레벨 인상률 상태
+  // 개별 레벨 인상률 상태 - baseUp은 3.2, merit은 2.5로 초기화
   const [levelRates, setLevelRates] = useState({
     'Lv.1': { baseUp: 3.2, merit: 2.5 },
     'Lv.2': { baseUp: 3.2, merit: 2.5 },
@@ -26,14 +26,14 @@ export default function Home() {
     'Lv.4': { baseUp: 3.2, merit: 2.5 }
   })
   
-  // 예산활용내역 상세를 위한 상태
+  // 예산활용내역 상세를 위한 상태 - 모두 0원으로 초기화
   const [promotionBudgets, setPromotionBudgets] = useState({
-    lv2: 263418542,
-    lv3: 119262338,
-    lv4: 32662484
+    lv2: 0,
+    lv3: 0,
+    lv4: 0
   })
-  const [additionalBudget, setAdditionalBudget] = useState(4499898100)
-  const [enableAdditionalIncrease, setEnableAdditionalIncrease] = useState(true)
+  const [additionalBudget, setAdditionalBudget] = useState(0)
+  const [enableAdditionalIncrease, setEnableAdditionalIncrease] = useState(false) // 비활성화로 시작
   
   // 계산된 예산 값들 상태
   const [budgetDetails, setBudgetDetails] = useState({
@@ -46,15 +46,29 @@ export default function Home() {
   // 추가 인상 총액 상태 (GradeSalaryAdjustmentTable에서 계산)
   const [calculatedAdditionalBudget, setCalculatedAdditionalBudget] = useState(0)
   
-  // 직급별 총 인상률 및 가중평균 상태
+  // 직급별 총 인상률 및 가중평균 상태 - 0으로 초기화
   const [levelTotalRates, setLevelTotalRates] = useState<{[key: string]: number}>({
-    'Lv.1': 7.77,
-    'Lv.2': 8.43,
-    'Lv.3': 6.60,
-    'Lv.4': 6.80
+    'Lv.1': 0,
+    'Lv.2': 0,
+    'Lv.3': 0,
+    'Lv.4': 0
   })
-  const [weightedAverageRate, setWeightedAverageRate] = useState(7.2)
-  const [meritWeightedAverage, setMeritWeightedAverage] = useState(2.5) // 성과인상률 가중평균
+  const [weightedAverageRate, setWeightedAverageRate] = useState(0)
+  const [meritWeightedAverage, setMeritWeightedAverage] = useState(0) // 성과인상률 가중평균
+  
+  // GradeSalaryAdjustmentTable의 세부 인상률 상태 - baseUp 3.2%, 성과인상률 2.5%, 나머지는 0
+  const [detailedLevelRates, setDetailedLevelRates] = useState<Record<string, {
+    baseUp: number
+    merit: number
+    promotion: number
+    advancement: number
+    additional: number
+  }>>({
+    'Lv.4': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.3': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.2': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
+  })
   
   // 시나리오 관리
   const {
@@ -70,7 +84,13 @@ export default function Home() {
   const updateLevelRate = (level: string, rates: any) => {
     // 새로운 GradeSalaryAdjustmentTable에서 전체 rates 객체를 전달받음
     console.log(`Level ${level} rates updated:`, rates)
-    // 필요시 여기서 추가 처리 가능
+    // detailedLevelRates 업데이트
+    if (rates) {
+      setDetailedLevelRates(prev => ({
+        ...prev,
+        [level]: rates
+      }))
+    }
   }
   
   // 승급/승격 예산 업데이트 핸들러
@@ -88,13 +108,31 @@ export default function Home() {
   
   // 시나리오 저장 핸들러
   const handleSaveScenario = (name: string) => {
+    // 실제 사용 예산 계산 (budgetDetails의 합계)
+    const totalUsedBudget = budgetDetails.aiRecommendation + 
+                           budgetDetails.promotion + 
+                           budgetDetails.additional + 
+                           budgetDetails.indirect
+    
     saveScenario(name, {
       baseUpRate,
       meritRate,
-      selectedFixedAmount,
       levelRates,
-      totalBudget: totalBudget || undefined,
-      fixedSalaryRange
+      totalBudget: totalUsedBudget || totalBudget || undefined, // 실제 사용 예산 저장
+      
+      // 예산활용내역 상세
+      promotionBudgets,
+      additionalBudget,
+      enableAdditionalIncrease,
+      calculatedAdditionalBudget,
+      
+      // 계산된 값들
+      levelTotalRates,
+      weightedAverageRate,
+      meritWeightedAverage,
+      
+      // GradeSalaryAdjustmentTable의 세부 인상률
+      detailedLevelRates
     })
   }
   
@@ -104,11 +142,37 @@ export default function Home() {
     if (scenarioData) {
       setBaseUpRate(scenarioData.baseUpRate)
       setMeritRate(scenarioData.meritRate)
-      setSelectedFixedAmount(scenarioData.selectedFixedAmount)
       setLevelRates(scenarioData.levelRates as typeof levelRates)
       setTotalBudget(scenarioData.totalBudget || null)
-      if (scenarioData.fixedSalaryRange) {
-        setFixedSalaryRange(scenarioData.fixedSalaryRange)
+      
+      // 예산활용내역 상세 복원
+      if (scenarioData.promotionBudgets) {
+        setPromotionBudgets(scenarioData.promotionBudgets)
+      }
+      if (scenarioData.additionalBudget !== undefined) {
+        setAdditionalBudget(scenarioData.additionalBudget)
+      }
+      if (scenarioData.enableAdditionalIncrease !== undefined) {
+        setEnableAdditionalIncrease(scenarioData.enableAdditionalIncrease)
+      }
+      if (scenarioData.calculatedAdditionalBudget !== undefined) {
+        setCalculatedAdditionalBudget(scenarioData.calculatedAdditionalBudget)
+      }
+      
+      // 계산된 값들 복원
+      if (scenarioData.levelTotalRates) {
+        setLevelTotalRates(scenarioData.levelTotalRates)
+      }
+      if (scenarioData.weightedAverageRate !== undefined) {
+        setWeightedAverageRate(scenarioData.weightedAverageRate)
+      }
+      if (scenarioData.meritWeightedAverage !== undefined) {
+        setMeritWeightedAverage(scenarioData.meritWeightedAverage)
+      }
+      
+      // GradeSalaryAdjustmentTable의 세부 인상률 복원
+      if (scenarioData.detailedLevelRates) {
+        setDetailedLevelRates(scenarioData.detailedLevelRates)
       }
     }
   }
@@ -176,10 +240,41 @@ export default function Home() {
             />
             <SimpleExportButton type="summary" />
             <button
-              onClick={refresh}
+              onClick={() => {
+                // API 데이터 새로고침
+                refresh()
+                // 사용자 조정 값들을 초기값으로 리셋
+                setBaseUpRate(3.2)
+                setMeritRate(2.5)
+                setTotalBudget(30000000000)
+                setLevelRates({
+                  'Lv.1': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.2': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.3': { baseUp: 3.2, merit: 2.5 },
+                  'Lv.4': { baseUp: 3.2, merit: 2.5 }
+                })
+                setPromotionBudgets({ lv2: 0, lv3: 0, lv4: 0 })
+                setAdditionalBudget(0)
+                setEnableAdditionalIncrease(false)
+                setCalculatedAdditionalBudget(0)
+                setLevelTotalRates({
+                  'Lv.1': 0,
+                  'Lv.2': 0,
+                  'Lv.3': 0,
+                  'Lv.4': 0
+                })
+                setWeightedAverageRate(0)
+                setMeritWeightedAverage(0)
+                setDetailedLevelRates({
+                  'Lv.4': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+                  'Lv.3': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+                  'Lv.2': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
+                  'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
+                })
+              }}
               className="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
             >
-              새로고침
+              초기화
             </button>
           </div>
         </header>
@@ -265,6 +360,7 @@ export default function Home() {
           <GradeSalaryAdjustmentTable
             baseUpRate={baseUpRate}
             meritRate={meritRate}
+            initialRates={detailedLevelRates}
             onRateChange={updateLevelRate}
             onTotalBudgetChange={(totalBudget) => {
               console.log('Total budget changed:', totalBudget)

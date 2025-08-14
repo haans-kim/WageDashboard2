@@ -33,6 +33,7 @@ interface GradeSalaryAdjustmentTableProps {
   onAdditionalBudgetChange?: (additionalBudget: number) => void  // 추가 인상 총액 콜백
   onLevelTotalRatesChange?: (levelRates: {[key: string]: number}, weightedAverage: number) => void  // 직급별 총 인상률 및 가중평균 콜백
   onMeritWeightedAverageChange?: (weightedAverage: number) => void  // 성과인상률 가중평균 콜백
+  initialRates?: { [key: string]: LevelRates }  // 초기 인상률 값
 }
 
 // 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
@@ -58,52 +59,60 @@ const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
   }
 }
 
-// 초기 인상률 값
+// 초기 인상률 값 - 성과인상률만 2.5%, 나머지는 0
 const DEFAULT_RATES: { [key: string]: LevelRates } = {
   'Lv.4': {
-    baseUp: 3.20,
+    baseUp: 0,
     merit: 2.50,
-    promotion: 0.60,
-    advancement: 0.00,
-    additional: 1.00
+    promotion: 0,
+    advancement: 0,
+    additional: 0
   },
   'Lv.3': {
-    baseUp: 3.20,
-    merit: 2.25,
-    promotion: 0.00,
-    advancement: 3.50,
-    additional: 1.15
+    baseUp: 0,
+    merit: 2.50,
+    promotion: 0,
+    advancement: 0,
+    additional: 0
   },
   'Lv.2': {
-    baseUp: 3.20,
-    merit: 3.00,
-    promotion: 0.00,
-    advancement: 0.80,
-    additional: 1.43
+    baseUp: 0,
+    merit: 2.50,
+    promotion: 0,
+    advancement: 0,
+    additional: 0
   },
   'Lv.1': {
-    baseUp: 3.20,
-    merit: 2.75,
-    promotion: 0.00,
-    advancement: 0.00,
-    additional: 1.82
+    baseUp: 0,
+    merit: 2.50,
+    promotion: 0,
+    advancement: 0,
+    additional: 0
   }
 }
 
 export function GradeSalaryAdjustmentTable({
-  baseUpRate = 3.20,
+  baseUpRate = 0,
   meritRate = 2.50,
   employeeData = DEFAULT_EMPLOYEE_DATA,
   onRateChange,
   onTotalBudgetChange,
-  enableAdditionalIncrease = true,
+  enableAdditionalIncrease = false,
   onAdditionalBudgetChange,
   onLevelTotalRatesChange,
-  onMeritWeightedAverageChange
+  onMeritWeightedAverageChange,
+  initialRates
 }: GradeSalaryAdjustmentTableProps) {
   
-  // 직급별 인상률 상태 관리
-  const [rates, setRates] = useState<{ [key: string]: LevelRates }>(DEFAULT_RATES)
+  // 직급별 인상률 상태 관리 - initialRates가 있으면 사용, 없으면 DEFAULT_RATES 사용
+  const [rates, setRates] = useState<{ [key: string]: LevelRates }>(initialRates || DEFAULT_RATES)
+  
+  // initialRates가 변경되면 rates 상태 업데이트 (시나리오 불러오기 시)
+  useEffect(() => {
+    if (initialRates) {
+      setRates(initialRates)
+    }
+  }, [initialRates])
   
   // AI 제안값이 변경되거나 추가 인상 활성화 상태가 변경되면 업데이트
   useEffect(() => {

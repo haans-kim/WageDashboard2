@@ -42,18 +42,18 @@ interface BudgetUtilizationDetailProps {
 }
 
 export function BudgetUtilizationDetail({
-  baseUpRate = 3.2,
-  meritRate = 2.5,
+  baseUpRate = 0,
+  meritRate = 0,
   meritWeightedAverage,
   totalEmployees = 4925,
   totalSalaryBase = 283034052564, // 총급여베이스
   totalBudget = 30000000000, // 총예산 기본값 300억
   levelStatistics,
-  promotionBudgets = { lv2: 263418542, lv3: 119262338, lv4: 32662484 },
+  promotionBudgets = { lv2: 0, lv3: 0, lv4: 0 },
   onPromotionBudgetChange,
-  additionalBudget = 4499898100,
+  additionalBudget = 0,
   onAdditionalBudgetChange,
-  enableAdditionalIncrease = true,
+  enableAdditionalIncrease = false,
   onEnableAdditionalIncreaseChange,
   onBudgetCalculated
 }: BudgetUtilizationDetailProps) {
