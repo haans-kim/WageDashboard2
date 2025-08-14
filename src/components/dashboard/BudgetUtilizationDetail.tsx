@@ -100,16 +100,16 @@ export function BudgetUtilizationDetail({
   }, [aiTotalBudget, promotionTotal, currentSetting, indirectTotal, onBudgetCalculated])
   
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
       <h2 className="text-xl font-semibold mb-4">예산활용내역상세</h2>
       
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 flex-1">
         {/* 카드 1: AI 적정 인상률 예산 */}
         <div className="bg-blue-50 rounded-lg p-4 relative">
-          <div className="absolute -top-1.5 -left-1.5 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-            ①
+          <div className="absolute -top-2 -left-2 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold text-base">
+            1
           </div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-1">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-2">
             AI 적정 인상률 예산
           </h3>
           <div className="space-y-2">
@@ -136,10 +136,10 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 2: 승급/승진 인상률 예산 */}
         <div className="bg-green-50 rounded-lg p-4 relative">
-          <div className="absolute -top-1.5 -left-1.5 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-            ②
+          <div className="absolute -top-2 -left-2 w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center font-bold text-base">
+            2
           </div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-1">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-2">
             승급/승진 인상 예산
           </h3>
           <div className="space-y-2">
@@ -196,10 +196,10 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 3: 추가 인상 가능 범위 */}
         <div className="bg-purple-50 rounded-lg p-4 relative">
-          <div className="absolute -top-1.5 -left-1.5 w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-            ③
+          <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-500 text-white rounded-lg flex items-center justify-center font-bold text-base">
+            3
           </div>
-          <div className="flex items-center justify-between mb-3 mt-2 pl-1">
+          <div className="flex items-center justify-between mb-3 mt-2 pl-2">
             <h3 className="text-sm font-semibold text-gray-700">
               추가 인상 가능 범위
             </h3>
@@ -250,10 +250,10 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 4: 간접비용 Impact */}
         <div className="bg-orange-50 rounded-lg p-4 relative">
-          <div className="absolute -top-1.5 -left-1.5 w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-            ④
+          <div className="absolute -top-2 -left-2 w-8 h-8 bg-orange-500 text-white rounded-lg flex items-center justify-center font-bold text-base">
+            4
           </div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-1">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2 pl-2">
             간접비용 Impact
           </h3>
           <div className="space-y-2">

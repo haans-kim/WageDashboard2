@@ -176,7 +176,7 @@ export default function Home() {
         
         {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 h-full">
             {/* AI 제안 적정인상률 */}
             <AIRecommendationCard 
               data={data?.aiRecommendation || null} 

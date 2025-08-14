@@ -33,7 +33,7 @@ export function AIRecommendationCard({
   const displayTotal = displayBaseUp + displayMerit
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
       <h2 className="text-xl font-semibold mb-4">
         AI 제안 적정 인상률
       </h2>
@@ -48,7 +48,7 @@ export function AIRecommendationCard({
       </div>
       
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6 flex-1">
         {/* 좌측: 최적 인상률 */}
         <div className="bg-blue-50 rounded-lg p-4 flex items-center">
           <div className="text-center w-full">
