@@ -104,8 +104,21 @@ export function GradeSalaryAdjustmentTable({
   initialRates
 }: GradeSalaryAdjustmentTableProps) {
   
-  // 직급별 인상률 상태 관리 - initialRates가 있으면 사용, 없으면 DEFAULT_RATES 사용
-  const [rates, setRates] = useState<{ [key: string]: LevelRates }>(initialRates || DEFAULT_RATES)
+  // 직급별 인상률 상태 관리 - initialRates가 있으면 사용, 없으면 props 기반 기본값 사용
+  const getInitialRates = () => {
+    if (initialRates) return initialRates
+    
+    // props 값을 사용한 기본 설정
+    const defaultRates = {
+      'Lv.4': { baseUp: baseUpRate, merit: meritRate, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.3': { baseUp: baseUpRate, merit: meritRate, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.2': { baseUp: baseUpRate, merit: meritRate, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.1': { baseUp: baseUpRate, merit: meritRate, promotion: 0, advancement: 0, additional: 0 }
+    }
+    return defaultRates
+  }
+  
+  const [rates, setRates] = useState<{ [key: string]: LevelRates }>(getInitialRates)
   
   // initialRates가 변경되면 rates 상태 업데이트 (시나리오 불러오기 시)
   useEffect(() => {
@@ -122,6 +135,7 @@ export function GradeSalaryAdjustmentTable({
         updated[level] = {
           ...updated[level],
           baseUp: baseUpRate, // Base-up은 항상 AI 제안값으로 고정
+          merit: meritRate, // Merit도 AI 제안값으로 고정
           additional: enableAdditionalIncrease ? updated[level].additional : 0 // 비활성화시 0으로 리셋
         }
       })

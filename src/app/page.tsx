@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useScenarios } from '@/hooks/useScenarios'
 import { ScenarioManager } from '@/components/ScenarioManager'
@@ -80,6 +80,31 @@ export default function Home() {
     deleteScenario,
     renameScenario
   } = useScenarios()
+  
+  // AI 설정 데이터가 로드되면 상태 동기화
+  useEffect(() => {
+    if (data?.aiRecommendation) {
+      const aiData = data.aiRecommendation
+      setBaseUpRate(aiData.baseUpPercentage)
+      setMeritRate(aiData.meritIncreasePercentage)
+      
+      // 개별 레벨 인상률도 업데이트
+      setLevelRates({
+        'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+        'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+        'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+        'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage }
+      })
+      
+      // 세부 인상률도 업데이트
+      setDetailedLevelRates({
+        'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
+      })
+    }
+  }, [data?.aiRecommendation])
   
   // 새로운 인터페이스에 맞춰 수정
   const updateLevelRate = (level: string, rates: any) => {
