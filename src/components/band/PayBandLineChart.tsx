@@ -81,7 +81,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
 
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={450}>
+      <ResponsiveContainer width="100%" aspect={2.2}>
         <LineChart
           data={data}
           margin={{ top: 5, right: 20, left: 25, bottom: 20 }}

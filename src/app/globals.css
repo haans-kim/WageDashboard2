@@ -32,6 +32,29 @@
     }
   }
 
+  /* 뷰포트 기반 반응형 폰트 크기 */
+  html {
+    font-size: clamp(14px, 1vw, 18px);
+  }
+  
+  @media (min-width: 1920px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  
+  @media (max-width: 1280px) {
+    html {
+      font-size: 15px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
   body {
     @apply text-gray-900 antialiased;
     background: #f9fafb;

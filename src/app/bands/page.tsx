@@ -225,9 +225,9 @@ function BandDashboardContent() {
         </div>
 
         {/* 직군 네비게이션 메뉴 + 선택된 직군 카드 */}
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
-          <div className="w-80 bg-white rounded-lg shadow p-4">
+          <div className="w-full lg:w-80 bg-white rounded-lg shadow p-4">
             <h2 className="text-xl font-bold text-gray-900 mb-4">직군별 분석</h2>
             <nav className="space-y-2">
               {/* 전체 보기 옵션 */}

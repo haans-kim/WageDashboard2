@@ -18,9 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased min-w-[320px]">
         <Navigation />
-        {children}
+        <main className="min-h-screen">
+          {children}
+        </main>
       </body>
     </html>
   )
