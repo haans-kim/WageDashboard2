@@ -31,6 +31,7 @@ export function clearCache() {
   if (typeof window === 'undefined') {
     cachedEmployeeData = null
     cachedAISettings = null
+    modifiedEmployeeData = null
     console.log('서버 사이드 캐시가 초기화되었습니다.')
   }
 }
@@ -372,6 +373,10 @@ export async function uploadEmployeeExcel(file: File): Promise<{
         message: `${invalidRows.length}개 행에 필수 데이터가 누락되었습니다.`
       }
     }
+    
+    // 캐시에 새 데이터 저장
+    cachedEmployeeData = employees
+    modifiedEmployeeData = employees
     
     // 파일 저장은 API 라우트에서 처리 (서버 사이드에서만 가능)
     
