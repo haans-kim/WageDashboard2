@@ -81,32 +81,26 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
 
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={400} minHeight={350}>
+      <ResponsiveContainer width="100%" height={400} minHeight={250}>
         <LineChart
           data={data}
-          margin={{ top: 5, right: 20, left: 25, bottom: 20 }}
+          margin={{ top: 5, right: 10, left: 10, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           
           <XAxis 
             dataKey="level" 
-            tick={{ fontSize: 12 }}
+            tick={{ fontSize: 10 }}
             axisLine={{ stroke: '#9ca3af' }}
-            padding={{ left: 30, right: 30 }}
+            padding={{ left: 20, right: 20 }}
           />
           
           <YAxis 
             domain={yAxisDomain}
             tickFormatter={(value) => `${(value / 10000).toFixed(0)}`}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 9 }}
             axisLine={{ stroke: '#9ca3af' }}
-            label={{ 
-              value: '만원', 
-              angle: -90, 
-              position: 'insideLeft',
-              style: { fontSize: 10, fill: '#6b7280' },
-              offset: -5
-            }}
+            width={35}
           />
           
           <Tooltip content={<CustomTooltip />} />

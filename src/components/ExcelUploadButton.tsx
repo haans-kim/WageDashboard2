@@ -100,7 +100,7 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
         isUploading 
           ? 'bg-gray-400 cursor-not-allowed' 
           : 'bg-blue-500 hover:bg-blue-600'
-      } text-white rounded-md transition-colors shadow-sm flex items-center gap-2`
+      } text-white rounded-md transition-colors shadow-sm flex items-center gap-2 w-full md:w-auto justify-center`
     : `h-10 px-4 text-sm font-medium ${
         isUploading 
           ? 'bg-gray-400 cursor-not-allowed' 

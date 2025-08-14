@@ -361,7 +361,7 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="container mx-auto px-3 py-4">
+      <div className="container mx-auto px-3 md:px-4 py-4">
         
         {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">

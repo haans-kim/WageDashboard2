@@ -192,11 +192,11 @@ function BandDashboardContent() {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6">
 
         {/* 상단 요약 패널 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="grid grid-cols-5 gap-6">
+        <div className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
             <div>
               <p className="text-base text-gray-600">회계연도</p>
               <p className="text-3xl font-bold text-gray-900">{fiscalYear}</p>

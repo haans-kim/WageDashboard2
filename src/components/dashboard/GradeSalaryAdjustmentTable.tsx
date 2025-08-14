@@ -296,8 +296,8 @@ export function GradeSalaryAdjustmentTable({
         {/* 추후 엑셀 업로드 버튼 추가 위치 */}
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <table className="w-full border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-gray-50">
               <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center text-sm font-semibold">
