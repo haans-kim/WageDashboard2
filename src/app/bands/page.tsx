@@ -179,26 +179,26 @@ export default function BandDashboard() {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="grid grid-cols-5 gap-6">
             <div>
-              <p className="text-sm text-gray-600">회계연도</p>
-              <p className="text-2xl font-bold text-gray-900">{fiscalYear}</p>
+              <p className="text-base text-gray-600">회계연도</p>
+              <p className="text-3xl font-bold text-gray-900">{fiscalYear}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">총 인원</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.totalHeadcount.toLocaleString()}명</p>
+              <p className="text-base text-gray-600">총 인원</p>
+              <p className="text-3xl font-bold text-gray-900">{summary.totalHeadcount.toLocaleString()}명</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">기본 Base-up</p>
-              <p className="text-2xl font-bold text-primary-600">{initialBaseUp}%</p>
-              <p className="text-xs text-gray-500 mt-1">메인 대시보드 값</p>
+              <p className="text-base text-gray-600">기본 Base-up</p>
+              <p className="text-3xl font-bold text-primary-600">{initialBaseUp}%</p>
+              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">기본 Merit</p>
-              <p className="text-2xl font-bold text-blue-600">{initialMerit}%</p>
-              <p className="text-xs text-gray-500 mt-1">메인 대시보드 값</p>
+              <p className="text-base text-gray-600">기본 Merit</p>
+              <p className="text-3xl font-bold text-blue-600">{initialMerit}%</p>
+              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">총 예산 영향</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-base text-gray-600">총 예산 영향</p>
+              <p className="text-3xl font-bold text-yellow-600">
                 {formatKoreanCurrency(summary.totalBudgetImpact, '억원', 100000000)}
               </p>
             </div>
@@ -209,7 +209,7 @@ export default function BandDashboard() {
         <div className="flex gap-6">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
           <div className="w-80 bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">직군별 분석</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">직군별 분석</h2>
             <nav className="space-y-2">
               {/* 전체 보기 옵션 */}
               <button
@@ -222,16 +222,16 @@ export default function BandDashboard() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-semibold">전체</div>
+                    <div className="font-semibold text-base">전체</div>
                     <div className="text-sm opacity-75">
                       {summary.totalHeadcount.toLocaleString()}명
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">
+                    <div className="text-base font-medium">
                       {formatPercentage(summary.avgBaseUpRate)}
                     </div>
-                    <div className="text-xs opacity-75">
+                    <div className="text-sm opacity-75">
                       Base-up
                     </div>
                   </div>
@@ -254,16 +254,16 @@ export default function BandDashboard() {
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="font-semibold">{band.name}</div>
+                      <div className="font-semibold text-base">{band.name}</div>
                       <div className="text-sm opacity-75">
                         {band.totalHeadcount.toLocaleString()}명
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">
+                      <div className="text-base font-medium">
                         {formatPercentage(band.avgBaseUpRate)}
                       </div>
-                      <div className="text-xs opacity-75">
+                      <div className="text-sm opacity-75">
                         Base-up
                       </div>
                     </div>

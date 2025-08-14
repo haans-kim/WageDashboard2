@@ -24,7 +24,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-base">
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-2 px-3 font-semibold text-gray-700">구분</th>
@@ -75,7 +75,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
               const competitiveness = (item.sblMedian / item.caMedian) * 100
               return (
                 <td key={`comp-${item.level}`} className="text-center py-2 px-1">
-                  <span className={`inline-block px-2 py-1 rounded-md font-semibold text-xs opacity-60 ${getCompetitivenessColor(competitiveness)}`}>
+                  <span className={`inline-block px-2 py-1 rounded-md font-semibold text-sm opacity-60 ${getCompetitivenessColor(competitiveness)}`}>
                     {competitiveness.toFixed(1)}%
                   </span>
                 </td>
@@ -91,7 +91,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
                 const adjustedCompetitiveness = ((item.sblMedianAdjusted || item.sblMedian) / item.caMedian) * 100
                 return (
                   <td key={`comp-adj-${item.level}`} className="text-center py-2 px-1">
-                    <span className={`inline-block px-2 py-1 rounded-md font-bold text-xs ${getCompetitivenessColor(adjustedCompetitiveness)}`}>
+                    <span className={`inline-block px-2 py-1 rounded-md font-bold text-sm ${getCompetitivenessColor(adjustedCompetitiveness)}`}>
                       {adjustedCompetitiveness.toFixed(1)}%
                     </span>
                   </td>
@@ -103,7 +103,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
       </table>
       
       {/* 범례 */}
-      <div className="mt-3 flex items-center gap-4 text-xs text-gray-600">
+      <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-red-100 rounded"></div>
           <span>&lt; 95% (경쟁력 부족)</span>

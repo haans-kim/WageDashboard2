@@ -12,7 +12,8 @@
     "test:coverage": "jest --coverage",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "generate:excel": "tsx src/scripts/generateDummyExcel.ts"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
