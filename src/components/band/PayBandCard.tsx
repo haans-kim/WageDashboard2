@@ -147,7 +147,7 @@ export function PayBandCard({
         <div className="col-span-8 space-y-4">
           {/* 꺾은선 차트 */}
           <div className="p-2 bg-gray-50 rounded-lg">
-            <h4 className="text-base font-semibold text-gray-700 mb-1 px-2 pt-2">중위수 비교</h4>
+            <h4 className="text-base font-semibold text-gray-700 mb-1 px-2 pt-2">보상경쟁력 분석</h4>
             <PayBandLineChart 
               key={`chart-${baseUpRate}-${additionalRate}-${JSON.stringify(meritMultipliers)}`}
               data={chartData} 

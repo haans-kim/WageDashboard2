@@ -240,20 +240,10 @@ function BandDashboardContent() {
                 }`}
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold text-base">전체</div>
-                    <div className="text-sm opacity-75">
-                      {summary.totalHeadcount.toLocaleString()}명
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-base font-medium">
-                      {formatPercentage(summary.avgBaseUpRate)}
-                    </div>
-                    <div className="text-sm opacity-75">
-                      Base-up
-                    </div>
-                  </div>
+                  <span className="font-semibold text-base">전체</span>
+                  <span className="text-base font-medium">
+                    {summary.totalHeadcount.toLocaleString()}명
+                  </span>
                 </div>
               </button>
               
@@ -272,20 +262,10 @@ function BandDashboardContent() {
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-base">{band.name}</div>
-                      <div className="text-sm opacity-75">
-                        {band.totalHeadcount.toLocaleString()}명
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-base font-medium">
-                        {formatPercentage(band.avgBaseUpRate)}
-                      </div>
-                      <div className="text-sm opacity-75">
-                        Base-up
-                      </div>
-                    </div>
+                    <span className="font-semibold text-base">{band.name}</span>
+                    <span className="text-base font-medium">
+                      {band.totalHeadcount.toLocaleString()}명
+                    </span>
                   </div>
                 </button>
               ))}
