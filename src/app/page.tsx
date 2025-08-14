@@ -33,6 +33,15 @@ export default function Home() {
     lv4: 32662484
   })
   const [additionalBudget, setAdditionalBudget] = useState(4499898100)
+  const [enableAdditionalIncrease, setEnableAdditionalIncrease] = useState(true)
+  
+  // 계산된 예산 값들 상태
+  const [budgetDetails, setBudgetDetails] = useState({
+    aiRecommendation: 0,
+    promotion: 0,
+    additional: 0,
+    indirect: 0
+  })
   
   // 시나리오 관리
   const {
@@ -217,6 +226,7 @@ export default function Home() {
               levelStatistics={data?.levelStatistics || []}
               customTotalBudget={totalBudget}
               onTotalBudgetChange={setTotalBudget}
+              budgetDetails={budgetDetails}
             />
           </div>
           
@@ -226,11 +236,15 @@ export default function Home() {
             meritRate={meritRate}
             totalEmployees={4925}
             totalSalaryBase={283034052564}
+            totalBudget={totalBudget ? totalBudget * 100000000 : 30000000000} // 억원 단위를 원 단위로 변환
             levelStatistics={data?.levelStatistics || []}
             promotionBudgets={promotionBudgets}
             onPromotionBudgetChange={updatePromotionBudget}
             additionalBudget={additionalBudget}
             onAdditionalBudgetChange={updateAdditionalBudget}
+            enableAdditionalIncrease={enableAdditionalIncrease}
+            onEnableAdditionalIncreaseChange={setEnableAdditionalIncrease}
+            onBudgetCalculated={setBudgetDetails}
           />
         </div>
         

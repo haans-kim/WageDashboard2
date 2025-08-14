@@ -16,6 +16,12 @@ interface BudgetResourceCardProps {
   }>
   customTotalBudget?: number | null
   onTotalBudgetChange?: (value: number | null) => void
+  budgetDetails?: {
+    aiRecommendation: number
+    promotion: number
+    additional: number
+    indirect: number
+  }
 }
 
 export function BudgetResourceCard({ 
@@ -27,21 +33,22 @@ export function BudgetResourceCard({
   levelRates,
   levelStatistics,
   customTotalBudget,
-  onTotalBudgetChange
+  onTotalBudgetChange,
+  budgetDetails
 }: BudgetResourceCardProps) {
   
   const actualBudget = customTotalBudget !== null && customTotalBudget !== undefined 
     ? customTotalBudget * 100000000 
     : totalBudget
   
-  // 예산 계산 로직 - 사용자 제공 값
-  let aiRecommendationBudget = 16132940996 // 카드 1: AI 적정 인상률 예산 (53.8%)
-  let promotionBudget = 151924823 // 카드 2: 승급/승진 예산 (0.5%)
-  let additionalBudget = 4499898100 // 카드 3: 추가 인상 (15.0%)
-  let indirectCostBudget = 3699687978 // 카드 4: 간접비용 (12.3%)
+  // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
+  let aiRecommendationBudget = budgetDetails?.aiRecommendation || 16132940996 // 카드 1: AI 적정 인상률 예산
+  let promotionBudget = budgetDetails?.promotion || 151924823 // 카드 2: 승급/승진 예산
+  let additionalBudget = budgetDetails?.additional || 4499898100 // 카드 3: 추가 인상
+  let indirectCostBudget = budgetDetails?.indirect || 3699687978 // 카드 4: 간접비용
   
-  // 레벨별 계산이 있을 경우
-  if (levelRates && levelStatistics) {
+  // 레벨별 계산이 있고 budgetDetails가 없을 경우만 계산
+  if (levelRates && levelStatistics && !budgetDetails) {
     aiRecommendationBudget = 0
     levelStatistics.forEach((level) => {
       const levelRate = levelRates[level.level]
@@ -56,7 +63,6 @@ export function BudgetResourceCard({
   // 총 사용 예산
   const totalUsedBudget = aiRecommendationBudget + promotionBudget + additionalBudget + indirectCostBudget
   const usageRate = (totalUsedBudget / actualBudget) * 100
-  const savingRate = 100 - usageRate
   
   // 각 항목의 비율 계산
   const aiPercent = (aiRecommendationBudget / actualBudget) * 100
@@ -105,14 +111,9 @@ export function BudgetResourceCard({
           
           <div className="flex justify-between items-center pt-3 border-t border-blue-200">
             <span className="text-base text-gray-700">활용률</span>
-            <div className="text-right">
-              <span className="text-lg font-bold text-green-600">
-                {formatPercentage(usageRate)}
-              </span>
-              <span className="text-sm text-gray-500 ml-2">
-                (절감률: {formatPercentage(savingRate)})
-              </span>
-            </div>
+            <span className="text-lg font-bold text-green-600">
+              {formatPercentage(usageRate)}
+            </span>
           </div>
         </div>
       </div>

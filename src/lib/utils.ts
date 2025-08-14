@@ -1,21 +1,28 @@
 /**
  * 숫자를 한국식 통화 형식으로 포맷팅
  * @param value - 포맷할 숫자
- * @param unit - 단위 ('원', '만원', '억원')
+ * @param unit - 단위 ('원', '만원', '억원', '백만원')
+ * @param divisor - 커스텀 나누기 값 (백만원 등을 위해)
  * @returns 포맷된 문자열
  */
-export function formatKoreanCurrency(value: number, unit: '원' | '만원' | '억원' = '원'): string {
+export function formatKoreanCurrency(value: number, unit: '원' | '만원' | '억원' | '백만원' = '원', divisor?: number): string {
   if (unit === '억원') {
-    const billions = (value / 100000000).toFixed(0)
-    return `${billions.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}억 원`
+    const billions = Math.round(value / 100000000)
+    return `${billions.toLocaleString('ko-KR')}억 원`
+  }
+  
+  if (unit === '백만원' && divisor) {
+    const millions = Math.round(value / divisor)
+    return `${millions.toLocaleString('ko-KR')}백만 원`
   }
   
   if (unit === '만원') {
-    const tenThousands = (value / 10000).toFixed(0)
-    return `${tenThousands.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}만 원`
+    const tenThousands = Math.round(value / 10000)
+    return `${tenThousands.toLocaleString('ko-KR')}만 원`
   }
   
-  return `${value.toLocaleString('ko-KR')}원`
+  // 원 단위는 소수점 없이 정수로 표시
+  return `${Math.round(value).toLocaleString('ko-KR')}원`
 }
 
 /**
