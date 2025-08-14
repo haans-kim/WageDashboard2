@@ -54,8 +54,8 @@ export function AIRecommendationCard({
         {/* 좌측: 최적 인상률 */}
         <div className="bg-blue-50 rounded-lg p-4 flex items-center">
           <div className="text-center w-full">
-            <p className="text-base font-medium text-gray-700 mb-2">최적 인상률</p>
-            <p className="text-4xl font-bold text-blue-600 font-tabular">
+            <p className="text-lg font-semibold text-gray-700 mb-2">최적 인상률</p>
+            <p className="text-5xl font-bold text-blue-600 font-tabular">
               {formatPercentage(displayTotal)}
             </p>
           </div>
@@ -66,8 +66,8 @@ export function AIRecommendationCard({
           {/* Base-up */}
           <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
             <div className="flex justify-between items-center w-full">
-              <span className="text-base text-gray-700 font-medium">Base-up</span>
-              <span className="text-2xl font-bold text-purple-600 font-tabular">
+              <span className="text-lg text-gray-700 font-medium">Base-up</span>
+              <span className="text-3xl font-bold text-purple-600 font-tabular">
                 {formatPercentage(displayBaseUp)}
               </span>
             </div>
@@ -78,8 +78,8 @@ export function AIRecommendationCard({
           {/* 성과인상률 */}
           <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
             <div className="flex justify-between items-center w-full">
-              <span className="text-base text-gray-700 font-medium">성과인상률</span>
-              <span className="text-2xl font-bold text-pink-600 font-tabular">
+              <span className="text-lg text-gray-700 font-medium">성과인상률</span>
+              <span className="text-3xl font-bold text-pink-600 font-tabular">
                 {formatPercentage(displayMerit)}
               </span>
             </div>

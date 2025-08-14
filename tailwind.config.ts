@@ -23,7 +23,33 @@ const config: Config = {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
+          950: '#082f49', // 더 진한 색 추가
         },
+        // shadcn/ui 호환 색상
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+      },
+      fontSize: {
+        // 미세 조정된 폰트 크기
+        'xs': ['0.75rem', { lineHeight: '1.5' }],  // 12px
+        'sm': ['0.875rem', { lineHeight: '1.5' }], // 14px
+        'base': ['1rem', { lineHeight: '1.6' }],   // 16px
+        'lg': ['1.125rem', { lineHeight: '1.6' }], // 18px
+        'xl': ['1.25rem', { lineHeight: '1.5' }],  // 20px
+        '2xl': ['1.5rem', { lineHeight: '1.4' }],  // 24px
+        '3xl': ['1.875rem', { lineHeight: '1.4' }], // 30px
+        '4xl': ['2.25rem', { lineHeight: '1.3' }],  // 36px
       },
     },
   },

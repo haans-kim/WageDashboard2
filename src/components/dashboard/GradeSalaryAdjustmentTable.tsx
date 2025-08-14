@@ -274,44 +274,44 @@ export function GradeSalaryAdjustmentTable({
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-semibold">직급별 고정급 인상률 조정</h2>
+        <h2 className="text-xl font-bold">직급별 고정급 인상률 조정</h2>
         {/* 추후 엑셀 업로드 버튼 추가 위치 */}
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50">
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center text-sm font-semibold">
                 직급
               </th>
-              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50 text-sm font-semibold">
                 ① AI 적정 인상률 예산
               </th>
-              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+              <th colSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50 text-sm font-semibold">
                 ② 승급/승격 인상
               </th>
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-yellow-50 text-sm font-semibold">
                 ③ 추가 인상
               </th>
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-blue-50">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center bg-blue-50 text-sm font-semibold">
                 총계 (①+③)%
               </th>
-              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center">
+              <th rowSpan={2} className="border border-gray-300 px-3 py-2 text-center text-sm font-semibold">
                 총 금액
               </th>
             </tr>
             <tr className="bg-gray-50">
-              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+              <th className="border border-gray-300 px-3 py-2 text-center text-sm bg-yellow-50">
                 Base-up
               </th>
-              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+              <th className="border border-gray-300 px-3 py-2 text-center text-sm bg-yellow-50">
                 성과 인상률
               </th>
-              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+              <th className="border border-gray-300 px-3 py-2 text-center text-sm bg-yellow-50">
                 승급 인상률
               </th>
-              <th className="border border-gray-300 px-3 py-2 text-center text-xs bg-yellow-50">
+              <th className="border border-gray-300 px-3 py-2 text-center text-sm bg-yellow-50">
                 승격 인상률
               </th>
             </tr>
@@ -320,36 +320,36 @@ export function GradeSalaryAdjustmentTable({
             {/* 전체 합계 행 */}
             <tr className="bg-gray-50 font-semibold">
               <td className="border border-gray-300 px-3 py-2 text-center">
-                전체<br/>
-                <span className="text-xs font-normal">
+                <div className="text-base font-bold">전체</div>
+                <span className="text-sm font-normal text-gray-600">
                   {employeeData.totalCount.toLocaleString()}명
                 </span>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center">
-                <div className="text-xs text-gray-600">Base-up</div>
-                <div className="text-blue-600">{totalSummary.avgBaseUp.toFixed(2)}%</div>
+                <div className="text-sm text-gray-600">Base-up</div>
+                <div className="text-base font-semibold text-blue-600">{totalSummary.avgBaseUp.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center">
-                <div className="text-xs text-gray-600">성과 인상률</div>
-                <div className="text-blue-600">{totalSummary.avgMerit.toFixed(2)}%</div>
+                <div className="text-sm text-gray-600">성과 인상률</div>
+                <div className="text-base font-semibold text-blue-600">{totalSummary.avgMerit.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center">
-                <div className="text-xs text-gray-600">승급 인상률</div>
-                <div className="text-orange-600">{totalSummary.avgPromotion.toFixed(2)}%</div>
+                <div className="text-sm text-gray-600">승급 인상률</div>
+                <div className="text-base font-semibold text-orange-600">{totalSummary.avgPromotion.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center">
-                <div className="text-xs text-gray-600">승격 인상률</div>
-                <div className="text-orange-600">{totalSummary.avgAdvancement.toFixed(2)}%</div>
+                <div className="text-sm text-gray-600">승격 인상률</div>
+                <div className="text-base font-semibold text-orange-600">{totalSummary.avgAdvancement.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center">
-                <div className="text-xs text-gray-600">추가 인상률</div>
-                <div className="text-orange-600">{totalSummary.avgAdditional.toFixed(2)}%</div>
+                <div className="text-sm text-gray-600">추가 인상률</div>
+                <div className="text-base font-semibold text-orange-600">{totalSummary.avgAdditional.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-center bg-blue-50">
-                {totalSummary.totalRate.toFixed(2)}%
+                <div className="text-lg font-bold text-blue-700">{totalSummary.totalRate.toFixed(2)}%</div>
               </td>
               <td className="border border-gray-300 px-3 py-2 text-right">
-                {formatKoreanCurrency(Math.round(totalSummary.totalAmount))}
+                <div className="text-base font-semibold">{formatKoreanCurrency(Math.round(totalSummary.totalAmount))}</div>
               </td>
             </tr>
             
@@ -363,28 +363,28 @@ export function GradeSalaryAdjustmentTable({
               return (
                 <tr key={level}>
                   <td className="border border-gray-300 px-3 py-2 text-center">
-                    {level}<br/>
-                    <span className="text-xs text-gray-600">
+                    <div className="text-base font-semibold">{level}</div>
+                    <span className="text-sm text-gray-600">
                       {levelData.headcount.toLocaleString()}명
                     </span>
                   </td>
                   
                   {/* Base-up (고정) */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-xs text-gray-500 mb-1">Base-up</div>
+                    <div className="text-sm text-gray-600 mb-1">Base-up</div>
                     <div className="flex items-center justify-center">
                       <input
                         type="text"
                         value={`${levelRates.baseUp.toFixed(2)}%`}
                         disabled
-                        className="w-16 px-1 py-1 text-center text-xs bg-gray-100 border border-gray-300 rounded"
+                        className="w-20 px-2 py-1.5 text-center text-base bg-gray-100 border border-gray-300 rounded font-medium"
                       />
                     </div>
                   </td>
                   
                   {/* 성과 인상률 */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-xs text-gray-500 mb-1">성과 인상률</div>
+                    <div className="text-sm text-gray-600 mb-1">성과 인상률</div>
                     <div className="flex items-center justify-center">
                       <input
                         type="number"
@@ -393,15 +393,15 @@ export function GradeSalaryAdjustmentTable({
                         step="0.01"
                         min="0"
                         max="10"
-                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                        className="w-16 px-2 py-1.5 text-center text-base border border-gray-300 rounded font-medium"
                       />
-                      <span className="ml-1 text-xs">%</span>
+                      <span className="ml-1 text-base">%</span>
                     </div>
                   </td>
                   
                   {/* 승급 인상률 */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-xs text-gray-500 mb-1">승급 인상률</div>
+                    <div className="text-sm text-gray-600 mb-1">승급 인상률</div>
                     <div className="flex items-center justify-center">
                       <input
                         type="number"
@@ -410,15 +410,15 @@ export function GradeSalaryAdjustmentTable({
                         step="0.01"
                         min="0"
                         max="10"
-                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                        className="w-16 px-2 py-1.5 text-center text-base border border-gray-300 rounded font-medium"
                       />
-                      <span className="ml-1 text-xs">%</span>
+                      <span className="ml-1 text-base">%</span>
                     </div>
                   </td>
                   
                   {/* 승격 인상률 */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-xs text-gray-500 mb-1">승격 인상률</div>
+                    <div className="text-sm text-gray-600 mb-1">승격 인상률</div>
                     <div className="flex items-center justify-center">
                       <input
                         type="number"
@@ -427,15 +427,15 @@ export function GradeSalaryAdjustmentTable({
                         step="0.01"
                         min="0"
                         max="10"
-                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                        className="w-16 px-2 py-1.5 text-center text-base border border-gray-300 rounded font-medium"
                       />
-                      <span className="ml-1 text-xs">%</span>
+                      <span className="ml-1 text-base">%</span>
                     </div>
                   </td>
                   
                   {/* 추가 인상률 */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-xs text-gray-500 mb-1">추가 인상률</div>
+                    <div className="text-sm text-gray-600 mb-1">추가 인상률</div>
                     <div className="flex items-center justify-center">
                       <input
                         type="number"
@@ -445,24 +445,24 @@ export function GradeSalaryAdjustmentTable({
                         min="0"
                         max="10"
                         disabled={!enableAdditionalIncrease}
-                        className={`w-14 px-1 py-1 text-center text-xs border rounded ${
+                        className={`w-16 px-2 py-1.5 text-center text-base border rounded font-medium ${
                           enableAdditionalIncrease 
                             ? 'border-gray-300 bg-white' 
                             : 'border-gray-200 bg-gray-100 text-gray-400'
                         }`}
                       />
-                      <span className="ml-1 text-xs">%</span>
+                      <span className="ml-1 text-base">%</span>
                     </div>
                   </td>
                   
                   {/* 총계 */}
-                  <td className="border border-gray-300 px-3 py-2 text-center bg-blue-50 font-semibold">
-                    {levelTotal.toFixed(2)}%
+                  <td className="border border-gray-300 px-3 py-2 text-center bg-blue-50">
+                    <div className="text-base font-bold text-blue-700">{levelTotal.toFixed(2)}%</div>
                   </td>
                   
                   {/* 총 금액 */}
                   <td className="border border-gray-300 px-3 py-2 text-right">
-                    {formatKoreanCurrency(Math.round(levelAmount))}
+                    <div className="text-base font-medium">{formatKoreanCurrency(Math.round(levelAmount))}</div>
                   </td>
                 </tr>
               )

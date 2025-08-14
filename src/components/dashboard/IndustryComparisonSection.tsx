@@ -121,24 +121,24 @@ export function IndustryComparisonSection({
   
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-lg font-semibold mb-3">동종업계 대비 비교</h2>
+      <h2 className="text-xl font-bold mb-3">동종업계 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="bg-blue-50 rounded-lg p-3 text-center">
-          <p className="text-sm text-gray-600">우리 회사(AI제안)</p>
-          <p className="text-2xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
-          <p className="text-xs text-gray-500">Base-up {formatPercentage(baseUpRate)} + Merit {formatPercentage(meritRate)}</p>
+          <p className="text-base text-gray-700 font-medium">우리 회사(AI제안)</p>
+          <p className="text-3xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
+          <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + Merit {formatPercentage(meritRate)}</p>
         </div>
         <div className="bg-purple-50 rounded-lg p-3 text-center">
-          <p className="text-sm text-gray-600">우리 회사(조정)</p>
-          <p className="text-2xl font-bold text-purple-600">{formatPercentage(weightedAverageRate)}</p>
-          <p className="text-xs text-gray-500">직급별 가중평균</p>
+          <p className="text-base text-gray-700 font-medium">우리 회사(조정)</p>
+          <p className="text-3xl font-bold text-purple-600">{formatPercentage(weightedAverageRate)}</p>
+          <p className="text-sm text-gray-600">직급별 가중평균</p>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
-          <p className="text-sm text-gray-600">C사 평균</p>
-          <p className="text-2xl font-bold text-green-600">{formatPercentage(cCompanyIncrease)}</p>
-          <p className="text-xs text-gray-500">동종업계 기준</p>
+          <p className="text-base text-gray-700 font-medium">C사 평균</p>
+          <p className="text-3xl font-bold text-green-600">{formatPercentage(cCompanyIncrease)}</p>
+          <p className="text-sm text-gray-600">동종업계 기준</p>
         </div>
       </div>
       
@@ -146,7 +146,7 @@ export function IndustryComparisonSection({
       <div className="grid grid-cols-7 gap-3">
         {/* 1열: 인상률 막대 차트 (2칸) */}
         <div className="bg-gray-50 rounded-lg p-3 col-span-2">
-          <h3 className="text-sm font-bold text-gray-800 mb-3">인상률 비교</h3>
+          <h3 className="text-base font-bold text-gray-800 mb-3">인상률 비교</h3>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={increaseComparisonData} margin={{ top: 20, right: 2, left: 2, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
