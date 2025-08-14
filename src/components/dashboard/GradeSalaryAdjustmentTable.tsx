@@ -29,6 +29,8 @@ interface GradeSalaryAdjustmentTableProps {
   employeeData?: EmployeeData // 추후 엑셀에서 import된 데이터
   onRateChange?: (level: string, rates: LevelRates) => void
   onTotalBudgetChange?: (totalBudget: number) => void
+  enableAdditionalIncrease?: boolean  // 추가 인상 활성화 여부
+  onAdditionalBudgetChange?: (additionalBudget: number) => void  // 추가 인상 총액 콜백
 }
 
 // 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
@@ -37,19 +39,19 @@ const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
   levels: {
     'Lv.4': { 
       headcount: 61, 
-      averageSalary: 108426000  // 예시값
+      averageSalary: 108469574  // 실제값
     },
     'Lv.3': { 
       headcount: 475, 
-      averageSalary: 75000000   // 예시값
+      averageSalary: 87599520   // 실제값
     },
     'Lv.2': { 
       headcount: 1506, 
-      averageSalary: 55000000   // 예시값
+      averageSalary: 67376032   // 실제값
     },
     'Lv.1': { 
       headcount: 2634, 
-      averageSalary: 45000000   // 예시값
+      averageSalary: 51977513   // 실제값
     }
   }
 }
@@ -91,13 +93,15 @@ export function GradeSalaryAdjustmentTable({
   meritRate = 2.50,
   employeeData = DEFAULT_EMPLOYEE_DATA,
   onRateChange,
-  onTotalBudgetChange
+  onTotalBudgetChange,
+  enableAdditionalIncrease = true,
+  onAdditionalBudgetChange
 }: GradeSalaryAdjustmentTableProps) {
   
   // 직급별 인상률 상태 관리
   const [rates, setRates] = useState<{ [key: string]: LevelRates }>(DEFAULT_RATES)
   
-  // AI 제안값이 변경되면 merit 기본값 업데이트
+  // AI 제안값이 변경되거나 추가 인상 활성화 상태가 변경되면 업데이트
   useEffect(() => {
     setRates(prev => {
       const updated = { ...prev }
@@ -105,11 +109,12 @@ export function GradeSalaryAdjustmentTable({
         updated[level] = {
           ...updated[level],
           baseUp: baseUpRate, // Base-up은 항상 AI 제안값으로 고정
+          additional: enableAdditionalIncrease ? updated[level].additional : 0 // 비활성화시 0으로 리셋
         }
       })
       return updated
     })
-  }, [baseUpRate, meritRate])
+  }, [baseUpRate, meritRate, enableAdditionalIncrease])
   
   // 직급별 총계 계산 (① + ③)
   const calculateLevelTotal = (levelRates: LevelRates): number => {
@@ -195,6 +200,20 @@ export function GradeSalaryAdjustmentTable({
       onTotalBudgetChange(totalSummary.totalAmount)
     }
   }, [totalSummary.totalAmount, onTotalBudgetChange])
+  
+  // 추가 인상 총액 계산 및 상위 컴포넌트에 알림
+  useEffect(() => {
+    if (onAdditionalBudgetChange) {
+      let additionalTotal = 0
+      Object.entries(rates).forEach(([level, rate]) => {
+        const data = employeeData.levels[level]
+        if (data) {
+          additionalTotal += data.headcount * data.averageSalary * (rate.additional / 100)
+        }
+      })
+      onAdditionalBudgetChange(additionalTotal)
+    }
+  }, [rates, employeeData, onAdditionalBudgetChange])
   
   const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   
@@ -371,7 +390,12 @@ export function GradeSalaryAdjustmentTable({
                         step="0.01"
                         min="0"
                         max="10"
-                        className="w-14 px-1 py-1 text-center text-xs border border-gray-300 rounded"
+                        disabled={!enableAdditionalIncrease}
+                        className={`w-14 px-1 py-1 text-center text-xs border rounded ${
+                          enableAdditionalIncrease 
+                            ? 'border-gray-300 bg-white' 
+                            : 'border-gray-200 bg-gray-100 text-gray-400'
+                        }`}
                       />
                       <span className="ml-1 text-xs">%</span>
                     </div>
@@ -393,11 +417,6 @@ export function GradeSalaryAdjustmentTable({
         </table>
       </div>
       
-      <div className="mt-3 text-xs text-gray-500">
-        <p>* Base-up은 AI 제안값으로 고정되며, 나머지 인상률은 자유롭게 조정 가능합니다.</p>
-        <p>* 총계 = ① AI 적정 인상률(Base-up + 성과) + ③ 추가 인상 (승급/승격 제외)</p>
-        <p>* 추후 엑셀 파일 업로드를 통해 인원 및 급여 데이터를 업데이트할 수 있습니다.</p>
-      </div>
     </div>
   )
 }

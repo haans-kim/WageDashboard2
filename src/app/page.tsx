@@ -43,6 +43,9 @@ export default function Home() {
     indirect: 0
   })
   
+  // 추가 인상 총액 상태 (GradeSalaryAdjustmentTable에서 계산)
+  const [calculatedAdditionalBudget, setCalculatedAdditionalBudget] = useState(0)
+  
   // 시나리오 관리
   const {
     scenarios,
@@ -237,7 +240,7 @@ export default function Home() {
             levelStatistics={data?.levelStatistics || []}
             promotionBudgets={promotionBudgets}
             onPromotionBudgetChange={updatePromotionBudget}
-            additionalBudget={additionalBudget}
+            additionalBudget={calculatedAdditionalBudget} // 자동 계산된 값 사용
             onAdditionalBudgetChange={updateAdditionalBudget}
             enableAdditionalIncrease={enableAdditionalIncrease}
             onEnableAdditionalIncreaseChange={setEnableAdditionalIncrease}
@@ -255,6 +258,8 @@ export default function Home() {
               console.log('Total budget changed:', totalBudget)
               // 필요시 다른 컴포넌트에 예산 정보 전달
             }}
+            enableAdditionalIncrease={enableAdditionalIncrease}
+            onAdditionalBudgetChange={setCalculatedAdditionalBudget}
           />
         </div>
         

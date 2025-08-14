@@ -232,15 +232,15 @@ export function BudgetUtilizationDetail({
                 <input
                   type="number"
                   value={Math.round(enableAdditionalIncrease ? additionalBudget : 0)}
-                  onChange={(e) => onAdditionalBudgetChange?.(parseFloat(e.target.value || '0'))}
                   className={`w-32 px-2 py-1.5 text-right text-sm font-bold border rounded ${
                     enableAdditionalIncrease 
-                      ? 'text-purple-600 border-purple-300 bg-white' 
+                      ? 'text-purple-600 border-purple-300 bg-purple-50' 
                       : 'text-gray-400 border-gray-200 bg-gray-50'
                   }`}
                   placeholder="0"
                   step="1"
-                  disabled={!enableAdditionalIncrease}
+                  disabled={true}  // 항상 읽기 전용
+                  readOnly={true}  // 읽기 전용 명시
                 />
                 <span className="text-sm text-gray-600">원</span>
               </div>
