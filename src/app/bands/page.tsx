@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PayBandCard } from '@/components/band/PayBandCard'
+import { ExcelUploadButton } from '@/components/ExcelUploadButton'
+import { SimpleExportButton } from '@/components/ExportButton'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { BandName } from '@/types/band'
 
@@ -173,6 +175,29 @@ export default function BandDashboard() {
 
   return (
     <main className="min-h-screen bg-gray-100">
+      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2">
+            <ExcelUploadButton 
+              onUploadSuccess={() => {
+                fetchBandData()
+              }}
+              isNavigation={true}
+            />
+            <SimpleExportButton 
+              data={{
+                bands: bands,
+                summary: summary,
+                initialBaseUp: initialBaseUp,
+                initialMerit: initialMerit
+              }}
+              isNavigation={true}
+            />
+          </div>
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 py-6">
 
         {/* 상단 요약 패널 */}

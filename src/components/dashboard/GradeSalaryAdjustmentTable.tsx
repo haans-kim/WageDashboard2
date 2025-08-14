@@ -53,7 +53,7 @@ const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
       averageSalary: 67376032   // 실제값
     },
     'Lv.1': { 
-      headcount: 2634, 
+      headcount: 2883, 
       averageSalary: 51977513   // 실제값
     }
   }
@@ -184,7 +184,8 @@ export function GradeSalaryAdjustmentTable({
       totalRate,
       totalAmount
     }
-  }, [rates, employeeData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates])
   
   // 인상률 변경 핸들러
   const handleRateChange = (level: string, field: keyof LevelRates, value: string) => {
@@ -226,7 +227,8 @@ export function GradeSalaryAdjustmentTable({
       })
       onAdditionalBudgetChange(additionalTotal)
     }
-  }, [rates, employeeData, onAdditionalBudgetChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates, onAdditionalBudgetChange])
   
   // 직급별 총 인상률 및 가중평균 계산 및 상위 컴포넌트에 알림
   useEffect(() => {
@@ -248,7 +250,8 @@ export function GradeSalaryAdjustmentTable({
       const weightedAverage = totalHeadcount > 0 ? weightedSum / totalHeadcount : 0
       onLevelTotalRatesChange(levelTotalRates, weightedAverage)
     }
-  }, [rates, employeeData]) // onLevelTotalRatesChange를 의존성에서 제거
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates]) // employeeData를 의존성에서 제거
   
   // 성과인상률 가중평균 계산 및 상위 컴포넌트에 알림
   useEffect(() => {
@@ -267,7 +270,8 @@ export function GradeSalaryAdjustmentTable({
       const meritWeightedAverage = totalHeadcount > 0 ? meritWeightedSum / totalHeadcount : 0
       onMeritWeightedAverageChange(meritWeightedAverage)
     }
-  }, [rates, employeeData]) // onMeritWeightedAverageChange를 의존성에서 제거
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates]) // employeeData를 의존성에서 제거
   
   const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   

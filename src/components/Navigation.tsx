@@ -41,8 +41,8 @@ export function Navigation({ children }: NavigationProps) {
               ))}
             </div>
           </div>
-          {/* 우측 버튼 영역 - 대시보드 페이지에서만 표시 */}
-          {pathname === '/' && children && (
+          {/* 우측 버튼 영역 - 대시보드와 Pay Band 페이지에서 표시 */}
+          {(pathname === '/' || pathname === '/bands') && children && (
             <div className="flex items-center gap-2">
               {children}
             </div>

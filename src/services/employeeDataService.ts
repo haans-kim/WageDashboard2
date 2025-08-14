@@ -13,6 +13,13 @@ import {
 } from '@/lib/bandDataGenerator'
 
 let cachedEmployeeData: EmployeeRecord[] | null = null
+let cachedAISettings: {
+  baseUpPercentage: number
+  meritIncreasePercentage: number
+  totalPercentage: number
+  minRange: number
+  maxRange: number
+} | null = null
 
 /**
  * 엑셀 파일에서 직원 데이터 읽기
@@ -23,8 +30,27 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
       // 업로드된 파일 처리
       const arrayBuffer = await file.arrayBuffer()
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-      const sheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[sheetName]
+      
+      // AI설정 시트 읽기
+      if (workbook.SheetNames.includes('AI설정')) {
+        const aiSheet = workbook.Sheets['AI설정']
+        const aiData = XLSX.utils.sheet_to_json(aiSheet)
+        
+        cachedAISettings = {
+          baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
+          meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
+          totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
+          minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
+          maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+        }
+      }
+      
+      // 직원 데이터 읽기 (직원기본정보 시트 우선, 없으면 첫 번째 시트)
+      const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
+        ? '직원기본정보' 
+        : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+      
+      const worksheet = workbook.Sheets[employeeSheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
       
       const employees = convertFromExcelFormat(jsonData)
@@ -54,6 +80,19 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
 }
 
 /**
+ * AI 설정 가져오기
+ */
+export function getAISettings() {
+  return cachedAISettings || {
+    baseUpPercentage: 3.2,
+    meritIncreasePercentage: 2.5,
+    totalPercentage: 5.7,
+    minRange: 5.7,
+    maxRange: 5.9
+  }
+}
+
+/**
  * 직급별 통계 계산 (대시보드용)
  */
 export async function getLevelStatistics() {
@@ -74,7 +113,7 @@ export async function getLevelStatistics() {
       minSalary: levelEmployees.length > 0 ? Math.min(...levelEmployees.map(e => e.currentSalary)) : 0,
       maxSalary: levelEmployees.length > 0 ? Math.max(...levelEmployees.map(e => e.currentSalary)) : 0
     }
-  }).filter(stat => stat.level !== '신입') // 대시보드는 신입 제외
+  }).filter(stat => stat.employeeCount > 0) // 인원이 0인 직급 제외
 }
 
 /**
@@ -157,8 +196,8 @@ export async function getDashboardSummary() {
   const totalSalary = employees.reduce((sum, e) => sum + e.currentSalary, 0)
   const avgSalary = totalSalary / employees.length
   
-  // AI 제안 인상률 (고정값)
-  const aiRecommendation = {
+  // AI 제안 인상률 (캐시된 값 또는 기본값)
+  const aiRecommendation = cachedAISettings || {
     baseUpPercentage: 3.2,
     meritIncreasePercentage: 2.5,
     totalPercentage: 5.7,

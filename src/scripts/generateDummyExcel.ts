@@ -25,7 +25,44 @@ const bandStats = calculateBandStatistics(employees)
 // 워크북 생성
 const wb = XLSX.utils.book_new()
 
-// 1. 직원 데이터 시트
+// 1. AI설정 시트 (가장 먼저 추가)
+const aiSettingsData = [
+  {
+    '항목': 'Base-up(%)',
+    '값': 3.2,
+    '설명': 'AI 제안 기본 인상률'
+  },
+  {
+    '항목': '성과인상률(%)',
+    '값': 2.5,
+    '설명': 'AI 제안 성과 인상률'
+  },
+  {
+    '항목': '총인상률(%)',
+    '값': 5.7,
+    '설명': 'AI 제안 총 인상률'
+  },
+  {
+    '항목': '최소범위(%)',
+    '값': 5.7,
+    '설명': '권장 인상률 최소값'
+  },
+  {
+    '항목': '최대범위(%)',
+    '값': 5.9,
+    '설명': '권장 인상률 최대값'
+  }
+]
+
+const aiSettingsSheet = XLSX.utils.json_to_sheet(aiSettingsData)
+aiSettingsSheet['!cols'] = [
+  { wch: 20 }, // 항목
+  { wch: 10 }, // 값
+  { wch: 30 }  // 설명
+]
+XLSX.utils.book_append_sheet(wb, aiSettingsSheet, 'AI설정')
+
+// 2. 직원 기본정보 시트
 const employeeSheet = XLSX.utils.json_to_sheet(excelData)
 
 // 컬럼 너비 자동 조정
@@ -38,17 +75,29 @@ const columnWidths = [
   { wch: 8 },  // 직책
   { wch: 12 }, // 입사일
   { wch: 15 }, // 현재연봉
-  { wch: 10 }, // Base-up(%)
-  { wch: 12 }, // 성과인상률(%)
-  { wch: 12 }, // 승진인상률(%)
-  { wch: 10 }, // 총인상률(%)
-  { wch: 15 }, // 인상후연봉
 ]
 employeeSheet['!cols'] = columnWidths
 
-XLSX.utils.book_append_sheet(wb, employeeSheet, '직원데이터')
+XLSX.utils.book_append_sheet(wb, employeeSheet, '직원기본정보')
 
-// 2. 직급별 요약 시트
+// 3. 직급별기준 시트 (새로 추가)
+const levelStandardsData = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => ({
+  '직급': level,
+  '기준Base-up(%)': 3.2,
+  '기준성과인상률(%)': 2.5,
+  '설명': `${level} 기본 인상률 설정`
+}))
+
+const levelStandardsSheet = XLSX.utils.json_to_sheet(levelStandardsData)
+levelStandardsSheet['!cols'] = [
+  { wch: 10 }, // 직급
+  { wch: 15 }, // 기준Base-up(%)
+  { wch: 18 }, // 기준성과인상률(%)
+  { wch: 30 }  // 설명
+]
+XLSX.utils.book_append_sheet(wb, levelStandardsSheet, '직급별기준')
+
+// 4. 직급별 요약 시트
 const levelSummaryData = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1', '신입'].map(level => {
   const levelEmployees = employees.filter(e => e.level === level)
   const avgSalary = levelEmployees.length > 0
@@ -76,7 +125,7 @@ levelSheet['!cols'] = [
 ]
 XLSX.utils.book_append_sheet(wb, levelSheet, '직급별요약')
 
-// 3. 직군별 요약 시트
+// 5. 직군별 요약 시트
 const bandSummaryData = Object.values(bandStats).map((band: any) => ({
   '직군': band.name,
   '인원수': band.totalHeadcount,
@@ -103,7 +152,7 @@ bandSheet['!cols'] = [
 ]
 XLSX.utils.book_append_sheet(wb, bandSheet, '직군별요약')
 
-// 4. 부서별 요약 시트
+// 6. 부서별 요약 시트 (선택적)
 const departmentData = Array.from(
   new Set(employees.map(e => e.department))
 ).map(dept => {

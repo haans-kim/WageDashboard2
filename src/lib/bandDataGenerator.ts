@@ -12,11 +12,6 @@ export interface EmployeeRecord {
   position?: string           // 직책
   hireDate: string            // 입사일
   currentSalary: number       // 현재 연봉
-  baseUpRate?: number         // Base-up 인상률
-  meritRate?: number          // 성과 인상률
-  promotionRate?: number      // 승진 인상률
-  totalIncreaseRate?: number  // 총 인상률
-  newSalary?: number          // 인상 후 연봉
 }
 
 // 직군 정의
@@ -36,35 +31,35 @@ export const LEVEL_INFO = {
   'Lv.4': { 
     headcount: 61, 
     avgSalary: 108469574,
-    ratio: 0.012,
+    ratio: 0.0124,
     minSalary: 95000000,
     maxSalary: 130000000
   },
   'Lv.3': { 
     headcount: 475, 
     avgSalary: 87599520,
-    ratio: 0.096,
+    ratio: 0.0965,
     minSalary: 75000000,
     maxSalary: 100000000
   },
   'Lv.2': { 
     headcount: 1506, 
     avgSalary: 67376032,
-    ratio: 0.306,
+    ratio: 0.3058,
     minSalary: 55000000,
     maxSalary: 80000000
   },
   'Lv.1': { 
-    headcount: 2634, 
+    headcount: 2883, 
     avgSalary: 51977513,
-    ratio: 0.535,
+    ratio: 0.5853,
     minSalary: 40000000,
     maxSalary: 65000000
   },
   '신입': { 
-    headcount: 249, 
+    headcount: 0, 
     avgSalary: 38000000,
-    ratio: 0.051,
+    ratio: 0,
     minSalary: 35000000,
     maxSalary: 42000000
   }
@@ -204,17 +199,8 @@ export function generateEmployeeData(totalCount: number = 4925): EmployeeRecord[
             levelInfo.minSalary,
             levelInfo.maxSalary,
             band.salaryMultiplier
-          ),
-          baseUpRate: 3.2,
-          meritRate: 2.5,
-          promotionRate: 0,
-          totalIncreaseRate: 5.7
+          )
         }
-        
-        // 인상 후 연봉 계산
-        employee.newSalary = Math.round(
-          employee.currentSalary * (1 + (employee.totalIncreaseRate || 0) / 100)
-        )
         
         employees.push(employee)
         employeeCounter++
@@ -291,12 +277,7 @@ export function convertToExcelFormat(employees: EmployeeRecord[]) {
     '직급': emp.level,
     '직책': emp.position || '',
     '입사일': emp.hireDate,
-    '현재연봉': emp.currentSalary,
-    'Base-up(%)': emp.baseUpRate || 0,
-    '성과인상률(%)': emp.meritRate || 0,
-    '승진인상률(%)': emp.promotionRate || 0,
-    '총인상률(%)': emp.totalIncreaseRate || 0,
-    '인상후연봉': emp.newSalary || emp.currentSalary
+    '현재연봉': emp.currentSalary
   }))
 }
 
@@ -310,11 +291,6 @@ export function convertFromExcelFormat(excelData: any[]): EmployeeRecord[] {
     level: row['직급'] || '',
     position: row['직책'] || undefined,
     hireDate: row['입사일'] || '',
-    currentSalary: Number(row['현재연봉']) || 0,
-    baseUpRate: Number(row['Base-up(%)']) || 0,
-    meritRate: Number(row['성과인상률(%)']) || 0,
-    promotionRate: Number(row['승진인상률(%)']) || 0,
-    totalIncreaseRate: Number(row['총인상률(%)']) || 0,
-    newSalary: Number(row['인상후연봉']) || 0
+    currentSalary: Number(row['현재연봉']) || 0
   }))
 }

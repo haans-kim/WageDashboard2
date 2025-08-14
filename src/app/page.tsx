@@ -10,6 +10,7 @@ import { BudgetUtilizationDetail } from '@/components/dashboard/BudgetUtilizatio
 import { GradeSalaryAdjustmentTable } from '@/components/dashboard/GradeSalaryAdjustmentTable'
 import { IndustryComparisonSection } from '@/components/dashboard/IndustryComparisonSection'
 import { ExportButton, SimpleExportButton } from '@/components/ExportButton'
+import { ExcelUploadButton } from '@/components/ExcelUploadButton'
 import { prepareExportData } from '@/lib/exportHelpers'
 
 export default function Home() {
@@ -177,6 +178,22 @@ export default function Home() {
     }
   }
   
+  // GradeSalaryAdjustmentTable용 직원 데이터
+  const employeeDataForTable = useMemo(() => {
+    if (!data?.levelStatistics) return undefined
+    
+    return {
+      totalCount: data.summary.totalEmployees,
+      levels: data.levelStatistics.reduce((acc, level) => ({
+        ...acc,
+        [level.level]: {
+          headcount: level.employeeCount,
+          averageSalary: parseInt(level.averageSalary)
+        }
+      }), {})
+    }
+  }, [data?.levelStatistics, data?.summary?.totalEmployees])
+  
   // 내보내기용 데이터 준비
   const exportData = useMemo(() => {
     const currentState = {
@@ -260,6 +277,10 @@ export default function Home() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center h-12 gap-2">
+            <ExcelUploadButton 
+              onUploadSuccess={refresh}
+              isNavigation={true}
+            />
             <ScenarioManager
               scenarios={scenarios}
               activeScenarioId={activeScenarioId}
@@ -323,7 +344,7 @@ export default function Home() {
             {/* AI 제안 적정인상률 */}
             <AIRecommendationCard 
               data={data?.aiRecommendation || null} 
-              totalEmployees={4925}
+              totalEmployees={data?.summary?.totalEmployees || 0}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
               meritWeightedAverage={meritWeightedAverage}
@@ -364,8 +385,8 @@ export default function Home() {
               totalBudget={30000000000}
               baseUpRate={baseUpRate}
               meritRate={meritRate}
-              totalEmployees={4925}
-              averageSalary={57465000}
+              totalEmployees={data?.summary?.totalEmployees || 0}
+              averageSalary={data?.summary?.averageSalary || 0}
               levelRates={levelRates}
               levelStatistics={data?.levelStatistics || []}
               customTotalBudget={totalBudget}
@@ -379,8 +400,8 @@ export default function Home() {
             baseUpRate={baseUpRate}
             meritRate={meritRate}
             meritWeightedAverage={meritWeightedAverage}
-            totalEmployees={4925}
-            totalSalaryBase={283034052564}
+            totalEmployees={data?.summary?.totalEmployees || 0}
+            totalSalaryBase={data?.summary?.totalPayroll || 0}
             totalBudget={totalBudget || 30000000000} // 원 단위 그대로 사용
             levelStatistics={data?.levelStatistics || []}
             promotionBudgets={promotionBudgets}
@@ -399,6 +420,7 @@ export default function Home() {
             baseUpRate={baseUpRate}
             meritRate={meritRate}
             initialRates={detailedLevelRates}
+            employeeData={employeeDataForTable}
             onRateChange={updateLevelRate}
             onTotalBudgetChange={(totalBudget) => {
               console.log('Total budget changed:', totalBudget)

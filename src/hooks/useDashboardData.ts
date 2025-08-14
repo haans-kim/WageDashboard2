@@ -5,6 +5,8 @@ interface DashboardData {
     totalEmployees: number
     fiscalYear: number
     lastUpdated: string
+    averageSalary?: number
+    totalPayroll?: number
   }
   aiRecommendation: {
     baseUpPercentage: number
