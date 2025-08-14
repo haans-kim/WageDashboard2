@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useMemo } from 'react'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useScenarios } from '@/hooks/useScenarios'
 import { ScenarioManager } from '@/components/ScenarioManager'
@@ -10,7 +9,8 @@ import { BudgetResourceCard } from '@/components/dashboard/BudgetResourceCard'
 import { BudgetUtilizationDetail } from '@/components/dashboard/BudgetUtilizationDetail'
 import { GradeSalaryAdjustmentTable } from '@/components/dashboard/GradeSalaryAdjustmentTable'
 import { IndustryComparisonSection } from '@/components/dashboard/IndustryComparisonSection'
-import { SimpleExportButton } from '@/components/ExportButton'
+import { ExportButton, SimpleExportButton } from '@/components/ExportButton'
+import { prepareExportData } from '@/lib/exportHelpers'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
@@ -176,6 +176,48 @@ export default function Home() {
       }
     }
   }
+  
+  // 내보내기용 데이터 준비
+  const exportData = useMemo(() => {
+    const currentState = {
+      baseUpRate,
+      meritRate,
+      totalBudget,
+      levelTotalRates,
+      weightedAverageRate,
+      meritWeightedAverage
+    }
+    
+    // 현재 활성 시나리오 이름 가져오기
+    const activeScenario = scenarios.find(s => s.id === activeScenarioId)
+    const scenarioName = activeScenario?.name || '현재 설정'
+    
+    return prepareExportData(
+      currentState,
+      budgetDetails,
+      data?.levelStatistics,
+      detailedLevelRates,
+      scenarioName
+    )
+  }, [
+    baseUpRate,
+    meritRate,
+    totalBudget,
+    levelTotalRates,
+    weightedAverageRate,
+    meritWeightedAverage,
+    budgetDetails,
+    detailedLevelRates,
+    data?.levelStatistics,
+    scenarios,
+    activeScenarioId
+  ])
+  
+  // 현재 시나리오 이름
+  const currentScenarioName = useMemo(() => {
+    const activeScenario = scenarios.find(s => s.id === activeScenarioId)
+    return activeScenario?.name || '현재 설정'
+  }, [scenarios, activeScenarioId])
 
   if (loading) {
     return (
@@ -215,21 +257,14 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-200">
       <div className="container mx-auto px-3 py-4">
-        <header className="mb-4 flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">인건비 대시보드</h1>
-            <p className="text-sm text-gray-600 mt-1">실시간 인상률 조정 및 인건비 배분 최적화</p>
+        <header className="mb-2">
+          <div className="flex justify-between items-center mb-3">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">인건비 대시보드</h1>
+              <p className="text-sm text-gray-600 mt-1">실시간 인상률 조정 및 인건비 배분 최적화</p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Link
-              href={`/bands?baseUp=${baseUpRate}&merit=${meritRate}`}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              Pay Band 분석
-            </Link>
+          <div className="flex gap-2 justify-end mb-2">
             <ScenarioManager
               scenarios={scenarios}
               activeScenarioId={activeScenarioId}
@@ -238,7 +273,6 @@ export default function Home() {
               onDelete={deleteScenario}
               onRename={renameScenario}
             />
-            <SimpleExportButton type="summary" />
             <button
               onClick={() => {
                 // API 데이터 새로고침
@@ -272,10 +306,17 @@ export default function Home() {
                   'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
                 })
               }}
-              className="px-3 py-1.5 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+              className="px-5 py-2.5 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2 font-medium"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               초기화
             </button>
+            <SimpleExportButton 
+              exportData={exportData}
+              scenarioName={currentScenarioName}
+            />
           </div>
         </header>
         
