@@ -50,23 +50,23 @@ export function AIRecommendationCard({
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}
       <div className="grid grid-cols-2 gap-6">
         {/* 좌측: 최적 인상률 */}
-        <div className="bg-blue-50 rounded-lg p-6">
-          <div className="text-center">
-            <p className="text-base font-medium text-gray-700 mb-3">최적 인상률</p>
-            <p className="text-5xl font-bold text-blue-600 font-tabular">
+        <div className="bg-blue-50 rounded-lg p-4 flex items-center">
+          <div className="text-center w-full">
+            <p className="text-base font-medium text-gray-700 mb-2">최적 인상률</p>
+            <p className="text-4xl font-bold text-blue-600 font-tabular">
               {formatPercentage(displayTotal)}
             </p>
-            <p className="text-sm text-gray-500 mt-3">
+            <p className="text-sm text-gray-500 mt-2">
               Range: {formatPercentage(5.7)}~{formatPercentage(5.9)}
             </p>
           </div>
         </div>
         
         {/* 우측: Base-up과 성과인상률 */}
-        <div className="space-y-4">
+        <div className="flex flex-col justify-between h-full">
           {/* Base-up */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center">
+          <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
+            <div className="flex justify-between items-center w-full">
               <span className="text-base text-gray-700 font-medium">Base-up</span>
               <span className="text-2xl font-bold text-purple-600 font-tabular">
                 {formatPercentage(displayBaseUp)}
@@ -74,9 +74,11 @@ export function AIRecommendationCard({
             </div>
           </div>
           
+          <div className="h-4"></div>
+          
           {/* 성과인상률 */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center">
+          <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
+            <div className="flex justify-between items-center w-full">
               <span className="text-base text-gray-700 font-medium">성과인상률</span>
               <span className="text-2xl font-bold text-pink-600 font-tabular">
                 {formatPercentage(displayMerit)}

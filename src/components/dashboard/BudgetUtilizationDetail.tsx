@@ -106,7 +106,7 @@ export function BudgetUtilizationDetail({
       <div className="grid grid-cols-1 gap-4">
         {/* 카드 1: AI 적정 인상률 예산 */}
         <div className="bg-blue-50 rounded-lg p-4 relative">
-          <div className="absolute -top-2 -left-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+          <div className="absolute -top-1 -left-1 w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
             ①
           </div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2">
@@ -136,7 +136,7 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 2: 승급/승진 인상률 예산 */}
         <div className="bg-green-50 rounded-lg p-4 relative">
-          <div className="absolute -top-2 -left-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+          <div className="absolute -top-1 -left-1 w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
             ②
           </div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2">
@@ -196,7 +196,7 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 3: 추가 인상 가능 범위 */}
         <div className="bg-purple-50 rounded-lg p-4 relative">
-          <div className="absolute -top-2 -left-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+          <div className="absolute -top-1 -left-1 w-7 h-7 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
             ③
           </div>
           <div className="flex items-center justify-between mb-3 mt-2">
@@ -250,7 +250,7 @@ export function BudgetUtilizationDetail({
         
         {/* 카드 4: 간접비용 Impact */}
         <div className="bg-orange-50 rounded-lg p-4 relative">
-          <div className="absolute -top-2 -left-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-base">
+          <div className="absolute -top-1 -left-1 w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
             ④
           </div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3 mt-2">

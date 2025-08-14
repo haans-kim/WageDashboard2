@@ -37,8 +37,9 @@ export function BudgetResourceCard({
   budgetDetails
 }: BudgetResourceCardProps) {
   
+  // customTotalBudget이 억원 단위가 아닌 원 단위로 처리
   const actualBudget = customTotalBudget !== null && customTotalBudget !== undefined 
-    ? customTotalBudget * 100000000 
+    ? (customTotalBudget < 1000000 ? customTotalBudget * 100000000 : customTotalBudget) // 1백만 미만이면 억원으로 간주, 이상이면 원으로 간주
     : totalBudget
   
   // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
@@ -81,18 +82,18 @@ export function BudgetResourceCard({
             <span className="text-base text-gray-700 font-medium">총 예산</span>
             <div className="flex items-center gap-2">
               {onTotalBudgetChange ? (
-                <div className="flex items-center gap-1 bg-white rounded-lg border-2 border-blue-300 px-4 py-2">
+                <div className="flex items-center gap-1 bg-white rounded-lg border-2 border-blue-300 px-3 py-1.5">
                   <input
-                    type="number"
-                    value={customTotalBudget || actualBudget / 100000000}
+                    type="text"
+                    value={customTotalBudget ? customTotalBudget.toLocaleString('ko-KR') : actualBudget.toLocaleString('ko-KR')}
                     onChange={(e) => {
-                      const value = e.target.value
+                      const value = e.target.value.replace(/,/g, '')
                       onTotalBudgetChange(value ? parseFloat(value) : null)
                     }}
-                    className="w-28 text-2xl font-bold text-blue-600 outline-none text-right"
+                    className="w-44 text-lg font-bold text-blue-600 outline-none text-right"
                     placeholder="0"
                   />
-                  <span className="text-base font-medium text-gray-600">억원</span>
+                  <span className="text-sm font-medium text-gray-600">원</span>
                 </div>
               ) : (
                 <span className="text-xl font-bold text-gray-900">
@@ -125,7 +126,7 @@ export function BudgetResourceCard({
           <div className="text-sm font-semibold text-gray-700 mb-3">고정급 인상</div>
           <div className="space-y-2">
             <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
                 ①
               </div>
               <span className="text-sm text-gray-600">AI 적정 인상률</span>
@@ -137,7 +138,7 @@ export function BudgetResourceCard({
               </div>
             </div>
             <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
                 ②
               </div>
               <span className="text-sm text-gray-600">승급/승진 인상</span>
@@ -149,7 +150,7 @@ export function BudgetResourceCard({
               </div>
             </div>
             <div className="flex justify-between items-center relative pl-7">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
                 ③
               </div>
               <span className="text-sm text-gray-600">추가 인상</span>
@@ -165,7 +166,7 @@ export function BudgetResourceCard({
         
         {/* 간접비용 인상 섹션 */}
         <div className="bg-orange-50 rounded-lg p-4 relative pl-9">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white">
             ④
           </div>
           <div className="flex justify-between items-center">
