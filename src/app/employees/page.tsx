@@ -7,9 +7,11 @@ import { SimpleExportButton } from '@/components/ExportButton'
 export default function EmployeesPage() {
   const [selectedLevel, setSelectedLevel] = useState<string>('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('')
+  const [selectedRating, setSelectedRating] = useState<string>('')
 
   const levels = ['', 'Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
   const departments = ['', '영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
+  const ratings = ['', 'S', 'A', 'B', 'C']
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -57,12 +59,29 @@ export default function EmployeesPage() {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                평가등급
+              </label>
+              <select
+                value={selectedRating}
+                onChange={(e) => setSelectedRating(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {ratings.map(rating => (
+                  <option key={rating} value={rating}>
+                    {rating ? `${rating}등급` : '전체'}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         <EmployeeTable 
           level={selectedLevel} 
           department={selectedDepartment}
+          performanceRating={selectedRating}
         />
       </div>
     </main>

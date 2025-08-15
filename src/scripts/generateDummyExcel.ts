@@ -75,6 +75,7 @@ const columnWidths = [
   { wch: 8 },  // 직책
   { wch: 12 }, // 입사일
   { wch: 15 }, // 현재연봉
+  { wch: 10 }, // 평가등급
 ]
 employeeSheet['!cols'] = columnWidths
 

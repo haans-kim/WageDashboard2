@@ -24,9 +24,10 @@ interface Employee {
 interface EmployeeTableProps {
   level?: string
   department?: string
+  performanceRating?: string
 }
 
-export function EmployeeTable({ level, department }: EmployeeTableProps) {
+export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -35,7 +36,7 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
 
   useEffect(() => {
     fetchEmployees()
-  }, [page, level, department, search])
+  }, [page, level, department, performanceRating, search])
 
   const fetchEmployees = async () => {
     setLoading(true)
@@ -45,6 +46,7 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
         limit: '10',
         ...(level && { level }),
         ...(department && { department }),
+        ...(performanceRating && { performanceRating }),
         ...(search && { search }),
       })
 
@@ -68,9 +70,10 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
   }
 
   const ratingColors = {
-    'S': 'bg-red-100 text-red-700',
+    'S': 'bg-emerald-100 text-emerald-700',
     'A': 'bg-blue-100 text-blue-700',
-    'B': 'bg-green-100 text-green-700',
+    'B': 'bg-amber-100 text-amber-700',
+    'C': 'bg-red-100 text-red-700',
   }
 
   return (

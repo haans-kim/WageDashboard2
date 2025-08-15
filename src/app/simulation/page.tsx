@@ -13,10 +13,18 @@ export default function SimulationPage() {
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<any>(null)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  
+  // 평가등급별 Merit 가중치
+  const [performanceWeights, setPerformanceWeights] = useState({
+    S: 1.5,
+    A: 1.2,
+    B: 1.0,
+    C: 0.8
+  })
 
   const levels = ['', 'Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
   const departments = ['', '영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
-  const ratings = ['', 'S', 'A', 'B']
+  const ratings = ['', 'S', 'A', 'B', 'C']
 
   const runSimulation = async () => {
     setLoading(true)
@@ -27,6 +35,7 @@ export default function SimulationPage() {
         body: JSON.stringify({
           baseUpPercentage: baseUp,
           meritIncreasePercentage: merit,
+          performanceWeights,
           filters: {
             ...(selectedLevel && { level: selectedLevel }),
             ...(selectedDepartment && { department: selectedDepartment }),
@@ -178,8 +187,41 @@ export default function SimulationPage() {
               </div>
             </div>
           </div>
+          
+          {/* 평가등급별 Merit 가중치 설정 */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="text-lg font-medium mb-4">평가등급별 Merit 가중치 조정</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {['S', 'A', 'B', 'C'].map((grade) => (
+                <div key={grade} className="bg-white p-3 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-700">{grade}등급</span>
+                    <span className="text-sm font-bold text-primary-600">
+                      {performanceWeights[grade as keyof typeof performanceWeights].toFixed(1)}x
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    value={performanceWeights[grade as keyof typeof performanceWeights]}
+                    onChange={(e) => setPerformanceWeights(prev => ({
+                      ...prev,
+                      [grade]: parseFloat(e.target.value)
+                    }))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0.5x</span>
+                    <span>2.0x</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end mt-6">
             <button
               onClick={runSimulation}
               disabled={loading}

@@ -12,6 +12,7 @@ export interface EmployeeRecord {
   position?: string           // 직책
   hireDate: string            // 입사일
   currentSalary: number       // 현재 연봉
+  performanceRating?: 'S' | 'A' | 'B' | 'C'  // 평가등급
 }
 
 // 직군 정의
@@ -183,6 +184,12 @@ export function generateEmployeeData(totalCount: number = 4925): EmployeeRecord[
         hireDate.setMonth(Math.floor(Math.random() * 12))
         hireDate.setDate(Math.floor(Math.random() * 28) + 1)
         
+        // 평가등급 분포 생성 (S:10%, A:30%, B:50%, C:10%)
+        const performanceRand = Math.random()
+        const performanceRating = performanceRand < 0.1 ? 'S' :
+                                  performanceRand < 0.4 ? 'A' :
+                                  performanceRand < 0.9 ? 'B' : 'C'
+        
         const employee: EmployeeRecord = {
           employeeId: `EMP${String(employeeCounter).padStart(5, '0')}`,
           name: `직원${employeeCounter}`,
@@ -199,7 +206,8 @@ export function generateEmployeeData(totalCount: number = 4925): EmployeeRecord[
             levelInfo.minSalary,
             levelInfo.maxSalary,
             band.salaryMultiplier
-          )
+          ),
+          performanceRating
         }
         
         employees.push(employee)
@@ -277,7 +285,8 @@ export function convertToExcelFormat(employees: EmployeeRecord[]) {
     '직급': emp.level,
     '직책': emp.position || '',
     '입사일': emp.hireDate,
-    '현재연봉': emp.currentSalary
+    '현재연봉': emp.currentSalary,
+    '평가등급': emp.performanceRating || 'B'
   }))
 }
 
@@ -289,6 +298,7 @@ export function convertFromExcelFormat(excelData: any[]): EmployeeRecord[] {
     department: row['부서'] || '',
     band: row['직군'] || '',
     level: row['직급'] || '',
+    performanceRating: row['평가등급'] || 'B',
     position: row['직책'] || undefined,
     hireDate: row['입사일'] || '',
     currentSalary: Number(row['현재연봉']) || 0

@@ -7,14 +7,21 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { baseUpPercentage = 3.2, meritIncreasePercentage = 2.5, filters } = body
+    const { 
+      baseUpPercentage = 3.2, 
+      meritIncreasePercentage = 2.5, 
+      performanceWeights = { S: 1.5, A: 1.2, B: 1.0, C: 0.8 },
+      filters 
+    } = body
 
     // employeeDataService의 시뮬레이션 기능 사용
     const simulation = await simulateSalaryIncrease({
       level: filters?.level,
       department: filters?.department,
+      performanceRating: filters?.performanceRating,
       baseUpPercentage,
-      meritIncreasePercentage
+      meritIncreasePercentage,
+      performanceWeights
     })
 
     // API 응답 형식에 맞게 변환

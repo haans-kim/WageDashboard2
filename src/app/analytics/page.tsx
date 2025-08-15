@@ -5,9 +5,16 @@ import { SalaryDistributionChart } from '@/components/analytics/SalaryDistributi
 import { ProjectionChart } from '@/components/analytics/ProjectionChart'
 import { DepartmentComparisonChart } from '@/components/analytics/DepartmentComparisonChart'
 import { TenureAnalysisChart } from '@/components/analytics/TenureAnalysisChart'
+import { PerformanceDistributionChart } from '@/components/analytics/PerformanceDistributionChart'
+import { PerformanceSalaryChart } from '@/components/analytics/PerformanceSalaryChart'
+import { LevelPerformanceHeatmap } from '@/components/analytics/LevelPerformanceHeatmap'
 import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
 import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
+import { LevelPieChart } from '@/components/charts/LevelPieChart'
+import { DepartmentChart } from '@/components/charts/DepartmentChart'
+import { PerformanceChart } from '@/components/charts/PerformanceChart'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
+import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<any>(null)
@@ -76,9 +83,12 @@ export default function AnalyticsPage() {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">고급 분석</h1>
-          <p className="text-gray-600 mt-2">인건비 데이터에 대한 심층 분석 및 인사이트</p>
+        <header className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">고급 분석</h1>
+            <p className="text-gray-600 mt-2">인건비 데이터에 대한 심층 분석 및 인사이트</p>
+          </div>
+          <SimpleExportButton />
         </header>
 
         {/* 주요 지표 */}
@@ -130,30 +140,65 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* 차트 그리드 */}
+        {/* 평가등급 분석 섹션 */}
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">평가등급 분석</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {data.performanceDistribution && (
+            <PerformanceDistributionChart 
+              data={data.performanceDistribution.map((item: any) => ({
+                rating: item.rating,
+                count: item.count,
+                percentage: (item.count / data.performanceDistribution.reduce((sum: number, p: any) => sum + p.count, 0)) * 100
+              }))}
+            />
+          )}
+          {data.performanceSalary && (
+            <PerformanceSalaryChart 
+              data={data.performanceSalary}
+            />
+          )}
+        </div>
+        
+        {/* 직급×평가등급 히트맵 */}
+        {data.levelPerformance && (
+          <div className="mb-8">
+            <LevelPerformanceHeatmap 
+              data={data.levelPerformance}
+            />
+          </div>
+        )}
+
+        {/* 기존 차트 그리드 */}
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">급여 및 부서 분석</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <SalaryDistributionChart data={data.salaryDistribution} />
           <DepartmentComparisonChart data={data.departmentAnalysis} />
           <ProjectionChart data={data.projections} />
           <TenureAnalysisChart data={data.tenureStats} />
         </div>
-
-        {/* 성과 등급별 분석 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h3 className="text-lg font-semibold mb-4">성과 등급별 평균 급여</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {performanceSummary.map((item) => (
-              <div key={item.rating} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-lg font-semibold">{item.rating}등급</span>
-                  <span className="text-sm text-gray-600">{item.count}명</span>
-                </div>
-                <p className="text-2xl font-bold text-primary-600">
-                  {formatKoreanCurrency(item.averageSalary, '만원')}
-                </p>
-              </div>
-            ))}
-          </div>
+        
+        {/* 추가 차트 - 기존 미사용 컴포넌트 활성화 */}
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">조직 구조 분석</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {data.levelStatistics && (
+            <LevelPieChart 
+              data={data.levelStatistics.map((item: any) => ({
+                level: item.level,
+                count: item.employeeCount,
+                percentage: item.percentage || 0
+              }))}
+            />
+          )}
+          {data.departmentBudget && (
+            <DepartmentChart 
+              data={data.departmentBudget}
+            />
+          )}
+          {data.performanceIncrease && (
+            <PerformanceChart 
+              data={data.performanceIncrease}
+            />
+          )}
         </div>
 
         {/* 인사이트 섹션 */}

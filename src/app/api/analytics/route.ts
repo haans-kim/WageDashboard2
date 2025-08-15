@@ -149,6 +149,78 @@ export async function GET() {
       utilizationRate: (usedBudget / totalBudget) * 100,
     }
 
+    // 7. 평가등급 분포
+    const performanceDistribution = ['S', 'A', 'B', 'C'].map(rating => {
+      const count = employees.filter(emp => emp.performanceRating === rating).length
+      return {
+        rating,
+        count,
+      }
+    })
+    
+    // 8. 평가등급별 평균급여
+    const performanceSalary = ['S', 'A', 'B', 'C'].map(rating => {
+      const ratingEmployees = employees.filter(emp => emp.performanceRating === rating)
+      const avgSalary = ratingEmployees.length > 0
+        ? Math.round(ratingEmployees.reduce((sum, emp) => sum + emp.currentSalary, 0) / ratingEmployees.length)
+        : 0
+      return {
+        rating,
+        averageSalary: avgSalary,
+        count: ratingEmployees.length,
+      }
+    })
+    
+    // 9. 직급×평가등급 히트맵 데이터
+    const levelPerformance = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
+      const levelData: any = { level }
+      ;['S', 'A', 'B', 'C'].forEach(rating => {
+        levelData[rating] = employees.filter(emp => 
+          emp.level === level && emp.performanceRating === rating
+        ).length
+      })
+      return levelData
+    })
+    
+    // 10. 직급별 통계 (LevelPieChart용)
+    const levelStatistics = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
+      const levelEmployees = employees.filter(emp => emp.level === level)
+      return {
+        level,
+        employeeCount: levelEmployees.length,
+        percentage: (levelEmployees.length / employees.length) * 100,
+      }
+    })
+    
+    // 11. 부서별 예산 (DepartmentChart용)
+    const departmentBudget = Object.entries(departmentGroups).map(([dept, emps]) => ({
+      department: dept,
+      budget: emps.reduce((sum, emp) => sum + emp.currentSalary, 0),
+      headcount: emps.length,
+    }))
+    
+    // 12. 평가등급별 인상액 (PerformanceChart용) 
+    const performanceIncrease = ['S', 'A', 'B', 'C'].map(rating => {
+      const weights = { S: 1.5, A: 1.2, B: 1.0, C: 0.8 }
+      const ratingEmployees = employees.filter(emp => emp.performanceRating === rating)
+      const baseUp = 3.2
+      const merit = 2.5
+      
+      const totalIncrease = ratingEmployees.reduce((sum, emp) => {
+        const meritWithWeight = merit * weights[rating as keyof typeof weights]
+        return sum + emp.currentSalary * (baseUp + meritWithWeight) / 100
+      }, 0)
+      
+      return {
+        rating,
+        totalIncrease: Math.round(totalIncrease),
+        averageIncrease: ratingEmployees.length > 0 
+          ? Math.round(totalIncrease / ratingEmployees.length)
+          : 0,
+        count: ratingEmployees.length,
+      }
+    })
+
     return NextResponse.json({
       salaryDistribution,
       departmentAnalysis,
@@ -161,6 +233,12 @@ export async function GET() {
       })),
       tenureStats,
       budgetUtilization,
+      performanceDistribution,
+      performanceSalary,
+      levelPerformance,
+      levelStatistics,
+      departmentBudget,
+      performanceIncrease,
     })
   } catch (error) {
     console.error('Analytics API Error:', error)
