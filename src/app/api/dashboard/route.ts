@@ -77,6 +77,7 @@ export async function GET() {
         count: perf._count.id,
       })),
       industryComparison: dashboardSummary.industryComparison,
+      competitorData: dashboardSummary.competitorData,  // C사 데이터 추가
     }
 
     return NextResponse.json(dashboardData)

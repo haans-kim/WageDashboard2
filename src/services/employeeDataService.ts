@@ -76,10 +76,9 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         }
       }
       
-      // 경쟁사데이터 시트 읽기 (C사 집계 데이터)
-      if (workbook.SheetNames.includes('C사데이터') || workbook.SheetNames.includes('경쟁사데이터')) {
-        const sheetName = workbook.SheetNames.includes('C사데이터') ? 'C사데이터' : '경쟁사데이터'
-        const competitorSheet = workbook.Sheets[sheetName]
+      // C사데이터 시트 읽기 (직군×직급 매트릭스)
+      if (workbook.SheetNames.includes('C사데이터')) {
+        const competitorSheet = workbook.Sheets['C사데이터']
         const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
         
         // 집계 데이터 형식으로 변환
@@ -173,20 +172,32 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           }
         }
         
-        // 경쟁사데이터 시트 읽기
-        if (workbook.SheetNames.includes('경쟁사데이터')) {
-          const competitorSheet = workbook.Sheets['경쟁사데이터']
-          const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+        // C사데이터 시트 읽기
+        if (workbook.SheetNames.includes('C사데이터')) {
+          const competitorSheet = workbook.Sheets['C사데이터']
+          const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
           
-          cachedCompetitorData = {
-            averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
-            levelSalaries: {
-              'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
-              'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
-              'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
-              'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+          // 집계 데이터 형식으로 변환
+          const competitorData: CompetitorData[] = []
+          competitorRawData.forEach((row: any) => {
+            const band = row['직군']
+            if (band) {
+              // 각 레벨에 대한 데이터 처리
+              ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+                if (row[level]) {
+                  competitorData.push({
+                    company: 'C사',
+                    band: band,
+                    level: level,
+                    averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                  })
+                }
+              })
             }
-          }
+          })
+          
+          cachedCompetitorData = competitorData
+          console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
         }
         
         // 직원 데이터 읽기
@@ -206,7 +217,7 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
       }
       
       // 초기 로드 시 public 폴더의 기본 파일 시도
-      const publicPath = path.join(process.cwd(), 'public', 'data', 'default_employee_data.xlsx')
+      const publicPath = path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx')
       try {
         await fs.access(publicPath)
         const fileBuffer = await fs.readFile(publicPath)
@@ -226,20 +237,32 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           }
         }
         
-        // 경쟁사데이터 시트 읽기
-        if (workbook.SheetNames.includes('경쟁사데이터')) {
-          const competitorSheet = workbook.Sheets['경쟁사데이터']
-          const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+        // C사데이터 시트 읽기
+        if (workbook.SheetNames.includes('C사데이터')) {
+          const competitorSheet = workbook.Sheets['C사데이터']
+          const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
           
-          cachedCompetitorData = {
-            averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
-            levelSalaries: {
-              'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
-              'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
-              'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
-              'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+          // 집계 데이터 형식으로 변환
+          const competitorData: CompetitorData[] = []
+          competitorRawData.forEach((row: any) => {
+            const band = row['직군']
+            if (band) {
+              // 각 레벨에 대한 데이터 처리
+              ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+                if (row[level]) {
+                  competitorData.push({
+                    company: 'C사',
+                    band: band,
+                    level: level,
+                    averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                  })
+                }
+              })
             }
-          }
+          })
+          
+          cachedCompetitorData = competitorData
+          console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
         }
         
         // 직원 데이터 읽기
@@ -374,11 +397,11 @@ export async function getBandLevelDetails() {
         },
         company: {
           median: calculatePercentile(salaries, 50),
-          mean: meanSalary,
+          mean: ourAvgSalary,
           values: []
         },
         competitor: {
-          median: marketMedian
+          median: competitorAvgSalary
         }
       }
     }).filter(level => level.level !== '신입') // 신입 제외

@@ -14,9 +14,14 @@ interface IndustryComparisonSectionProps {
     employeeCount: number
     averageSalary: string
   }>
-  competitorData?: {  // C사 데이터 (엑셀에서 가져옴)
-    averageIncrease?: number  // C사 평균 인상률
-    levelSalaries?: {  // 직급별 C사 급여
+  competitorData?: Array<{  // 새로운 형식: 직군×직급별 C사 데이터
+    company: string
+    band: string
+    level: string
+    averageSalary: number
+  }> | {  // 구 형식 (임시 지원)
+    averageIncrease?: number
+    levelSalaries?: {
       'Lv.1'?: number
       'Lv.2'?: number
       'Lv.3'?: number
@@ -39,9 +44,18 @@ function IndustryComparisonSectionComponent({
   competitorData
 }: IndustryComparisonSectionProps) {
   
-  // C사 데이터 (엑셀에서 가져온 데이터 사용, 없으면 기본값)
+  // C사 데이터 (엑셀에서 가져온 데이터 사용)
   const companyIncrease = baseUpRate + meritRate // 우리 회사
-  const cCompanyIncrease = competitorData?.averageIncrease || 4.2 // C사 평균 인상률
+  
+  // C사 평균 인상률 계산 (새 구조에서는 직접 계산 필요)
+  let cCompanyIncrease = 4.2 // 기본값
+  if (Array.isArray(competitorData)) {
+    // 새로운 구조에서는 인상률을 별도로 관리하지 않으므로 기본값 사용
+    cCompanyIncrease = 4.2
+  } else if (competitorData?.averageIncrease) {
+    // 구 형식
+    cCompanyIncrease = competitorData.averageIncrease
+  }
   
   // 동적 Y축 범위 계산
   const maxValue = Math.max(companyIncrease, cCompanyIncrease)
@@ -54,10 +68,26 @@ function IndustryComparisonSectionComponent({
     return levelData ? parseFloat(levelData.averageSalary) / 1000 : 0 // 천원 단위로 변환
   }
   
-  // 직급별 C사 급여 (엑셀에서 가져온 데이터 사용, 없으면 기본값)
+  // 직급별 C사 급여 (엑셀에서 가져온 데이터 사용)
   const getCCompanySalary = (level: string) => {
-    const defaults = { 'Lv.1': 56000, 'Lv.2': 70000, 'Lv.3': 80000, 'Lv.4': 100000 }
-    return competitorData?.levelSalaries?.[level as keyof typeof competitorData.levelSalaries] || defaults[level as keyof typeof defaults] || 0
+    // competitorData가 배열 형식인 경우 (새로운 구조)
+    if (Array.isArray(competitorData)) {
+      // 모든 직군의 해당 직급 평균 계산
+      const levelSalaries = competitorData
+        .filter(c => c.level === level)
+        .map(c => c.averageSalary)
+      
+      if (levelSalaries.length > 0) {
+        const avgSalary = levelSalaries.reduce((sum, sal) => sum + sal, 0) / levelSalaries.length
+        return avgSalary / 1000 // 천원 단위로 변환
+      }
+    }
+    // 구 형식 지원 (나중에 제거 예정)
+    else if (competitorData?.levelSalaries) {
+      return competitorData.levelSalaries[level as keyof typeof competitorData.levelSalaries] || 0
+    }
+    
+    return 0
   }
   
   // 직급별 경쟁력 데이터 (실제 데이터 기반) - Lv.1이 맨 왼쪽

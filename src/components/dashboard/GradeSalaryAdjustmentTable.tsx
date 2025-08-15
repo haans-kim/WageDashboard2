@@ -38,25 +38,25 @@ interface GradeSalaryAdjustmentTableProps {
   onTotalSummaryChange?: (summary: { avgBaseUp: number; avgMerit: number; totalRate: number }) => void  // 전체 평균 콜백
 }
 
-// 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
-const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
-  totalCount: 4925,
+// 빈 데이터 구조 (실제 데이터는 엑셀에서 동적으로 로드)
+const EMPTY_EMPLOYEE_DATA: EmployeeData = {
+  totalCount: 0,
   levels: {
     'Lv.4': { 
-      headcount: 61, 
-      averageSalary: 108469574  // 실제값
+      headcount: 0, 
+      averageSalary: 0
     },
     'Lv.3': { 
-      headcount: 475, 
-      averageSalary: 87599520   // 실제값
+      headcount: 0, 
+      averageSalary: 0
     },
     'Lv.2': { 
-      headcount: 1506, 
-      averageSalary: 67376032   // 실제값
+      headcount: 0, 
+      averageSalary: 0
     },
     'Lv.1': { 
-      headcount: 2883, 
-      averageSalary: 51977513   // 실제값
+      headcount: 0, 
+      averageSalary: 0
     }
   }
 }
@@ -96,7 +96,7 @@ const DEFAULT_RATES: { [key: string]: LevelRates } = {
 function GradeSalaryAdjustmentTableComponent({
   baseUpRate = 0,
   meritRate = 0,
-  employeeData = DEFAULT_EMPLOYEE_DATA,
+  employeeData = EMPTY_EMPLOYEE_DATA,
   onRateChange,
   onTotalBudgetChange,
   enableAdditionalIncrease = false,
