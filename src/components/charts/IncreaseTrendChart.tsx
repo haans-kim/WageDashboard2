@@ -13,7 +13,14 @@ interface IncreaseTrendChartProps {
 }
 
 export function IncreaseTrendChart({ data }: IncreaseTrendChartProps) {
-  const chartData = data.map(item => ({
+  // Lv.1 ~ Lv.4 순서로 정렬
+  const sortedData = [...data].sort((a, b) => {
+    const aNum = parseInt(a.level.replace('Lv.', ''))
+    const bNum = parseInt(b.level.replace('Lv.', ''))
+    return aNum - bNum
+  })
+  
+  const chartData = sortedData.map(item => ({
     level: item.level,
     'Base-up': item.avgBaseUpPercentage,
     'Merit': item.avgMeritPercentage,
@@ -37,41 +44,49 @@ export function IncreaseTrendChart({ data }: IncreaseTrendChartProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">직급별 인상률 추이</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="level" />
-          <YAxis 
-            tickFormatter={(value) => `${value}%`}
-            domain={[0, 'dataMax + 1']}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Line 
-            type="monotone" 
-            dataKey="Base-up" 
-            stroke="#3b82f6" 
-            strokeWidth={2}
-            dot={{ fill: '#3b82f6', r: 4 }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="Merit" 
-            stroke="#10b981" 
-            strokeWidth={2}
-            dot={{ fill: '#10b981', r: 4 }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="총 인상률" 
-            stroke="#dc2626" 
-            strokeWidth={3}
-            dot={{ fill: '#dc2626', r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="p-6">
+        <h2 className="text-base font-medium text-slate-900 mb-4">직급별 인상률 추이</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+            <XAxis 
+              dataKey="level" 
+              tick={{ fontSize: 12, fill: '#64748B' }}
+              padding={{ left: 20, right: 20 }}
+            />
+            <YAxis 
+              tickFormatter={(value) => `${value}%`}
+              domain={[0, 'dataMax + 1']}
+              tick={{ fontSize: 11, fill: '#64748B' }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend wrapperStyle={{ fontSize: '12px' }} />
+            <Line 
+              type="monotone" 
+              dataKey="Base-up" 
+              stroke="#6366F1" 
+              strokeWidth={2}
+              dot={{ fill: '#6366F1', r: 4 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="Merit" 
+              stroke="#8B5CF6" 
+              strokeWidth={2}
+              dot={{ fill: '#8B5CF6', r: 4 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="총 인상률" 
+              stroke="#EC4899" 
+              strokeWidth={3}
+              strokeDasharray="5 5"
+              dot={{ fill: '#EC4899', r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }

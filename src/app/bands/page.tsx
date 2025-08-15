@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { PayBandCard } from '@/components/band/PayBandCard'
 import { ExcelUploadButton } from '@/components/ExcelUploadButton'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { PayBandCompetitivenessHeatmap } from '@/components/analytics/PayBandCompetitivenessHeatmap'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { useMetadata } from '@/hooks/useMetadata'
 import { BandName } from '@/types/band'
@@ -313,6 +314,11 @@ function BandDashboardContent() {
               </div>
             )}
           </div>
+        </div>
+        
+        {/* Pay Band 경쟁력 분석 - 맨 아래 별도 섹션 */}
+        <div className="mt-6">
+          <PayBandCompetitivenessHeatmap />
         </div>
       </div>
     </main>

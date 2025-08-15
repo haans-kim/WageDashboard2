@@ -183,12 +183,17 @@ export async function GET() {
     })
     
     // 10. 직급별 통계 (LevelPieChart용)
-    const levelStatistics = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
+    const levelStatistics = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
       const levelEmployees = employees.filter(emp => emp.level === level)
+      const totalSalary = levelEmployees.reduce((sum, emp) => sum + emp.currentSalary, 0)
       return {
         level,
         employeeCount: levelEmployees.length,
         percentage: (levelEmployees.length / employees.length) * 100,
+        totalSalary: totalSalary.toString(),
+        avgBaseUpPercentage: 3.2,
+        avgMeritPercentage: 2.5,
+        totalIncreasePercentage: 5.7
       }
     })
     

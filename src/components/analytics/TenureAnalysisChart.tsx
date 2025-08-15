@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { formatKoreanCurrency } from '@/lib/utils'
 
 interface TenureAnalysisChartProps {
@@ -11,7 +11,6 @@ interface TenureAnalysisChartProps {
   }>
 }
 
-const COLORS = ['#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
 
 export function TenureAnalysisChart({ data }: TenureAnalysisChartProps) {
   const CustomTooltip = ({ active, payload }: any) => {
@@ -33,36 +32,49 @@ export function TenureAnalysisChart({ data }: TenureAnalysisChartProps) {
   }))
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold mb-4">근속년수별 급여 분석</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="tenure" />
-          <YAxis 
-            label={{ value: '평균 급여 (만원)', angle: -90, position: 'insideLeft' }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="averageSalaryDisplay">
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        {data.map((item, index) => (
-          <div key={item.tenure} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-            <div className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded" 
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-              />
-              <span className="text-sm">{item.tenure}</span>
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="p-6">
+        <h3 className="text-base font-medium text-slate-900 mb-4">근속년수별 급여 추세</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorTenure" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#EC4899" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#EC4899" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+            <XAxis 
+              dataKey="tenure" 
+              tick={{ fontSize: 12, fill: '#64748B' }}
+              padding={{ left: 10, right: 10 }}
+            />
+            <YAxis 
+              label={{ value: '평균 급여 (만원)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#64748B' } }}
+              tick={{ fontSize: 11, fill: '#64748B' }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area 
+              type="monotone" 
+              dataKey="averageSalaryDisplay" 
+              stroke="#EC4899" 
+              strokeWidth={2}
+              fillOpacity={1} 
+              fill="url(#colorTenure)" 
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {data.map((item) => (
+            <div key={item.tenure} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
+              <span className="text-sm text-slate-700">{item.tenure}</span>
+              <div className="text-right">
+                <span className="text-sm font-semibold text-slate-900">{item.employeeCount}명</span>
+                <p className="text-xs text-slate-500">{formatKoreanCurrency(item.averageSalary, '만원')}</p>
+              </div>
             </div>
-            <span className="text-sm font-medium">{item.employeeCount}명</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   )

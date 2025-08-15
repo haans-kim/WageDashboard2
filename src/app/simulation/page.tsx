@@ -105,36 +105,31 @@ export default function SimulationPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                시뮬레이션 Sandbox 
-                {isIndependentMode && <span className="ml-2 text-sm px-2 py-1 bg-orange-100 text-orange-700 rounded">독립 모드</span>}
-              </h1>
-              <p className="text-gray-600 mt-2">자유롭게 인상률을 조정하여 영향도를 분석하세요</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  if (!isIndependentMode) {
-                    setBaseUp(globalBaseUp)
-                    setMerit(globalMerit)
-                  }
-                  setIsIndependentMode(!isIndependentMode)
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isIndependentMode 
-                    ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {isIndependentMode ? '대시보드 값 동기화' : '독립 모드 시작'}
-              </button>
-            </div>
+      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2">
+            <button
+              onClick={() => {
+                if (!isIndependentMode) {
+                  setBaseUp(globalBaseUp)
+                  setMerit(globalMerit)
+                }
+                setIsIndependentMode(!isIndependentMode)
+              }}
+              className={`h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium rounded-lg transition-colors ${
+                isIndependentMode 
+                  ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {isIndependentMode ? '대시보드 값 동기화' : '독립 모드 시작'}
+            </button>
           </div>
-        </header>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-8">
 
         {/* 시뮬레이션 설정 */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">

@@ -11,14 +11,12 @@ import { PerformanceSalaryChart } from '@/components/analytics/PerformanceSalary
 import { LevelPerformanceHeatmap } from '@/components/analytics/LevelPerformanceHeatmap'
 import { BudgetBarChart } from '@/components/charts/BudgetBarChart'
 import { IncreaseTrendChart } from '@/components/charts/IncreaseTrendChart'
-import { LevelPieChart } from '@/components/charts/LevelPieChart'
-import { DepartmentChart } from '@/components/charts/DepartmentChart'
-import { PerformanceChart } from '@/components/charts/PerformanceChart'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { RateInfoCard } from '@/components/common/RateInfoCard'
 
 export default function AnalyticsPage() {
-  const { baseUpRate, meritRate, performanceWeights } = useWageContext()
+  const { baseUpRate, meritRate, performanceWeights, levelRates } = useWageContext()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -78,20 +76,25 @@ export default function AnalyticsPage() {
 
   const performanceSummary = Object.entries(performanceByRating).map(([rating, data]: any) => ({
     rating,
-    averageSalary: Math.round(data.total / data.count),
+    averageSalary: data.count > 0 ? Math.round(data.total / data.count) : 0,
     count: data.count,
-  }))
+  })).filter(item => !isNaN(item.averageSalary) && isFinite(item.averageSalary))
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">고급 분석</h1>
-            <p className="text-gray-600 mt-2">인건비 데이터에 대한 심층 분석 및 인사이트</p>
+      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2">
+            <SimpleExportButton isNavigation={true} />
           </div>
-          <SimpleExportButton />
-        </header>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <RateInfoCard />
+        </div>
 
         {/* 주요 지표 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -147,11 +150,14 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {data.performanceDistribution && (
             <PerformanceDistributionChart 
-              data={data.performanceDistribution.map((item: any) => ({
-                rating: item.rating,
-                count: item.count,
-                percentage: (item.count / data.performanceDistribution.reduce((sum: number, p: any) => sum + p.count, 0)) * 100
-              }))}
+              data={data.performanceDistribution.map((item: any) => {
+                const total = data.performanceDistribution.reduce((sum: number, p: any) => sum + p.count, 0)
+                return {
+                  rating: item.rating,
+                  count: item.count,
+                  percentage: total > 0 ? (item.count / total) * 100 : 0
+                }
+              })}
             />
           )}
           {data.performanceSalary && (
@@ -177,72 +183,6 @@ export default function AnalyticsPage() {
           <DepartmentComparisonChart data={data.departmentAnalysis} />
           <ProjectionChart data={data.projections} />
           <TenureAnalysisChart data={data.tenureStats} />
-        </div>
-        
-        {/* 추가 차트 - 기존 미사용 컴포넌트 활성화 */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">조직 구조 분석</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {data.levelStatistics && (
-            <LevelPieChart 
-              data={data.levelStatistics.map((item: any) => ({
-                level: item.level,
-                count: item.employeeCount,
-                percentage: item.percentage || 0
-              }))}
-            />
-          )}
-          {data.departmentBudget && (
-            <DepartmentChart 
-              data={data.departmentBudget}
-            />
-          )}
-          {data.performanceIncrease && (
-            <PerformanceChart 
-              data={data.performanceIncrease}
-            />
-          )}
-        </div>
-
-        {/* 인사이트 섹션 */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">주요 인사이트</h3>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
-              <p className="text-gray-700">
-                현재 예산 활용률은 {formatPercentage(data.budgetUtilization.utilizationRate)}로, 
-                잔여 예산은 {formatKoreanCurrency(
-                  Number(data.budgetUtilization.totalBudget) - Number(data.budgetUtilization.usedBudget),
-                  '억원'
-                )}입니다.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
-              <p className="text-gray-700">
-                부서별 평균 급여 격차가 가장 큰 곳은 {
-                  data.departmentAnalysis.reduce((max: any, dept: any) => 
-                    dept.salaryRange > (max?.salaryRange || 0) ? dept : max, null
-                  )?.department
-                }로, 최대 {formatKoreanCurrency(
-                  Math.max(...data.departmentAnalysis.map((d: any) => d.salaryRange)),
-                  '만원'
-                )}의 차이를 보입니다.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary-500 rounded-full mt-1.5"></div>
-              <p className="text-gray-700">
-                5% 인상 시 총 예산은 {formatKoreanCurrency(
-                  data.projections.find((p: any) => p.rate === 5)?.totalProjected || 0,
-                  '억원'
-                )}으로 증가하며, 추가 소요 예산은 {formatKoreanCurrency(
-                  data.projections.find((p: any) => p.rate === 5)?.increase || 0,
-                  '억원'
-                )}입니다.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </main>

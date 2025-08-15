@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useScenarios } from '@/hooks/useScenarios'
+import { useWageContext } from '@/context/WageContext'
 import { ScenarioManager } from '@/components/ScenarioManager'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetResourceCard } from '@/components/dashboard/BudgetResourceCard'
@@ -15,17 +16,34 @@ import { prepareExportData } from '@/lib/exportHelpers'
 
 export default function Home() {
   const { data, loading, error, refresh } = useDashboardData()
-  const [baseUpRate, setBaseUpRate] = useState(3.2) // 3.2% 고정
-  const [meritRate, setMeritRate] = useState(2.5) // 2.5%로 설정 (3.2 + 2.5 = 5.7)
-  const [totalBudget, setTotalBudget] = useState<number | null>(30000000000) // 총예산 300억원 유지
   
-  // 개별 레벨 인상률 상태 - baseUp은 3.2, merit은 2.5로 초기화
-  const [levelRates, setLevelRates] = useState({
-    'Lv.1': { baseUp: 3.2, merit: 2.5 },
-    'Lv.2': { baseUp: 3.2, merit: 2.5 },
-    'Lv.3': { baseUp: 3.2, merit: 2.5 },
-    'Lv.4': { baseUp: 3.2, merit: 2.5 }
-  })
+  // WageContext에서 전역 상태 가져오기
+  const {
+    baseUpRate: contextBaseUpRate,
+    meritRate: contextMeritRate,
+    levelRates: contextLevelRates,
+    totalBudget: contextTotalBudget,
+    setBaseUpRate: setContextBaseUpRate,
+    setMeritRate: setContextMeritRate,
+    setLevelRates: setContextLevelRates,
+    setTotalBudget: setContextTotalBudget
+  } = useWageContext()
+  
+  // 로컬 상태 (대시보드 페이지에서만 사용)
+  const [baseUpRate, setBaseUpRate] = useState(contextBaseUpRate)
+  const [meritRate, setMeritRate] = useState(contextMeritRate)
+  const [totalBudget, setTotalBudget] = useState<number | null>(contextTotalBudget)
+  const [levelRates, setLevelRates] = useState(contextLevelRates)
+  
+  // 대시보드 값이 변경될 때 WageContext 업데이트
+  useEffect(() => {
+    setContextBaseUpRate(baseUpRate)
+    setContextMeritRate(meritRate)
+    setContextLevelRates(levelRates)
+    if (totalBudget !== null) {
+      setContextTotalBudget(totalBudget)
+    }
+  }, [baseUpRate, meritRate, levelRates, totalBudget, setContextBaseUpRate, setContextMeritRate, setContextLevelRates, setContextTotalBudget])
   
   // 예산활용내역 상세를 위한 상태 - 모두 0원으로 초기화
   const [promotionBudgets, setPromotionBudgets] = useState({
@@ -57,7 +75,7 @@ export default function Home() {
   const [weightedAverageRate, setWeightedAverageRate] = useState(0)
   const [meritWeightedAverage, setMeritWeightedAverage] = useState(0) // 성과인상률 가중평균
   
-  // GradeSalaryAdjustmentTable의 세부 인상률 상태 - baseUp 3.2%, 성과인상률 2.5%, 나머지는 0
+  // GradeSalaryAdjustmentTable의 세부 인상률 상태 - 모두 0으로 초기화
   const [detailedLevelRates, setDetailedLevelRates] = useState<Record<string, {
     baseUp: number
     merit: number
@@ -65,10 +83,10 @@ export default function Home() {
     advancement: number
     additional: number
   }>>({
-    'Lv.4': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.3': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.2': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
+    'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
   })
   
   // 시나리오 관리
@@ -115,6 +133,12 @@ export default function Home() {
       setDetailedLevelRates(prev => ({
         ...prev,
         [level]: rates
+      }))
+      
+      // levelRates도 업데이트 (baseUp과 merit만)
+      setLevelRates(prev => ({
+        ...prev,
+        [level]: { baseUp: rates.baseUp, merit: rates.merit }
       }))
     }
   }

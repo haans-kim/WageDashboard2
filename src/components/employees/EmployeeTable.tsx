@@ -128,6 +128,9 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                   <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     성과
                   </th>
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    적용 인상률
+                  </th>
                   <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     TO-BE 급여
                   </th>
@@ -169,6 +172,25 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                           {employee.performanceRating}
                         </span>
                       )}
+                    </td>
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
+                      {(() => {
+                        const levelRate = levelRates[employee.level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+                        const effectiveMeritRate = employee.performanceRating && performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
+                          ? levelRate.merit * performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
+                          : levelRate.merit
+                        const totalRate = levelRate.baseUp + effectiveMeritRate
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-purple-600">
+                              {totalRate.toFixed(1)}%
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              (B: {levelRate.baseUp}% + M: {effectiveMeritRate.toFixed(1)}%)
+                            </span>
+                          </div>
+                        )
+                      })()}
                     </td>
                     <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
                       {(() => {

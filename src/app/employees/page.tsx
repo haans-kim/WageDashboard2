@@ -2,14 +2,19 @@
 
 import { useState } from 'react'
 import { useMetadata } from '@/hooks/useMetadata'
+import { useWageContext } from '@/context/WageContext'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { PerformanceWeightModal } from '@/components/employees/PerformanceWeightModal'
+import { RateInfoCard } from '@/components/common/RateInfoCard'
 
 export default function EmployeesPage() {
   const { departments, levels, ratings, loading: metadataLoading } = useMetadata()
+  const { baseUpRate, meritRate, levelRates } = useWageContext()
   const [selectedLevel, setSelectedLevel] = useState<string>('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<string>('')
+  const [isWeightModalOpen, setIsWeightModalOpen] = useState(false)
 
   // 메타데이터 로딩 중일 때 로딩 화면 표시
   if (metadataLoading) {
@@ -27,14 +32,28 @@ export default function EmployeesPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">직원 관리</h1>
-            <p className="text-gray-600 mt-2">직원별 급여 정보 및 인상률 계산</p>
+      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2">
+            <button
+              onClick={() => setIsWeightModalOpen(true)}
+              className="h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              평가등급 가중치
+            </button>
+            <SimpleExportButton isNavigation={true} />
           </div>
-          <SimpleExportButton />
-        </header>
+        </div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <RateInfoCard />
+        </div>
 
         <div className="mb-6 bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">필터</h2>
@@ -99,6 +118,11 @@ export default function EmployeesPage() {
           performanceRating={selectedRating}
         />
       </div>
+      
+      <PerformanceWeightModal 
+        isOpen={isWeightModalOpen}
+        onClose={() => setIsWeightModalOpen(false)}
+      />
     </main>
   )
 }

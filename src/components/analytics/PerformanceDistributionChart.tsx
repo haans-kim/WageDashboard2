@@ -11,17 +11,17 @@ interface PerformanceDistributionChartProps {
 }
 
 const COLORS = {
-  'S': '#10b981',  // emerald-500
-  'A': '#3b82f6',  // blue-500
-  'B': '#f59e0b',  // amber-500
-  'C': '#ef4444'   // red-500
+  'S': '#10B981',  // emerald-500
+  'A': '#3B82F6',  // blue-500
+  'B': '#F59E0B',  // amber-500
+  'C': '#EF4444'   // red-500
 }
 
 export function PerformanceDistributionChart({ data }: PerformanceDistributionChartProps) {
-  const chartData = data.map(item => ({
+  const chartData = data.filter(item => item.count > 0).map(item => ({
     name: `${item.rating}등급`,
     value: item.count,
-    percentage: item.percentage
+    percentage: isNaN(item.percentage) || !isFinite(item.percentage) ? 0 : item.percentage
   }))
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -52,7 +52,7 @@ export function PerformanceDistributionChart({ data }: PerformanceDistributionCh
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+            label={({ name, percentage }) => `${name} ${(percentage || 0).toFixed(1)}%`}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"

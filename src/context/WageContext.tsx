@@ -46,9 +46,9 @@ interface WageContextType {
 const WageContext = createContext<WageContextType | undefined>(undefined)
 
 export function WageProvider({ children }: { children: ReactNode }) {
-  // 기본값 설정
-  const [baseUpRate, setBaseUpRate] = useState(3.2)
-  const [meritRate, setMeritRate] = useState(2.5)
+  // 기본값 설정 - 모두 0으로 초기화
+  const [baseUpRate, setBaseUpRate] = useState(0)
+  const [meritRate, setMeritRate] = useState(0)
   const [performanceWeights, setPerformanceWeights] = useState<PerformanceWeights>({
     S: 1.5,
     A: 1.2,
@@ -56,12 +56,12 @@ export function WageProvider({ children }: { children: ReactNode }) {
     C: 0.8
   })
   const [levelRates, setLevelRates] = useState({
-    'Lv.1': { baseUp: 3.2, merit: 2.5 },
-    'Lv.2': { baseUp: 3.2, merit: 2.5 },
-    'Lv.3': { baseUp: 3.2, merit: 2.5 },
-    'Lv.4': { baseUp: 3.2, merit: 2.5 }
+    'Lv.1': { baseUp: 0, merit: 0 },
+    'Lv.2': { baseUp: 0, merit: 0 },
+    'Lv.3': { baseUp: 0, merit: 0 },
+    'Lv.4': { baseUp: 0, merit: 0 }
   })
-  const [totalBudget, setTotalBudget] = useState(30000000000)
+  const [totalBudget, setTotalBudget] = useState(0)
   
   // localStorage에서 저장된 값 불러오기
   useEffect(() => {
@@ -70,18 +70,18 @@ export function WageProvider({ children }: { children: ReactNode }) {
       if (savedState) {
         try {
           const parsed = JSON.parse(savedState)
-          setBaseUpRate(parsed.baseUpRate ?? 3.2)
-          setMeritRate(parsed.meritRate ?? 2.5)
+          setBaseUpRate(parsed.baseUpRate ?? 0)
+          setMeritRate(parsed.meritRate ?? 0)
           setPerformanceWeights(parsed.performanceWeights ?? {
             S: 1.5, A: 1.2, B: 1.0, C: 0.8
           })
           setLevelRates(parsed.levelRates ?? {
-            'Lv.1': { baseUp: 3.2, merit: 2.5 },
-            'Lv.2': { baseUp: 3.2, merit: 2.5 },
-            'Lv.3': { baseUp: 3.2, merit: 2.5 },
-            'Lv.4': { baseUp: 3.2, merit: 2.5 }
+            'Lv.1': { baseUp: 0, merit: 0 },
+            'Lv.2': { baseUp: 0, merit: 0 },
+            'Lv.3': { baseUp: 0, merit: 0 },
+            'Lv.4': { baseUp: 0, merit: 0 }
           })
-          setTotalBudget(parsed.totalBudget ?? 30000000000)
+          setTotalBudget(parsed.totalBudget ?? 0)
         } catch (e) {
           console.error('Failed to parse saved wage settings:', e)
         }
