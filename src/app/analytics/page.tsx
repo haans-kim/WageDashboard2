@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useWageContext } from '@/context/WageContext'
 import { SalaryDistributionChart } from '@/components/analytics/SalaryDistributionChart'
 import { ProjectionChart } from '@/components/analytics/ProjectionChart'
 import { DepartmentComparisonChart } from '@/components/analytics/DepartmentComparisonChart'
@@ -17,6 +18,7 @@ import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function AnalyticsPage() {
+  const { baseUpRate, meritRate, performanceWeights } = useWageContext()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 

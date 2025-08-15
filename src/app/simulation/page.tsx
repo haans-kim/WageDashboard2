@@ -1,12 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useWageContext } from '@/context/WageContext'
 import { SimulationResults } from '@/components/simulation/SimulationResults'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function SimulationPage() {
+  const { baseUpRate: globalBaseUp, meritRate: globalMerit } = useWageContext()
   const [baseUp, setBaseUp] = useState(3.2)
   const [merit, setMerit] = useState(2.5)
+  const [isIndependentMode, setIsIndependentMode] = useState(false)
   const [selectedLevel, setSelectedLevel] = useState<string>('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<string>('')
@@ -25,6 +28,14 @@ export default function SimulationPage() {
   const levels = ['', 'Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
   const departments = ['', '영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
   const ratings = ['', 'S', 'A', 'B', 'C']
+  
+  // 독립 모드가 아닐 때 대시보드 값과 동기화
+  useEffect(() => {
+    if (!isIndependentMode) {
+      setBaseUp(globalBaseUp)
+      setMerit(globalMerit)
+    }
+  }, [globalBaseUp, globalMerit, isIndependentMode])
 
   const runSimulation = async () => {
     setLoading(true)
@@ -84,13 +95,45 @@ export default function SimulationPage() {
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">임금 인상 시뮬레이션</h1>
-          <p className="text-gray-600 mt-2">전체 직원 대상 임금 인상 시뮬레이션 및 일괄 적용</p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                시뮬레이션 Sandbox 
+                {isIndependentMode && <span className="ml-2 text-sm px-2 py-1 bg-orange-100 text-orange-700 rounded">독립 모드</span>}
+              </h1>
+              <p className="text-gray-600 mt-2">자유롭게 인상률을 조정하여 영향도를 분석하세요</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  if (!isIndependentMode) {
+                    setBaseUp(globalBaseUp)
+                    setMerit(globalMerit)
+                  }
+                  setIsIndependentMode(!isIndependentMode)
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  isIndependentMode 
+                    ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {isIndependentMode ? '대시보드 값 동기화' : '독립 모드 시작'}
+              </button>
+            </div>
+          </div>
         </header>
 
         {/* 시뮬레이션 설정 */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">시뮬레이션 설정</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">시뮬레이션 설정</h2>
+            {!isIndependentMode && (
+              <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded">
+                대시보드와 동기화 중
+              </span>
+            )}
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -134,7 +177,7 @@ export default function SimulationPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium mb-3">필터 설정 (선택사항)</h3>
+              <h3 className="text-lg font-medium mb-3">시뮬레이션 대상 그룹</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

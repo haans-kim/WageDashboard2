@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
+import { useWageContext } from '@/context/WageContext'
 import Link from 'next/link'
 
 interface Employee {
@@ -28,6 +29,7 @@ interface EmployeeTableProps {
 }
 
 export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
+  const { calculateToBeSalary } = useWageContext()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -126,11 +128,14 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                   <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     성과
                   </th>
-                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    예상 인상률
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    TO-BE 급여
+                  </th>
+                  <th className="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    증감액
                   </th>
                   <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
+                    상세
                   </th>
                 </tr>
               </thead>
@@ -165,14 +170,35 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                         </span>
                       )}
                     </td>
-                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
-                      {employee.latestCalculation ? (
-                        <span className="font-semibold text-primary-600">
-                          {formatPercentage(employee.latestCalculation.totalPercentage)}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
+                      {(() => {
+                        const toBeSalary = calculateToBeSalary(
+                          employee.currentSalary,
+                          employee.level,
+                          employee.performanceRating || undefined
+                        )
+                        return (
+                          <span className="font-semibold text-primary-600">
+                            {formatKoreanCurrency(toBeSalary, '만원')}
+                          </span>
+                        )
+                      })()}
+                    </td>
+                    <td className="hidden lg:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
+                      {(() => {
+                        const toBeSalary = calculateToBeSalary(
+                          employee.currentSalary,
+                          employee.level,
+                          employee.performanceRating || undefined
+                        )
+                        const difference = toBeSalary - employee.currentSalary
+                        const isPositive = difference > 0
+                        return (
+                          <span className={`font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {isPositive ? '+' : ''}{formatKoreanCurrency(difference, '만원')}
+                          </span>
+                        )
+                      })()}
                     </td>
                     <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium">
                       <Link

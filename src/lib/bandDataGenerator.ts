@@ -298,7 +298,7 @@ export function convertFromExcelFormat(excelData: any[]): EmployeeRecord[] {
     department: row['부서'] || '',
     band: row['직군'] || '',
     level: row['직급'] || '',
-    performanceRating: row['평가등급'] || 'B',
+    performanceRating: row['평가등급'] as 'S' | 'A' | 'B' | 'C' | undefined,
     position: row['직책'] || undefined,
     hireDate: row['입사일'] || '',
     currentSalary: Number(row['현재연봉']) || 0
