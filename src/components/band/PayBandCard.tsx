@@ -83,7 +83,7 @@ export function PayBandCard({
   // 최종 인상률 계산 및 Context 저장
   useEffect(() => {
     if (levelRates && bandName) {
-      const finalRates: { [level: string]: { baseUp: number; merit: number } } = {}
+      const finalRates: { [level: string]: { baseUp: number; merit: number } } = {};
       
       ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
         finalRates[level] = {
