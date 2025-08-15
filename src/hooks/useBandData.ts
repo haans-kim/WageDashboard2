@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { loadExcelData, hasStoredData } from '@/lib/clientStorage'
+import { BandName } from '@/types/band'
 
 interface BandData {
   id: string
-  name: string
+  name: BandName
   totalHeadcount: number
   avgBaseUpRate: number
   avgSBLIndex: number
@@ -130,7 +131,7 @@ export function useBandData() {
               
               bandDataArray.push({
                 id: bandName.toLowerCase().replace(/[&\s]/g, '_'),
-                name: bandName,
+                name: bandName as BandName,
                 totalHeadcount,
                 avgBaseUpRate: 3.2,
                 avgSBLIndex: 95,
