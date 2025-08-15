@@ -77,9 +77,9 @@ export function useDashboardData() {
               },
               aiRecommendation: clientData.aiSettings,
               budget: {
-                totalBudget: '0', // 초기값 0
-                usedBudget: '0',
-                remainingBudget: '0', // 초기값 0
+                totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+                usedBudget: '0', // 초기 사용 예산은 0
+                remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
                 usagePercentage: 0
               },
               levelStatistics: [],
@@ -156,9 +156,9 @@ export function useDashboardData() {
             },
             aiRecommendation: clientData.aiSettings,
             budget: {
-              totalBudget: '0', // 초기값 0
-              usedBudget: '0',
-              remainingBudget: '0', // 초기값 0
+              totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+              usedBudget: '0', // 초기 사용 예산은 0
+              remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
               usagePercentage: 0
             },
             levelStatistics: [],

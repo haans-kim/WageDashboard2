@@ -54,31 +54,34 @@ export function PayBandCard({
   onRateChange,
   currentRates
 }: PayBandCardProps) {
-  const { setBandFinalRates, bandFinalRates } = useWageContext()
+  const { setBandFinalRates, bandFinalRates, bandAdjustments, setBandAdjustments } = useWageContext()
   
-  // 직군별 조정값 관리 (0이 기본값)
-  const [baseUpAdjustment, setBaseUpAdjustment] = useState(0)
-  const [meritAdjustment, setMeritAdjustment] = useState(0)
+  // WageContext에서 직군별 조정값 가져오기
+  const bandAdjustment = bandAdjustments[bandName] || { baseUpAdjustment: 0, meritAdjustment: 0 }
+  const [baseUpAdjustment, setBaseUpAdjustment] = useState(bandAdjustment.baseUpAdjustment)
+  const [meritAdjustment, setMeritAdjustment] = useState(bandAdjustment.meritAdjustment)
 
-  // localStorage에서 저장된 조정값 불러오기
+  // WageContext에서 값이 변경되면 로컬 상태 업데이트
   useEffect(() => {
-    if (typeof window !== 'undefined' && bandName) {
-      const savedAdjustments = localStorage.getItem(`bandAdjustments_${bandName}`)
-      if (savedAdjustments) {
-        const parsed = JSON.parse(savedAdjustments)
-        setBaseUpAdjustment(parsed.baseUpAdjustment || 0)
-        setMeritAdjustment(parsed.meritAdjustment || 0)
-      }
+    const adjustment = bandAdjustments[bandName]
+    if (adjustment) {
+      setBaseUpAdjustment(adjustment.baseUpAdjustment)
+      setMeritAdjustment(adjustment.meritAdjustment)
     }
-  }, [bandName])
+  }, [bandAdjustments, bandName])
 
-  // 조정값 변경 시 localStorage에 저장
+  // 로컬 조정값 변경 시 WageContext 업데이트
   useEffect(() => {
-    if (typeof window !== 'undefined' && bandName) {
-      const adjustments = { baseUpAdjustment, meritAdjustment }
-      localStorage.setItem(`bandAdjustments_${bandName}`, JSON.stringify(adjustments))
+    if (bandName) {
+      setBandAdjustments(prev => ({
+        ...prev,
+        [bandName]: {
+          baseUpAdjustment,
+          meritAdjustment
+        }
+      }))
     }
-  }, [bandName, baseUpAdjustment, meritAdjustment])
+  }, [bandName, baseUpAdjustment, meritAdjustment, setBandAdjustments])
 
   // 최종 인상률 계산 및 Context 저장
   useEffect(() => {

@@ -610,10 +610,10 @@ export async function getDashboardSummary() {
     maxRange: 0
   }
   
-  // 예산 정보 - 초기값은 0 (사용자가 조정하지 않은 상태)
-  const directBudget = 0 // 초기값 0
-  const indirectCost = 0 // 초기값 0
-  const totalBudget = 0 // 초기값 0
+  // 예산 정보 - AI 설정값 기반으로 계산하되, 사용 예산은 0
+  const directBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
+  const indirectCost = directBudget * 0.178 // 간접비용 17.8%
+  const totalBudget = directBudget + indirectCost // 총예산
   
   return {
     summary: {
@@ -624,11 +624,11 @@ export async function getDashboardSummary() {
     },
     aiRecommendation,
     budget: {
-      totalBudget: '0', // 초기값 0
-      baseUpBudget: 0, // 초기값 0
-      meritBudget: 0, // 초기값 0
-      usedBudget: 0,
-      remainingBudget: 0 // 초기값 0
+      totalBudget: Math.round(totalBudget).toString(), // 총예산
+      baseUpBudget: totalSalary * (aiRecommendation.baseUpPercentage / 100),
+      meritBudget: totalSalary * (aiRecommendation.meritIncreasePercentage / 100),
+      usedBudget: 0, // 초기 사용 예산은 0
+      remainingBudget: totalBudget // 잔여 예산 = 총예산
     },
     levelStatistics: levelStats,
     departmentDistribution,

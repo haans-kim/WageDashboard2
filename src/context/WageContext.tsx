@@ -36,6 +36,14 @@ interface WageContextType {
     }
   }
   
+  // 직군별 조정값 (PAY-BAND 페이지 슬라이더)
+  bandAdjustments: {
+    [bandName: string]: {
+      baseUpAdjustment: number
+      meritAdjustment: number
+    }
+  }
+  
   // 직군별 최종 인상률 (Pay Band에서 조정된 값)
   bandFinalRates: {
     [bandName: string]: {
@@ -55,6 +63,12 @@ interface WageContextType {
   setPerformanceWeights: (weights: PerformanceWeights) => void
   setLevelRates: (rates: any) => void
   setDetailedLevelRates: (rates: any) => void
+  setBandAdjustments: React.Dispatch<React.SetStateAction<{
+    [bandName: string]: {
+      baseUpAdjustment: number
+      meritAdjustment: number
+    }
+  }>>
   setBandFinalRates: React.Dispatch<React.SetStateAction<{
     [bandName: string]: {
       [level: string]: {
@@ -98,6 +112,12 @@ export function WageProvider({ children }: { children: ReactNode }) {
     'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
     'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
   })
+  const [bandAdjustments, setBandAdjustments] = useState<{
+    [bandName: string]: {
+      baseUpAdjustment: number
+      meritAdjustment: number
+    }
+  }>({})
   const [bandFinalRates, setBandFinalRates] = useState<{
     [bandName: string]: {
       [level: string]: {
@@ -132,6 +152,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
             'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
             'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
           })
+          setBandAdjustments(parsed.bandAdjustments ?? {})
           setBandFinalRates(parsed.bandFinalRates ?? {})
           setTotalBudget(parsed.totalBudget ?? 0)
         } catch (e) {
@@ -150,12 +171,13 @@ export function WageProvider({ children }: { children: ReactNode }) {
         performanceWeights,
         levelRates,
         detailedLevelRates,
+        bandAdjustments,
         bandFinalRates,
         totalBudget
       }
       localStorage.setItem('wageSettings', JSON.stringify(stateToSave))
     }
-  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandFinalRates, totalBudget])
+  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandAdjustments, bandFinalRates, totalBudget])
   
   // TO-BE 급여 계산 함수
   const calculateToBeSalary = (
@@ -190,6 +212,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
     performanceWeights,
     levelRates,
     detailedLevelRates,
+    bandAdjustments,
     bandFinalRates,
     totalBudget,
     setBaseUpRate,
@@ -197,6 +220,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
     setPerformanceWeights,
     setLevelRates,
     setDetailedLevelRates,
+    setBandAdjustments,
     setBandFinalRates,
     setTotalBudget,
     calculateToBeSalary
