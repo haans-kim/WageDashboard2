@@ -85,8 +85,10 @@ function BandDashboardContent() {
   }, [])
   
   // 인상률 우선순위: 1. WageContext (사용자가 조정한 값), 2. URL 파라미터, 3. AI 설정, 4. 기본값
-  const initialBaseUp = contextBaseUp || parseFloat(searchParams.get('baseUp') || '') || aiSettings?.baseUpPercentage || 3.2
-  const initialMerit = contextMerit || parseFloat(searchParams.get('merit') || '') || aiSettings?.meritIncreasePercentage || 2.5
+  const urlBaseUp = searchParams.get('baseUp') ? parseFloat(searchParams.get('baseUp')!) : null
+  const urlMerit = searchParams.get('merit') ? parseFloat(searchParams.get('merit')!) : null
+  const initialBaseUp = contextBaseUp || urlBaseUp || aiSettings?.baseUpPercentage || 3.2
+  const initialMerit = contextMerit || urlMerit || aiSettings?.meritIncreasePercentage || 2.5
   
   // fiscalYear 변경 시 처리 (현재는 사용하지 않음)
   useEffect(() => {

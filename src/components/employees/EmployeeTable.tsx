@@ -130,12 +130,14 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                       {formatKoreanCurrency(employee.currentSalary, '만원')}
                     </td>
                     <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
-                      {employee.performanceRating && (
+                      {employee.performanceRating ? (
                         <span className={`px-1 md:px-2 py-0.5 md:py-1 text-xs font-semibold rounded-full ${
                           ratingColors[employee.performanceRating as keyof typeof ratingColors] || 'bg-gray-100'
                         }`}>
                           {employee.performanceRating}
                         </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
                     <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
