@@ -72,7 +72,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
           <tr className="border-b border-gray-100">
             <td className="py-2 px-3 font-semibold text-gray-500">경쟁력 (현재)</td>
             {data.map((item) => {
-              const competitiveness = (item.sblMedian / item.caMedian) * 100
+              const competitiveness = Math.round((item.sblMedian / item.caMedian) * 100 * 10) / 10
               return (
                 <td key={`comp-${item.level}`} className="text-center py-2 px-1">
                   <span className={`inline-block px-2 py-1 rounded-md font-semibold text-sm opacity-60 ${getCompetitivenessColor(competitiveness)}`}>
@@ -88,7 +88,7 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             <tr className="bg-yellow-50">
               <td className="py-2 px-3 font-bold text-gray-700">경쟁력 (조정 후)</td>
               {data.map((item) => {
-                const adjustedCompetitiveness = ((item.sblMedianAdjusted || item.sblMedian) / item.caMedian) * 100
+                const adjustedCompetitiveness = Math.round(((item.sblMedianAdjusted || item.sblMedian) / item.caMedian) * 100 * 10) / 10
                 return (
                   <td key={`comp-adj-${item.level}`} className="text-center py-2 px-1">
                     <span className={`inline-block px-2 py-1 rounded-md font-bold text-sm ${getCompetitivenessColor(adjustedCompetitiveness)}`}>

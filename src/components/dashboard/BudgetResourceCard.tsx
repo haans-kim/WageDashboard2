@@ -64,13 +64,13 @@ function BudgetResourceCardComponent({
   
   // 총 사용 예산
   const totalUsedBudget = aiRecommendationBudget + promotionBudget + additionalBudget + indirectCostBudget
-  const usageRate = (totalUsedBudget / actualBudget) * 100
+  const usageRate = Math.round((totalUsedBudget / actualBudget) * 100 * 10) / 10
   
   // 각 항목의 비율 계산
-  const aiPercent = (aiRecommendationBudget / actualBudget) * 100
-  const promotionPercent = (promotionBudget / actualBudget) * 100
-  const additionalPercent = (additionalBudget / actualBudget) * 100
-  const indirectPercent = (indirectCostBudget / actualBudget) * 100
+  const aiPercent = Math.round((aiRecommendationBudget / actualBudget) * 100 * 10) / 10
+  const promotionPercent = Math.round((promotionBudget / actualBudget) * 100 * 10) / 10
+  const additionalPercent = Math.round((additionalBudget / actualBudget) * 100 * 10) / 10
+  const indirectPercent = Math.round((indirectCostBudget / actualBudget) * 100 * 10) / 10
   
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">

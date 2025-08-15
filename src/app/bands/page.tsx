@@ -122,21 +122,21 @@ function BandDashboardContent() {
 
   // 요약 계산 - 업데이트된 예산 영향 포함
   const summary = {
-    totalHeadcount: bands.reduce((sum, band) => sum + band.totalHeadcount, 0),
+    totalHeadcount: bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0),
     totalBudgetImpact: Object.keys(bandBudgetImpacts).length > 0 
       ? Object.values(bandBudgetImpacts).reduce((sum, impact) => sum + impact, 0)
-      : bands.reduce((sum, band) => sum + band.totalBudgetImpact, 0),
+      : bands.reduce((sum, band) => sum + (band?.totalBudgetImpact || 0), 0),
     avgBaseUpRate: bands.length > 0 
-      ? bands.reduce((sum, band) => sum + band.avgBaseUpRate * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgBaseUpRate || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0,
     avgSBLIndex: bands.length > 0
-      ? bands.reduce((sum, band) => sum + band.avgSBLIndex * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgSBLIndex || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0,
     avgCAIndex: bands.length > 0
-      ? bands.reduce((sum, band) => sum + band.avgCAIndex * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgCAIndex || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0
   }
   

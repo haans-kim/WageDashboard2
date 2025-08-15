@@ -25,7 +25,7 @@ export function LevelPieChart({ data }: LevelPieChartProps) {
   const chartData = data.map(item => ({
     name: item.level,
     value: item.employeeCount || item.count || 0,
-    percentage: item.percentage || ((item.employeeCount || item.count || 0) / totalEmployees) * 100
+    percentage: item.percentage || Math.round(((item.employeeCount || item.count || 0) / totalEmployees) * 100 * 10) / 10
   }))
 
   const CustomTooltip = ({ active, payload }: any) => {

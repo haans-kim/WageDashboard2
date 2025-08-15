@@ -67,8 +67,8 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             {payload.find((p: any) => p.dataKey === 'sblMedianAdjusted') && (
               <p className="text-xs font-semibold">
                 보상경쟁력 (조정 후): {(
-                  (payload.find((p: any) => p.dataKey === 'sblMedianAdjusted')?.value / 
-                   payload.find((p: any) => p.dataKey === 'caMedian')?.value) * 100
+                  Math.round((payload.find((p: any) => p.dataKey === 'sblMedianAdjusted')?.value / 
+                   payload.find((p: any) => p.dataKey === 'caMedian')?.value) * 100 * 10) / 10
                 ).toFixed(1)}%
               </p>
             )}

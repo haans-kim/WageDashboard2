@@ -37,7 +37,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
       </h2>
       <div className="space-y-4">
         {data.map((level) => {
-          const percentage = totalEmployees > 0 ? (level.employeeCount / totalEmployees) * 100 : 0
+          const percentage = totalEmployees > 0 ? Math.round((level.employeeCount / totalEmployees) * 100 * 10) / 10 : 0
           const colorClass = levelColors[level.level as keyof typeof levelColors] || 'bg-gray-100 text-gray-700'
           
           // 개별 레벨 값이 있으면 사용, 없으면 전체 값, 그것도 없으면 원래 값 사용
