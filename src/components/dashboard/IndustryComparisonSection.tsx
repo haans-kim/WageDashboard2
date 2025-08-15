@@ -224,13 +224,32 @@ function IndustryComparisonSectionComponent({
                 type="number"
               />
               <Tooltip 
-                formatter={(value: number) => [`${Math.round(value * 10) / 10}%`, '인상률']}
+                formatter={(value: number, name: string) => {
+                  if (name === 'adjustedValue' || value === null || value === undefined) return null
+                  return [`${Math.round(value * 10) / 10}%`, '인상률']
+                }}
                 contentStyle={{ 
                   backgroundColor: 'white', 
                   border: '1px solid #d1d5db', 
                   borderRadius: '8px',
                   fontSize: '12px',
                   fontWeight: 'bold'
+                }}
+                content={(props: any) => {
+                  if (!props.active || !props.payload) return null
+                  const validPayload = props.payload.filter((p: any) => p.dataKey !== 'adjustedValue' && p.value !== null)
+                  if (validPayload.length === 0) return null
+                  
+                  return (
+                    <div style={props.contentStyle}>
+                      <p style={{ margin: 0, fontWeight: 'bold' }}>{props.label}</p>
+                      {validPayload.map((entry: any, index: number) => (
+                        <p key={index} style={{ margin: 0, color: entry.color }}>
+                          인상률: {Math.round(entry.value * 10) / 10}%
+                        </p>
+                      ))}
+                    </div>
+                  )
                 }}
               />
               <Bar 

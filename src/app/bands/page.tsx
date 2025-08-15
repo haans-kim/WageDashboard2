@@ -7,6 +7,7 @@ import { SimpleExportButton } from '@/components/ExportButton'
 import { PayBandCompetitivenessHeatmap } from '@/components/analytics/PayBandCompetitivenessHeatmap'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { useMetadata } from '@/hooks/useMetadata'
+import { useBandData } from '@/hooks/useBandData'
 import { BandName } from '@/types/band'
 import { RateInfoCard } from '@/components/common/RateInfoCard'
 
@@ -48,6 +49,7 @@ interface BandData {
 function BandDashboardContent() {
   const searchParams = useSearchParams()
   const { bands: availableBands, loading: metadataLoading } = useMetadata()
+  const { bands: bandsFromHook, loading: bandsLoading } = useBandData()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
@@ -71,9 +73,9 @@ function BandDashboardContent() {
   const initialBaseUp = parseFloat(searchParams.get('baseUp') || '3.2')
   const initialMerit = parseFloat(searchParams.get('merit') || '2.5')
   
-  // 데이터 로드
+  // fiscalYear 변경 시 처리 (현재는 사용하지 않음)
   useEffect(() => {
-    fetchBandData()
+    // 클라이언트 데이터를 사용하므로 별도 fetch 불필요
   }, [fiscalYear])
   
   // bandRates가 변경될 때 localStorage에 저장
@@ -93,31 +95,13 @@ function BandDashboardContent() {
   // 선택된 직군 데이터
   const selectedBandData = bands.find(band => band.id === selectedBand)
 
-  const fetchBandData = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/bands?fiscalYear=${fiscalYear}`)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const result = await response.json()
-      console.log('API Response:', result) // 디버깅용
-      
-      if (result.success && result.data) {
-        setBands(result.data.bands || [])
-      } else {
-        console.error('Invalid response format:', result)
-        setBands([])
-      }
-    } catch (error) {
-      console.error('Failed to fetch band data:', error)
-      setBands([])
-    } finally {
+  // 훅에서 가져온 데이터 사용
+  useEffect(() => {
+    if (!bandsLoading && bandsFromHook) {
+      setBands(bandsFromHook)
       setLoading(false)
     }
-  }
+  }, [bandsFromHook, bandsLoading])
 
 
   // 요약 계산 - 업데이트된 예산 영향 포함
