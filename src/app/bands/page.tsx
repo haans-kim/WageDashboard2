@@ -52,7 +52,7 @@ function BandDashboardContent() {
   const searchParams = useSearchParams()
   const { bands: availableBands, loading: metadataLoading } = useMetadata()
   const { bands: bandsFromHook, loading: bandsLoading } = useBandData()
-  const { baseUpRate: contextBaseUp, meritRate: contextMerit } = useWageContext()
+  const { baseUpRate: contextBaseUp, meritRate: contextMerit, levelRates } = useWageContext()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
@@ -296,6 +296,7 @@ function BandDashboardContent() {
                 levels={totalBandData.levels}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
+                levelRates={levelRates}
                 onRateChange={(bandId, data) => {
                   // 전체 집계에서는 예산 영향 업데이트 처리 생략
                   console.log('Total band rate changed:', data)
@@ -318,6 +319,7 @@ function BandDashboardContent() {
                 levels={selectedBandData.levels}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
+                levelRates={levelRates}
                 currentRates={bandRates[selectedBandData.name]}  // 저장된 인상률 전달
                 onRateChange={(bandId, data) => {
                   // 인상률 변경 시 예산 영향 업데이트

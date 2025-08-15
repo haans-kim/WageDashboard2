@@ -91,7 +91,7 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                     현재 급여
                   </th>
                   <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    성과
+                    평가등급
                   </th>
                   <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     적용 인상률
