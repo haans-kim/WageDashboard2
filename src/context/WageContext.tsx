@@ -55,7 +55,14 @@ interface WageContextType {
   setPerformanceWeights: (weights: PerformanceWeights) => void
   setLevelRates: (rates: any) => void
   setDetailedLevelRates: (rates: any) => void
-  setBandFinalRates: (rates: any) => void
+  setBandFinalRates: React.Dispatch<React.SetStateAction<{
+    [bandName: string]: {
+      [level: string]: {
+        baseUp: number
+        merit: number
+      }
+    }
+  }>>
   setTotalBudget: (budget: number) => void
   
   // TO-BE 급여 계산 함수

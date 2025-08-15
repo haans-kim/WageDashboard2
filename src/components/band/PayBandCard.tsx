@@ -93,7 +93,14 @@ export function PayBandCard({
       })
       
       // Context에 직군별 최종 인상률 저장
-      setBandFinalRates(prev => ({
+      setBandFinalRates((prev: {
+        [bandName: string]: {
+          [level: string]: {
+            baseUp: number
+            merit: number
+          }
+        }
+      }) => ({
         ...prev,
         [bandName]: finalRates
       }))

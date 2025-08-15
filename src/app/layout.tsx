@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Navigation } from '@/components/Navigation'
+import { Navigation } from '@/components/navigation'
 import { WageProvider } from '@/context/WageContext'
 import './globals.css'
 
