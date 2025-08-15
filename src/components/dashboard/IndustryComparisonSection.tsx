@@ -45,7 +45,7 @@ function IndustryComparisonSectionComponent({
 }: IndustryComparisonSectionProps) {
   
   // C사 데이터 (엑셀에서 가져온 데이터 사용)
-  const companyIncrease = baseUpRate + meritRate // 우리 회사
+  const companyIncrease = Math.round((baseUpRate + meritRate) * 10) / 10 // 우리 회사 (소수점 1자리)
   
   // C사 평균 인상률 계산 (새 구조에서는 직접 계산 필요)
   let cCompanyIncrease = 4.2 // 기본값
@@ -131,7 +131,7 @@ function IndustryComparisonSectionComponent({
     {
       name: '우리 회사',
       value: companyIncrease,
-      adjustedValue: weightedAverageRate,
+      adjustedValue: Math.round(weightedAverageRate * 10) / 10,
       color: '#3B82F6'
     },
     {
@@ -224,7 +224,7 @@ function IndustryComparisonSectionComponent({
                 type="number"
               />
               <Tooltip 
-                formatter={(value: number) => [`${value}%`, '인상률']}
+                formatter={(value: number) => [`${Math.round(value * 10) / 10}%`, '인상률']}
                 contentStyle={{ 
                   backgroundColor: 'white', 
                   border: '1px solid #d1d5db', 
@@ -240,7 +240,7 @@ function IndustryComparisonSectionComponent({
                   position: 'top', 
                   fontSize: 12, 
                   fontWeight: 'bold',
-                  formatter: (value: any) => `${value}%` 
+                  formatter: (value: any) => `${Math.round(value * 10) / 10}%` 
                 }}
               >
                 {increaseComparisonData.map((entry, index) => (
@@ -272,7 +272,7 @@ function IndustryComparisonSectionComponent({
                         fontWeight="bold" 
                         textAnchor="middle"
                       >
-                        조정: {payload.adjustedValue.toFixed(1)}%
+                        조정: {Math.round(payload.adjustedValue * 10) / 10}%
                       </text>
                     </g>
                   )
