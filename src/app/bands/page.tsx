@@ -151,35 +151,35 @@ function BandDashboardContent() {
     totalBudgetImpact: summary.totalBudgetImpact,
     levels: ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
       const levelData = bands.flatMap(band => 
-        band.levels.filter(l => l.level === level)
-      )
+        band.levels ? band.levels.filter(l => l && l.level === level) : []
+      ).filter(l => l !== undefined && l !== null)
       
-      const totalHeadcount = levelData.reduce((sum, l) => sum + l.headcount, 0)
-      const totalBasePay = levelData.reduce((sum, l) => sum + l.meanBasePay * l.headcount, 0)
+      const totalHeadcount = levelData.reduce((sum, l) => sum + (l?.headcount || 0), 0)
+      const totalBasePay = levelData.reduce((sum, l) => sum + ((l?.meanBasePay || 0) * (l?.headcount || 0)), 0)
       
       return {
         level,
         headcount: totalHeadcount,
         meanBasePay: totalHeadcount > 0 ? totalBasePay / totalHeadcount : 0,
-        baseUpKRW: levelData.reduce((sum, l) => sum + l.baseUpKRW * l.headcount, 0) / (totalHeadcount || 1),
-        baseUpRate: levelData.reduce((sum, l) => sum + l.baseUpRate * l.headcount, 0) / (totalHeadcount || 1),
-        sblIndex: levelData.reduce((sum, l) => sum + l.sblIndex * l.headcount, 0) / (totalHeadcount || 1),
-        caIndex: levelData.reduce((sum, l) => sum + l.caIndex * l.headcount, 0) / (totalHeadcount || 1),
-        competitiveness: levelData.reduce((sum, l) => sum + l.competitiveness * l.headcount, 0) / (totalHeadcount || 1),
+        baseUpKRW: levelData.reduce((sum, l) => sum + (l?.baseUpKRW || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        baseUpRate: levelData.reduce((sum, l) => sum + (l?.baseUpRate || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        sblIndex: levelData.reduce((sum, l) => sum + (l?.sblIndex || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        caIndex: levelData.reduce((sum, l) => sum + (l?.caIndex || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        competitiveness: levelData.reduce((sum, l) => sum + (l?.competitiveness || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
         market: {
-          min: Math.min(...levelData.map(l => l.market.min)),
-          q1: levelData.reduce((sum, l) => sum + l.market.q1 * l.headcount, 0) / (totalHeadcount || 1),
-          median: levelData.reduce((sum, l) => sum + l.market.median * l.headcount, 0) / (totalHeadcount || 1),
-          q3: levelData.reduce((sum, l) => sum + l.market.q3 * l.headcount, 0) / (totalHeadcount || 1),
-          max: Math.max(...levelData.map(l => l.market.max))
+          min: levelData.length > 0 ? Math.min(...levelData.map(l => l?.market?.min || 0)) : 0,
+          q1: levelData.reduce((sum, l) => sum + (l?.market?.q1 || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          median: levelData.reduce((sum, l) => sum + (l?.market?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          q3: levelData.reduce((sum, l) => sum + (l?.market?.q3 || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          max: levelData.length > 0 ? Math.max(...levelData.map(l => l?.market?.max || 0)) : 0
         },
         company: {
-          median: levelData.reduce((sum, l) => sum + l.company.median * l.headcount, 0) / (totalHeadcount || 1),
-          mean: levelData.reduce((sum, l) => sum + l.company.mean * l.headcount, 0) / (totalHeadcount || 1),
-          values: levelData.flatMap(l => l.company.values)
+          median: levelData.reduce((sum, l) => sum + (l?.company?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          mean: levelData.reduce((sum, l) => sum + (l?.company?.mean || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          values: levelData.flatMap(l => l?.company?.values || [])
         },
         competitor: {
-          median: levelData.reduce((sum, l) => sum + l.competitor.median * l.headcount, 0) / (totalHeadcount || 1)
+          median: levelData.reduce((sum, l) => sum + (l?.competitor?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1)
         }
       }
     })
