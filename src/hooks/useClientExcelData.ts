@@ -114,17 +114,31 @@ export function useClientExcelData() {
       const employees = XLSX.utils.sheet_to_json(worksheet)
       
       // 데이터 변환 (필요한 경우)
-      const processedEmployees = employees.map((emp: any) => ({
-        employeeId: emp['사번'] || emp['employeeId'] || '',
-        name: emp['이름'] || emp['name'] || '',
-        level: emp['직급'] || emp['level'] || '',
-        band: emp['직군'] || emp['band'] || '',
-        department: emp['부서'] || emp['department'] || '',
-        currentSalary: emp['현재연봉'] || emp['currentSalary'] || 0,
-        performanceRating: emp['성과등급'] || emp['performanceRating'] || '',
-        hireDate: emp['입사일'] || emp['hireDate'] || '',
-        position: emp['직책'] || emp['position'] || ''
-      }))
+      const processedEmployees = employees.map((emp: any, index: number) => {
+        // 평가등급 필드 찾기 - 여러 가능한 컬럼명 확인
+        const rating = emp['평가등급'] || emp['평가'] || emp['성과등급'] || emp['성과'] || 
+                      emp['performanceRating'] || emp['Performance'] || emp['Rating'] || ''
+        
+        // 디버깅: 처음 몇 개 직원의 평가등급 확인
+        if (index < 3) {
+          console.log(`직원 ${index + 1} (${emp['이름'] || emp['name']}) 평가등급 매핑:`, {
+            원본데이터: emp,
+            평가등급: rating
+          })
+        }
+        
+        return {
+          employeeId: emp['사번'] || emp['employeeId'] || '',
+          name: emp['이름'] || emp['name'] || '',
+          level: emp['직급'] || emp['level'] || '',
+          band: emp['직군'] || emp['band'] || '',
+          department: emp['부서'] || emp['department'] || '',
+          currentSalary: emp['현재연봉'] || emp['currentSalary'] || 0,
+          performanceRating: rating,
+          hireDate: emp['입사일'] || emp['hireDate'] || '',
+          position: emp['직책'] || emp['position'] || ''
+        }
+      })
       
       const newData: ClientExcelData = {
         employees: processedEmployees,

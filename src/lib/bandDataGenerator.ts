@@ -293,15 +293,37 @@ export function convertToExcelFormat(employees: EmployeeRecord[]) {
 
 // 엑셀에서 읽은 데이터를 내부 형식으로 변환
 export function convertFromExcelFormat(excelData: any[]): EmployeeRecord[] {
-  return excelData.map(row => ({
-    employeeId: row['사번'] || '',
-    name: row['이름'] || '',
-    department: row['부서'] || '',
-    band: row['직군'] || '',
-    level: row['직급'] || '',
-    performanceRating: row['평가등급'] as 'S' | 'A' | 'B' | 'C' | undefined,
-    position: row['직책'] || undefined,
-    hireDate: row['입사일'] || '',
-    currentSalary: Number(row['현재연봉']) || 0
-  }))
+  // 첫 번째 행의 컬럼명 확인을 위한 디버깅
+  if (excelData.length > 0) {
+    console.log('Excel 데이터 첫 번째 행 컬럼:', Object.keys(excelData[0]))
+    console.log('Excel 데이터 샘플:', excelData[0])
+  }
+  
+  return excelData.map((row, index) => {
+    // 평가등급 데이터 체크 - 여러 가능한 컬럼명 확인
+    const rating = row['평가등급'] || row['평가'] || row['성과등급'] || row['성과'] || row['Performance'] || row['Rating']
+    if (index < 5) {
+      console.log(`직원 ${index + 1} 평가등급 매핑:`, {
+        '평가등급': row['평가등급'],
+        '평가': row['평가'],
+        '성과등급': row['성과등급'],
+        '성과': row['성과'],
+        'Performance': row['Performance'],
+        'Rating': row['Rating'],
+        '최종값': rating
+      })
+    }
+    
+    return {
+      employeeId: row['사번'] || '',
+      name: row['이름'] || '',
+      department: row['부서'] || '',
+      band: row['직군'] || '',
+      level: row['직급'] || '',
+      performanceRating: rating as 'S' | 'A' | 'B' | 'C' | undefined,
+      position: row['직책'] || undefined,
+      hireDate: row['입사일'] || '',
+      currentSalary: Number(row['현재연봉']) || 0
+    }
+  })
 }

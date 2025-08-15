@@ -83,11 +83,16 @@ export function useEmployeesData(filters: {
           
           const paginatedEmployees = filtered.slice(start, end)
           
-          // ID 추가 (없는 경우)
-          const employeesWithId = paginatedEmployees.map((emp: any, index: number) => ({
-            ...emp,
-            id: emp.id || emp.employeeId || `emp-${index}`
-          }))
+          // ID 추가 (없는 경우) 및 평가등급 확인
+          const employeesWithId = paginatedEmployees.map((emp: any, index: number) => {
+            if (index < 3) {
+              console.log(`직원 ${emp.name} 평가등급:`, emp.performanceRating)
+            }
+            return {
+              ...emp,
+              id: emp.id || emp.employeeId || `emp-${index}`
+            }
+          })
           
           setData({
             employees: employeesWithId,
