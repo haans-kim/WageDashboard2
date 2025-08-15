@@ -31,6 +31,7 @@ interface GradeSalaryAdjustmentTableProps {
   onTotalBudgetChange?: (totalBudget: number) => void
   enableAdditionalIncrease?: boolean  // 추가 인상 활성화 여부
   onAdditionalBudgetChange?: (additionalBudget: number) => void  // 추가 인상 총액 콜백
+  onPromotionBudgetChange?: (levelBudgets: {[key: string]: number}) => void  // 승급/승격 예산 콜백
   onLevelTotalRatesChange?: (levelRates: {[key: string]: number}, weightedAverage: number) => void  // 직급별 총 인상률 및 가중평균 콜백
   onMeritWeightedAverageChange?: (weightedAverage: number) => void  // 성과인상률 가중평균 콜백
   initialRates?: { [key: string]: LevelRates }  // 초기 인상률 값
@@ -100,6 +101,7 @@ function GradeSalaryAdjustmentTableComponent({
   onTotalBudgetChange,
   enableAdditionalIncrease = false,
   onAdditionalBudgetChange,
+  onPromotionBudgetChange,
   onLevelTotalRatesChange,
   onMeritWeightedAverageChange,
   initialRates,
@@ -145,9 +147,9 @@ function GradeSalaryAdjustmentTableComponent({
     })
   }, [baseUpRate, meritRate, enableAdditionalIncrease])
   
-  // 직급별 총계 계산 (① + ③)
+  // 직급별 총계 계산 (① + ③만, 승급/승격은 제외)
   const calculateLevelTotal = (levelRates: LevelRates): number => {
-    // Base-up + 성과 + 추가 (승급/승격은 제외)
+    // Base-up + 성과 + 추가만 (승급/승격은 일부 대상자만 해당하므로 제외)
     return levelRates.baseUp + levelRates.merit + levelRates.additional
   }
   
@@ -229,7 +231,8 @@ function GradeSalaryAdjustmentTableComponent({
     if (onTotalBudgetChange) {
       onTotalBudgetChange(totalSummary.totalAmount)
     }
-  }, [totalSummary.totalAmount, onTotalBudgetChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalSummary.totalAmount])
   
   // 추가 인상 총액 계산 및 상위 컴포넌트에 알림
   useEffect(() => {
@@ -244,7 +247,24 @@ function GradeSalaryAdjustmentTableComponent({
       onAdditionalBudgetChange(additionalTotal)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rates, onAdditionalBudgetChange])
+  }, [rates])
+  
+  // 승급/승격 예산 계산 및 상위 컴포넌트에 알림
+  useEffect(() => {
+    if (onPromotionBudgetChange) {
+      const promotionBudgets: {[key: string]: number} = {}
+      Object.entries(rates).forEach(([level, rate]) => {
+        const data = employeeData.levels[level]
+        if (data) {
+          // 승급 + 승격 예산 합계 (연간)
+          const promotionBudget = data.headcount * data.averageSalary * ((rate.promotion + rate.advancement) / 100)
+          promotionBudgets[level] = promotionBudget
+        }
+      })
+      onPromotionBudgetChange(promotionBudgets)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates])
   
   // 직급별 총 인상률 및 가중평균 계산 및 상위 컴포넌트에 알림
   useEffect(() => {
@@ -287,7 +307,7 @@ function GradeSalaryAdjustmentTableComponent({
       onMeritWeightedAverageChange(meritWeightedAverage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rates]) // employeeData를 의존성에서 제거
+  }, [rates])
   
   // 전체 요약 정보를 상위 컴포넌트에 알림
   useEffect(() => {
@@ -298,7 +318,8 @@ function GradeSalaryAdjustmentTableComponent({
         totalRate: totalSummary.totalRate
       })
     }
-  }, [totalSummary, onTotalSummaryChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalSummary.avgBaseUp, totalSummary.avgMerit, totalSummary.totalRate])
   
   const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   

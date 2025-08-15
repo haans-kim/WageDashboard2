@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWageContext } from '@/context/WageContext'
 import { SalaryDistributionChart } from '@/components/analytics/SalaryDistributionChart'
 import { ProjectionChart } from '@/components/analytics/ProjectionChart'
@@ -16,6 +17,7 @@ import { SimpleExportButton } from '@/components/ExportButton'
 import { RateInfoCard } from '@/components/common/RateInfoCard'
 
 export default function AnalyticsPage() {
+  const router = useRouter()
   const { baseUpRate, meritRate, performanceWeights, levelRates } = useWageContext()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -28,9 +30,12 @@ export default function AnalyticsPage() {
     try {
       const response = await fetch('/api/analytics')
       const result = await response.json()
-      setData(result)
+      
+      // 데이터가 없어도 페이지는 표시 (빈 차트로)
+      setData(result || {})
     } catch (error) {
       console.error('Failed to fetch analytics:', error)
+      setData({})
     } finally {
       setLoading(false)
     }

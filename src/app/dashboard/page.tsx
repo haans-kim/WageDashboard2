@@ -182,12 +182,24 @@ export default function Home() {
     }
   }
   
-  // 승급/승격 예산 업데이트 핸들러
+  // 승급/승격 예산 업데이트 핸들러 (개별 레벨)
   const updatePromotionBudget = (level: string, value: number) => {
     setPromotionBudgets(prev => ({
       ...prev,
       [level]: value
     }))
+  }
+  
+  // 승급/승격 예산 업데이트 핸들러 (전체 레벨)
+  const updateAllPromotionBudgets = (levelBudgets: {[key: string]: number}) => {
+    // 직급별 예산을 억원 단위로 변환
+    const budgets = {
+      lv4: (levelBudgets['Lv.4'] || 0) / 100000000,
+      lv3: (levelBudgets['Lv.3'] || 0) / 100000000,
+      lv2: (levelBudgets['Lv.2'] || 0) / 100000000,
+      lv1: (levelBudgets['Lv.1'] || 0) / 100000000
+    }
+    setPromotionBudgets(budgets)
   }
   
   // 추가 인상 예산 업데이트 핸들러
@@ -514,6 +526,7 @@ export default function Home() {
             }}
             enableAdditionalIncrease={enableAdditionalIncrease}
             onAdditionalBudgetChange={setCalculatedAdditionalBudget}
+            onPromotionBudgetChange={updateAllPromotionBudgets}  // 승급/승격 예산 콜백 추가
             onLevelTotalRatesChange={(rates, avgRate) => {
               setLevelTotalRates(rates)
               setWeightedAverageRate(avgRate)

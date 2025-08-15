@@ -417,9 +417,9 @@ export async function getDashboardSummary() {
     maxRange: 5.9
   }
   
-  // 예산 정보 (AI 설정값 기반으로 동적 계산 + 간접비용 22.6% 포함)
+  // 예산 정보 (AI 설정값 기반으로 동적 계산 + 간접비용 17.8% 포함)
   const directBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
-  const indirectCost = directBudget * 0.226 // 간접비용 22.6%
+  const indirectCost = directBudget * 0.178 // 간접비용 17.8% (퇴직급여 4.5% + 4대보험 11.3% + 개인연금 2.0%)
   const totalBudget = directBudget + indirectCost // 총예산 = 직접비용 + 간접비용
   
   return {
@@ -431,7 +431,7 @@ export async function getDashboardSummary() {
     },
     aiRecommendation,
     budget: {
-      totalBudget: totalBudget.toString(), // 총예산 (간접비용 포함)
+      totalBudget: Math.round(totalBudget).toString(), // 총예산 (간접비용 포함, 소수점 제거)
       baseUpBudget: totalSalary * (aiRecommendation.baseUpPercentage / 100),
       meritBudget: totalSalary * (aiRecommendation.meritIncreasePercentage / 100),
       usedBudget: 0,

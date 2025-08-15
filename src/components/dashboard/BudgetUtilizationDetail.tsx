@@ -49,7 +49,7 @@ function BudgetUtilizationDetailComponent({
   totalSalaryBase = 283034052564, // 총급여베이스
   totalBudget = 30000000000, // 총예산 기본값 300억
   levelStatistics,
-  promotionBudgets = { lv2: 0, lv3: 0, lv4: 0 },
+  promotionBudgets = { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
   onPromotionBudgetChange,
   additionalBudget = 0,
   onAdditionalBudgetChange,
@@ -83,11 +83,12 @@ function BudgetUtilizationDetailComponent({
     aiTotalBudget = baseUpBudget + meritBudget
   }
   
-  // 카드 2: 승급/승격 인상률 예산 (사용자 입력)
-  const promotionLv2 = promotionBudgets.lv2
-  const promotionLv3 = promotionBudgets.lv3
-  const promotionLv4 = promotionBudgets.lv4
-  const promotionTotal = promotionLv2 + promotionLv3 + promotionLv4
+  // 카드 2: 승급/승격 인상률 예산 (자동 계산, 억원 단위로 저장됨)
+  const promotionLv1 = promotionBudgets.lv1 * 100000000 // 억원 -> 원
+  const promotionLv2 = promotionBudgets.lv2 * 100000000
+  const promotionLv3 = promotionBudgets.lv3 * 100000000
+  const promotionLv4 = promotionBudgets.lv4 * 100000000
+  const promotionTotal = promotionLv1 + promotionLv2 + promotionLv3 + promotionLv4
   
   // 카드 3: 추가 인상 가능 범위 계산
   // 간접비용 비중 (퇴직급여 4.5% + 4대보험 11.3% + 개인연금 2.0% = 17.8%)
@@ -173,50 +174,40 @@ function BudgetUtilizationDetailComponent({
             <div className="flex justify-between items-center">
               <span className="text-base text-gray-700">Lv.4</span>
               <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={Math.round(promotionLv4)}
-                  onChange={(e) => onPromotionBudgetChange?.('lv4', parseFloat(e.target.value || '0'))}
-                  className="w-32 px-2 py-1.5 text-right text-base font-semibold border border-gray-300 rounded"
-                  placeholder="0"
-                  step="1"
-                />
-                <span className="text-base text-gray-600">원</span>
+                <span className="font-semibold text-gray-900 text-base">
+                  {formatKoreanCurrency(promotionLv4, '억원', 100000000)}
+                </span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-base text-gray-700">Lv.3</span>
               <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={Math.round(promotionLv3)}
-                  onChange={(e) => onPromotionBudgetChange?.('lv3', parseFloat(e.target.value || '0'))}
-                  className="w-32 px-2 py-1.5 text-right text-base font-semibold border border-gray-300 rounded"
-                  placeholder="0"
-                  step="1"
-                />
-                <span className="text-base text-gray-600">원</span>
+                <span className="font-semibold text-gray-900 text-base">
+                  {formatKoreanCurrency(promotionLv3, '억원', 100000000)}
+                </span>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-base text-gray-700">Lv.2</span>
               <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={Math.round(promotionLv2)}
-                  onChange={(e) => onPromotionBudgetChange?.('lv2', parseFloat(e.target.value || '0'))}
-                  className="w-32 px-2 py-1.5 text-right text-base font-semibold border border-gray-300 rounded"
-                  placeholder="0"
-                  step="1"
-                />
-                <span className="text-base text-gray-600">원</span>
+                <span className="font-semibold text-gray-900 text-base">
+                  {formatKoreanCurrency(promotionLv2, '억원', 100000000)}
+                </span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-base text-gray-700">Lv.1</span>
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-gray-900 text-base">
+                  {formatKoreanCurrency(promotionBudgets.lv1 || 0, '억원', 100000000)}
+                </span>
               </div>
             </div>
             <div className="flex justify-between pt-2 border-t border-green-200">
               <span className="font-semibold text-gray-700 text-base">합계</span>
               <div className="text-right">
                 <span className="font-bold text-green-600 text-lg">
-                  {Math.round(promotionTotal).toLocaleString('ko-KR')}원
+                  {formatKoreanCurrency(promotionTotal, '억원', 100000000)}
                 </span>
                 <span className="text-sm text-gray-500 ml-1">
                   ({((promotionTotal / totalBudget) * 100).toFixed(1)}% 활용)

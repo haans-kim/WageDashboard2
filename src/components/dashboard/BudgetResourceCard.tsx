@@ -43,11 +43,11 @@ function BudgetResourceCardComponent({
     ? customTotalBudget
     : totalBudget
   
-  // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
-  let aiRecommendationBudget = budgetDetails?.aiRecommendation || 16132940996 // 카드 1: AI 적정 인상률 예산
-  let promotionBudget = budgetDetails?.promotion || 151924823 // 카드 2: 승급/승격 예산
-  let additionalBudget = budgetDetails?.additional || 4499898100 // 카드 3: 추가 인상
-  let indirectCostBudget = budgetDetails?.indirect || 3699687978 // 카드 4: 간접비용
+  // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 0
+  let aiRecommendationBudget = budgetDetails?.aiRecommendation || 0 // 카드 1: AI 적정 인상률 예산
+  let promotionBudget = budgetDetails?.promotion || 0 // 카드 2: 승급/승격 예산
+  let additionalBudget = budgetDetails?.additional || 0 // 카드 3: 추가 인상
+  let indirectCostBudget = budgetDetails?.indirect || 0 // 카드 4: 간접비용
   
   // 레벨별 계산이 있고 budgetDetails가 없을 경우만 계산
   if (levelRates && levelStatistics && !budgetDetails) {

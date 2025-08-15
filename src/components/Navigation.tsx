@@ -37,7 +37,7 @@ export function Navigation({ children }: NavigationProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                     pathname === item.href
                       ? 'bg-primary-100 text-primary-700'
                       : 'text-gray-700 hover:bg-gray-100'
@@ -92,7 +92,7 @@ export function Navigation({ children }: NavigationProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors ${
                   pathname === item.href
                     ? 'bg-primary-100 text-primary-700'
                     : 'text-gray-700 hover:bg-gray-100'
