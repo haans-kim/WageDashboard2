@@ -13,6 +13,7 @@ export interface EmployeeRecord {
   hireDate: string            // 입사일
   currentSalary: number       // 현재 연봉
   performanceRating?: 'S' | 'A' | 'B' | 'C'  // 평가등급
+  company?: string            // 회사 (SBL, C사 등)
 }
 
 // 직군 정의

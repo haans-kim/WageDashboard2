@@ -1,29 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useWageContext } from '@/context/WageContext'
 
-interface Employee {
-  id: string
-  name: string
+interface LevelData {
   level: string
-  band: string
-  currentSalary: number
-  performanceRating?: string
+  headcount: number
+  competitiveness: number
+  sblIndex: number  // 우리회사 vs C사 경쟁력 (%)
+  caIndex: number   // C사 평균 급여
 }
 
 interface BandData {
-  band: string
-  minSalary: number
-  q1Salary: number
-  medianSalary: number
-  q3Salary: number
-  maxSalary: number
+  id: string
+  name: string
+  levels: LevelData[]
 }
 
 export function PayBandCompetitivenessHeatmap() {
-  const { calculateToBeSalary } = useWageContext()
-  const [employees, setEmployees] = useState<Employee[]>([])
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   
@@ -33,16 +26,12 @@ export function PayBandCompetitivenessHeatmap() {
   
   const fetchData = async () => {
     try {
-      const [empResponse, bandResponse] = await Promise.all([
-        fetch('/api/employees'),
-        fetch('/api/bands')
-      ])
+      const response = await fetch('/api/bands')
+      const data = await response.json()
       
-      const empData = await empResponse.json()
-      const bandData = await bandResponse.json()
-      
-      setEmployees(empData.employees || [])
-      setBands(bandData.bands || [])
+      if (data.success && data.data) {
+        setBands(data.data.bands || [])
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
@@ -50,65 +39,51 @@ export function PayBandCompetitivenessHeatmap() {
     }
   }
   
-  // 경쟁력 상태 계산
-  const getCompetitivenessStatus = (salary: number, band: BandData) => {
-    if (salary < band.q1Salary) return 'under' // 경쟁력 부족
-    if (salary > band.q3Salary) return 'over'  // 경쟁력 우위
-    return 'fit' // 적정
+  // 색상 결정 함수
+  const getCellColor = (value: number) => {
+    if (!value || value === 0) return 'bg-gray-100 text-gray-400'
+    
+    if (value < 95) {
+      // 경쟁력 부족 (빨간색)
+      if (value < 85) return 'bg-red-600 text-white'
+      if (value < 90) return 'bg-red-500 text-white'
+      return 'bg-red-400 text-white'
+    } else if (value >= 95 && value <= 105) {
+      // 적정 (초록색)
+      if (value >= 98 && value <= 102) return 'bg-green-500 text-white'
+      return 'bg-green-400 text-white'
+    } else {
+      // 경쟁력 우위 (파란색)
+      if (value > 115) return 'bg-blue-600 text-white'
+      if (value > 110) return 'bg-blue-500 text-white'
+      return 'bg-blue-400 text-white'
+    }
   }
   
-  // 직급별, 밴드별 경쟁력 집계
-  const analyzeCompetitiveness = () => {
-    const levels = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
-    const analysis: any = {}
-    const summary = { under: [], fit: [], over: [] } as any
+  // 요약 통계 계산
+  const calculateSummary = () => {
+    let totalUnder = 0
+    let totalFit = 0
+    let totalOver = 0
+    let totalCount = 0
     
-    // 디버깅을 위한 로그
-    console.log('Analyzing competitiveness:', { 
-      employeesCount: employees.length, 
-      bandsCount: bands.length 
-    })
-    
-    levels.forEach(level => {
-      analysis[level] = {}
-      bands.forEach(band => {
-        const levelBandEmployees = employees.filter(
-          emp => emp.level === level && emp.band === band.band
-        )
-        
-        if (levelBandEmployees.length > 0) {
-          console.log(`Found ${levelBandEmployees.length} employees for ${level}/${band.band}`)
-        }
-        
-        const statuses = levelBandEmployees.map(emp => {
-          const toBeSalary = calculateToBeSalary(emp.currentSalary, emp.level, emp.performanceRating)
-          const status = getCompetitivenessStatus(toBeSalary, band)
-          
-          // 요약 데이터에 추가
-          if (status === 'under') {
-            summary.under.push({ ...emp, toBeSalary, band: band.band })
-          } else if (status === 'over') {
-            summary.over.push({ ...emp, toBeSalary, band: band.band })
+    bands.forEach(band => {
+      band.levels.forEach(level => {
+        const value = level.sblIndex  // 우리회사 vs C사 경쟁력
+        if (level.headcount > 0) {
+          totalCount += level.headcount
+          if (value < 95) {
+            totalUnder += level.headcount
+          } else if (value >= 95 && value <= 105) {
+            totalFit += level.headcount
           } else {
-            summary.fit.push({ ...emp, toBeSalary, band: band.band })
+            totalOver += level.headcount
           }
-          
-          return status
-        })
-        
-        const counts = {
-          under: statuses.filter(s => s === 'under').length,
-          fit: statuses.filter(s => s === 'fit').length,
-          over: statuses.filter(s => s === 'over').length,
-          total: levelBandEmployees.length
         }
-        
-        analysis[level][band.band] = counts
       })
     })
     
-    console.log('Analysis result:', { analysis, summary })
-    return { analysis, summary }
+    return { totalUnder, totalFit, totalOver, totalCount }
   }
   
   if (loading) {
@@ -122,28 +97,19 @@ export function PayBandCompetitivenessHeatmap() {
     )
   }
   
-  const { analysis, summary } = analyzeCompetitiveness()
-  const levels = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
+  const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
+  const summary = calculateSummary()
   
-  // 히트맵 색상 결정
-  const getHeatmapColor = (counts: any) => {
-    if (!counts || counts.total === 0) return 'bg-gray-50'
-    
-    const underRatio = counts.under / counts.total
-    const overRatio = counts.over / counts.total
-    
-    if (underRatio > 0.5) return 'bg-red-100 border-red-200' // 부족 많음
-    if (overRatio > 0.5) return 'bg-blue-100 border-blue-200' // 초과 많음
-    if (counts.fit / counts.total > 0.5) return 'bg-green-100 border-green-200' // 적정 많음
-    return 'bg-yellow-50 border-yellow-200' // 혼재
-  }
   
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
       <div className="px-6 py-4 border-b border-slate-100">
         <h3 className="text-base font-semibold text-slate-800">
-          Pay Band 경쟁력 분석 (TO-BE 기준)
+          우리회사 vs C사 경쟁력 분석
         </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          각 직군×직급별 평균급여 비교 (우리회사/C사 × 100%)
+        </p>
       </div>
       
       <div className="p-6">
@@ -154,41 +120,121 @@ export function PayBandCompetitivenessHeatmap() {
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="text-left text-sm font-medium text-slate-600 pb-3">직급/직군</th>
-                    {bands.map(band => (
-                      <th key={band.band} className="text-center text-sm font-medium text-slate-600 pb-3 px-2">
-                        {band.band}
+                    <th className="text-left text-sm font-medium text-slate-600 pb-3 px-3">직군 / 직급</th>
+                    {levels.map(level => (
+                      <th key={level} className="text-center text-sm font-medium text-slate-600 pb-3 px-2 min-w-[80px]">
+                        {level}
                       </th>
                     ))}
+                    <th className="text-center text-sm font-medium text-slate-600 pb-3 px-2 min-w-[80px]">평균</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {levels.map(level => (
-                    <tr key={level}>
-                      <td className="text-sm font-medium text-slate-700 py-2">{level}</td>
-                      {bands.map(band => {
-                        const counts = analysis[level][band.band]
-                        return (
-                          <td key={band.band} className="p-1">
-                            <div className={`rounded-lg border p-3 text-center ${getHeatmapColor(counts)}`}>
-                              {counts?.total > 0 ? (
-                                <div>
-                                  <div className="text-lg font-bold text-slate-900">{counts.total}</div>
-                                  <div className="text-xs text-slate-600 mt-1">
-                                    {counts.under > 0 && <span className="text-red-600">↓{counts.under} </span>}
-                                    {counts.fit > 0 && <span className="text-green-600">●{counts.fit} </span>}
-                                    {counts.over > 0 && <span className="text-blue-600">↑{counts.over}</span>}
+                  {bands.map((band, idx) => {
+                    // 직군별 평균 계산
+                    let totalValue = 0
+                    let totalHeadcount = 0
+                    band.levels.forEach(level => {
+                      const value = level.sblIndex  // 우리회사 vs C사 경쟁력
+                      if (level.headcount > 0) {
+                        totalValue += value * level.headcount
+                        totalHeadcount += level.headcount
+                      }
+                    })
+                    const avgValue = totalHeadcount > 0 ? totalValue / totalHeadcount : 0
+                    
+                    return (
+                      <tr key={band.id} className={idx % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className="text-sm font-medium text-slate-700 py-2 px-3">
+                          {band.name}
+                        </td>
+                        {levels.map(levelName => {
+                          const levelData = band.levels.find(l => l.level === levelName)
+                          const value = levelData?.sblIndex || 0  // 우리회사 vs C사 경쟁력
+                          const headcount = levelData?.headcount || 0
+                          
+                          return (
+                            <td key={levelName} className="p-1">
+                              <div className={`rounded-lg p-3 text-center transition-all ${getCellColor(value)}`}>
+                                {headcount > 0 ? (
+                                  <div>
+                                    <div className="text-lg font-bold">
+                                      {value}%
+                                    </div>
+                                    <div className="text-xs opacity-80 mt-1">
+                                      {headcount}명
+                                    </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className="text-sm text-slate-400">-</div>
-                              )}
+                                ) : (
+                                  <div className="text-sm">-</div>
+                                )}
+                              </div>
+                            </td>
+                          )
+                        })}
+                        <td className="p-1">
+                          <div className={`rounded-lg p-3 text-center ${getCellColor(avgValue)}`}>
+                            <div className="text-lg font-bold">
+                              {avgValue > 0 ? `${avgValue.toFixed(1)}%` : '-'}
                             </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                  
+                  {/* 전체 평균 행 */}
+                  <tr className="border-t-2 border-gray-300 bg-gray-100">
+                    <td className="text-sm font-semibold text-slate-900 py-2 px-3">전체 평균</td>
+                    {levels.map(levelName => {
+                      let totalValue = 0
+                      let totalHeadcount = 0
+                      
+                      bands.forEach(band => {
+                        const levelData = band.levels.find(l => l.level === levelName)
+                        if (levelData && levelData.headcount > 0) {
+                          const value = levelData.sblIndex  // 우리회사 vs C사 경쟁력
+                          totalValue += value * levelData.headcount
+                          totalHeadcount += levelData.headcount
+                        }
+                      })
+                      
+                      const avgValue = totalHeadcount > 0 ? totalValue / totalHeadcount : 0
+                      
+                      return (
+                        <td key={levelName} className="p-1">
+                          <div className={`rounded-lg p-3 text-center ${getCellColor(avgValue)}`}>
+                            <div className="text-lg font-bold">
+                              {avgValue > 0 ? `${avgValue.toFixed(1)}%` : '-'}
+                            </div>
+                          </div>
+                        </td>
+                      )
+                    })}
+                    <td className="p-1">
+                      <div className="rounded-lg p-3 text-center bg-gray-200">
+                        <div className="text-lg font-bold text-slate-900">
+                          {(() => {
+                            let totalValue = 0
+                            let totalHeadcount = 0
+                            
+                            bands.forEach(band => {
+                              band.levels.forEach(level => {
+                                if (level.headcount > 0) {
+                                  const value = level.sblIndex  // 우리회사 vs C사 경쟁력
+                                  totalValue += value * level.headcount
+                                  totalHeadcount += level.headcount
+                                }
+                              })
+                            })
+                            
+                            const avg = totalHeadcount > 0 ? totalValue / totalHeadcount : 0
+                            return avg > 0 ? `${avg.toFixed(1)}%` : '-'
+                          })()}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -196,16 +242,16 @@ export function PayBandCompetitivenessHeatmap() {
             {/* 범례 */}
             <div className="flex items-center gap-4 mt-4 text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
-                <span className="text-slate-600">경쟁력 부족 다수</span>
+                <div className="w-4 h-4 bg-red-500 rounded"></div>
+                <span className="text-slate-600">&lt;95% (경쟁력 부족)</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
-                <span className="text-slate-600">적정 다수</span>
+                <div className="w-4 h-4 bg-green-500 rounded"></div>
+                <span className="text-slate-600">95-105% (적정)</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded"></div>
-                <span className="text-slate-600">경쟁력 우위 다수</span>
+                <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                <span className="text-slate-600">&gt;105% (경쟁력 우위)</span>
               </div>
             </div>
           </div>
@@ -215,19 +261,12 @@ export function PayBandCompetitivenessHeatmap() {
             {/* 경쟁력 부족 */}
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-red-900">경쟁력 부족</h4>
-                <span className="text-xl font-bold text-red-600">{summary.under.length}명</span>
+                <h4 className="text-sm font-semibold text-red-900">경쟁력 부족 (&lt;95%)</h4>
+                <span className="text-xl font-bold text-red-600">{summary.totalUnder}명</span>
               </div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {summary.under.slice(0, 5).map((emp: any, idx: number) => (
-                  <div key={idx} className="text-xs text-red-700">
-                    {emp.name} ({emp.level}/{emp.band})
-                  </div>
-                ))}
-                {summary.under.length > 5 && (
-                  <div className="text-xs text-red-600 font-medium">
-                    외 {summary.under.length - 5}명...
-                  </div>
+              <div className="text-xs text-red-700">
+                {summary.totalCount > 0 && (
+                  <div>전체 인원의 {((summary.totalUnder / summary.totalCount) * 100).toFixed(1)}%</div>
                 )}
               </div>
             </div>
@@ -235,19 +274,12 @@ export function PayBandCompetitivenessHeatmap() {
             {/* 적정 */}
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-green-900">적정</h4>
-                <span className="text-xl font-bold text-green-600">{summary.fit.length}명</span>
+                <h4 className="text-sm font-semibold text-green-900">적정 (95-105%)</h4>
+                <span className="text-xl font-bold text-green-600">{summary.totalFit}명</span>
               </div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {summary.fit.slice(0, 5).map((emp: any, idx: number) => (
-                  <div key={idx} className="text-xs text-green-700">
-                    {emp.name} ({emp.level}/{emp.band})
-                  </div>
-                ))}
-                {summary.fit.length > 5 && (
-                  <div className="text-xs text-green-600 font-medium">
-                    외 {summary.fit.length - 5}명...
-                  </div>
+              <div className="text-xs text-green-700">
+                {summary.totalCount > 0 && (
+                  <div>전체 인원의 {((summary.totalFit / summary.totalCount) * 100).toFixed(1)}%</div>
                 )}
               </div>
             </div>
@@ -255,20 +287,22 @@ export function PayBandCompetitivenessHeatmap() {
             {/* 경쟁력 우위 */}
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-blue-900">경쟁력 우위</h4>
-                <span className="text-xl font-bold text-blue-600">{summary.over.length}명</span>
+                <h4 className="text-sm font-semibold text-blue-900">경쟁력 우위 (&gt;105%)</h4>
+                <span className="text-xl font-bold text-blue-600">{summary.totalOver}명</span>
               </div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {summary.over.slice(0, 5).map((emp: any, idx: number) => (
-                  <div key={idx} className="text-xs text-blue-700">
-                    {emp.name} ({emp.level}/{emp.band})
-                  </div>
-                ))}
-                {summary.over.length > 5 && (
-                  <div className="text-xs text-blue-600 font-medium">
-                    외 {summary.over.length - 5}명...
-                  </div>
+              <div className="text-xs text-blue-700">
+                {summary.totalCount > 0 && (
+                  <div>전체 인원의 {((summary.totalOver / summary.totalCount) * 100).toFixed(1)}%</div>
                 )}
+              </div>
+            </div>
+            
+            {/* 전체 통계 */}
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">전체 분석 대상</h4>
+              <div className="text-2xl font-bold text-gray-800">{summary.totalCount}명</div>
+              <div className="text-xs text-gray-600 mt-1">
+                {bands.length}개 직군 × {levels.length}개 직급
               </div>
             </div>
           </div>

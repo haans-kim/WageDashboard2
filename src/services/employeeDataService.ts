@@ -22,16 +22,16 @@ let cachedAISettings: {
   maxRange: number
 } | null = null
 
+// 경쟁사 데이터 구조 (집계 데이터)
+interface CompetitorData {
+  company: string      // 회사명 (C사)
+  band: string        // 직군
+  level: string       // 직급
+  averageSalary: number  // 평균연봉
+}
+
 // 경쟁사 데이터 캐시
-let cachedCompetitorData: {
-  averageIncrease?: number
-  levelSalaries?: {
-    'Lv.1'?: number
-    'Lv.2'?: number
-    'Lv.3'?: number
-    'Lv.4'?: number
-  }
-} | null = null
+let cachedCompetitorData: CompetitorData[] | null = null
 
 // 메모리 내 수정된 데이터 저장
 let modifiedEmployeeData: EmployeeRecord[] | null = null
@@ -76,20 +76,33 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         }
       }
       
-      // 경쟁사데이터 시트 읽기
-      if (workbook.SheetNames.includes('경쟁사데이터')) {
-        const competitorSheet = workbook.Sheets['경쟁사데이터']
-        const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+      // 경쟁사데이터 시트 읽기 (C사 집계 데이터)
+      if (workbook.SheetNames.includes('C사데이터') || workbook.SheetNames.includes('경쟁사데이터')) {
+        const sheetName = workbook.SheetNames.includes('C사데이터') ? 'C사데이터' : '경쟁사데이터'
+        const competitorSheet = workbook.Sheets[sheetName]
+        const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
         
-        cachedCompetitorData = {
-          averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
-          levelSalaries: {
-            'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
-            'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
-            'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
-            'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+        // 집계 데이터 형식으로 변환
+        const competitorData: CompetitorData[] = []
+        competitorRawData.forEach((row: any) => {
+          const band = row['직군']
+          if (band) {
+            // 각 레벨에 대한 데이터 처리
+            ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+              if (row[level]) {
+                competitorData.push({
+                  company: 'C사',
+                  band: band,
+                  level: level,
+                  averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                })
+              }
+            })
           }
-        }
+        })
+        
+        cachedCompetitorData = competitorData
+        console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
       }
       
       // 직원 데이터 읽기 (직원기본정보 시트 우선, 없으면 첫 번째 시트)
@@ -268,6 +281,13 @@ export function getAISettings() {
 }
 
 /**
+ * 경쟁사 데이터 가져오기
+ */
+export function getCompetitorData(): CompetitorData[] {
+  return cachedCompetitorData || []
+}
+
+/**
  * 직급별 통계 계산 (대시보드용)
  */
 export async function getLevelStatistics() {
@@ -304,6 +324,7 @@ export async function getBandStatistics() {
  */
 export async function getBandLevelDetails() {
   const employees = await getEmployeeData()
+  const competitorData = getCompetitorData()
   
   // 실제 데이터에서 유니크한 직군 추출
   const uniqueBands = Array.from(new Set(employees.map(e => e.band).filter(Boolean))).sort()
@@ -319,27 +340,31 @@ export async function getBandLevelDetails() {
       const levelEmployees = bandEmployees.filter(e => e.level === level)
       const salaries = levelEmployees.map(e => e.currentSalary)
       
-      // 시장 데이터 (가상)
-      const marketMedian = level === 'Lv.4' ? 115000000 :
-                          level === 'Lv.3' ? 92000000 :
-                          level === 'Lv.2' ? 72000000 :
-                          level === 'Lv.1' ? 56000000 : 40000000
-      
-      const meanSalary = salaries.length > 0 
+      // 우리 회사 평균 급여
+      const ourAvgSalary = salaries.length > 0 
         ? salaries.reduce((a, b) => a + b, 0) / salaries.length 
         : 0
       
-      const competitiveness = meanSalary ? (meanSalary / marketMedian) * 100 : 0
+      // C사 평균 급여 찾기
+      const competitorEntry = competitorData.find(
+        c => c.band === bandName && c.level === level
+      )
+      const competitorAvgSalary = competitorEntry?.averageSalary || 0
+      
+      // 경쟁력 계산 (우리 회사 / C사 * 100)
+      const competitiveness = competitorAvgSalary > 0 
+        ? Math.round((ourAvgSalary / competitorAvgSalary) * 100)
+        : 0
       
       return {
         level,
         headcount: levelEmployees.length,
-        meanBasePay: meanSalary,
-        baseUpKRW: Math.round(meanSalary * 0.032),
+        meanBasePay: ourAvgSalary,
+        baseUpKRW: Math.round(ourAvgSalary * 0.032),
         baseUpRate: 3.2,
-        sblIndex: Math.round(competitiveness),
-        caIndex: Math.round(competitiveness * 1.05),
-        competitiveness: Math.round(competitiveness),
+        sblIndex: competitiveness,  // 우리회사 vs C사 경쟁력
+        caIndex: competitorAvgSalary,  // C사 평균 급여
+        competitiveness: competitiveness,
         market: {
           min: salaries.length > 0 ? Math.min(...salaries) : 0,
           q1: calculatePercentile(salaries, 25),
@@ -403,10 +428,18 @@ export async function getDashboardSummary() {
   }
   
   const levelStats = await getLevelStatistics()
+  const competitorData = getCompetitorData()
   
   // 전체 평균 급여
   const totalSalary = employees.reduce((sum, e) => sum + e.currentSalary, 0)
   const avgSalary = totalSalary / employees.length
+  
+  // 경쟁사 평균 급여 계산
+  let competitorAvgSalary = 0
+  if (competitorData && competitorData.length > 0) {
+    const totalCompetitorSalary = competitorData.reduce((sum, c) => sum + c.averageSalary, 0)
+    competitorAvgSalary = totalCompetitorSalary / competitorData.length
+  }
   
   // AI 제안 인상률 (캐시된 값 또는 기본값)
   const aiRecommendation = cachedAISettings || {
@@ -440,10 +473,10 @@ export async function getDashboardSummary() {
     levelStatistics: levelStats,
     industryComparison: {
       ourCompany: aiRecommendation.totalPercentage,
-      competitor: 4.2,
-      industry: 4.5
+      competitor: competitorAvgSalary > 0 ? Math.round((competitorAvgSalary / avgSalary - 1) * 1000) / 10 : 4.2, // C사 인상률 자동 계산
+      industry: competitorAvgSalary > 0 ? Math.round((competitorAvgSalary / avgSalary - 1) * 1000) / 10 + 0.3 : 4.5 // 동종업계 = C사 + 0.3%
     },
-    competitorData: cachedCompetitorData // 경쟁사 데이터 추가
+    competitorData: cachedCompetitorData // 경쟁사 데이터
   }
 }
 
