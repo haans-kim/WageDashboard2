@@ -24,12 +24,18 @@ interface Props {
     additionalRate: number
     meritMultipliers: Record<string, number>
   }>
+  levelRates?: {  // 대시보드에서 설정한 직급별 인상률
+    [level: string]: {
+      baseUp: number
+      merit: number
+    }
+  }
   initialBaseUp?: number
   initialMerit?: number
   bands?: BandData[]  // Accept bands as props
 }
 
-export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialBaseUp = 3.2, initialMerit = 2.5, bands: propsB = [] }: Props) {
+export function PayBandCompetitivenessHeatmap({ bandRates = {}, levelRates, initialBaseUp = 3.2, initialMerit = 2.5, bands: propsB = [] }: Props) {
   const { bands: hookBands, loading: hookLoading } = useBandData()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,17 +58,23 @@ export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialBaseUp = 
   
   // TO-BE 경쟁력 계산 함수
   const calculateToBECompetitiveness = (band: BandData, level: LevelData) => {
-    const rate = bandRates[band.name]
+    let totalRate = 0
     
-    // bandRates에 해당 직군 설정이 없으면 initialBaseUp 사용
-    const baseUpRate = rate?.baseUpRate ?? (initialBaseUp / 100)
-    const additionalRate = rate?.additionalRate ?? 0
-    const meritMultiplier = rate?.meritMultipliers?.[level.level] ?? 1.0
+    // 1. 우선순위: 대시보드에서 설정한 직급별 인상률 사용
+    if (levelRates && levelRates[level.level]) {
+      const levelRate = levelRates[level.level]
+      totalRate = levelRate.baseUp / 100 + levelRate.merit / 100
+    } 
+    // 2. 차선책: Pay Band에서 설정한 직군별 인상률 사용
+    else {
+      const rate = bandRates[band.name]
+      const baseUpRate = rate?.baseUpRate ?? (initialBaseUp / 100)
+      const additionalRate = rate?.additionalRate ?? 0
+      const meritMultiplier = rate?.meritMultipliers?.[level.level] ?? 1.0
+      totalRate = baseUpRate + additionalRate + (initialMerit / 100) * meritMultiplier
+    }
     
     if (!level.meanBasePay) return level.sblIndex
-    
-    // 인상률 계산
-    const totalRate = baseUpRate + additionalRate + (initialMerit / 100) * meritMultiplier
     
     // 조정된 급여 계산
     const adjustedSalary = level.meanBasePay * (1 + totalRate)

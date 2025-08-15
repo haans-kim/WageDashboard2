@@ -306,6 +306,7 @@ function BandDashboardContent() {
               // 경쟁력 분석 보기
               <PayBandCompetitivenessHeatmap 
                 bandRates={bandRates}
+                levelRates={levelRates}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
                 bands={bands}

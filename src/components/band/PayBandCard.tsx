@@ -122,8 +122,17 @@ export function PayBandCard({
         return null
       }
       
-      const totalRaiseRate = baseUpRate + additionalRate + 
-        (initialMerit / 100) * meritMultipliers[level.level as keyof typeof meritMultipliers]
+      // 각 직급별로 인상률 적용 - levelRates가 있으면 우선 사용
+      let totalRaiseRate
+      if (levelRates && levelRates[level.level]) {
+        // 대시보드에서 설정한 직급별 인상률 사용
+        const levelRate = levelRates[level.level]
+        totalRaiseRate = levelRate.baseUp / 100 + levelRate.merit / 100
+      } else {
+        // 기존 로직: Pay Band 내에서 설정한 인상률 사용
+        totalRaiseRate = baseUpRate + additionalRate + 
+          (initialMerit / 100) * meritMultipliers[level.level as keyof typeof meritMultipliers]
+      }
       const adjustedSblMedian = level.company.median * (1 + totalRaiseRate)
       
       return {
