@@ -60,8 +60,8 @@ function IndustryComparisonSectionComponent({
   // C사 평균 인상률 (엑셀에서 읽어온 값 우선 사용)
   let cCompanyIncrease = competitorIncreaseRate // 엑셀에서 읽어온 C사 인상률
   
-  // 엑셀에서 값이 없으면 구 형식 확인
-  if (cCompanyIncrease === 0 && competitorData?.averageIncrease) {
+  // 엑셀에서 값이 없으면 구 형식 확인 (타입 가드 사용)
+  if (cCompanyIncrease === 0 && competitorData && !Array.isArray(competitorData) && competitorData.averageIncrease) {
     cCompanyIncrease = competitorData.averageIncrease
   }
   
