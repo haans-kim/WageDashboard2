@@ -112,6 +112,23 @@ function BandDashboardContent() {
     }
   }, [bands, selectedBand])
   
+  // 전체 직군의 추가 조정으로 인한 총 예산 영향 계산
+  const calculateTotalAdditionalImpact = () => {
+    const { bandAdjustments } = useWageContext()
+    
+    return bands.reduce((total, band) => {
+      const adjustment = bandAdjustments[band.name] || { baseUpAdjustment: 0, meritAdjustment: 0 }
+      const additionalRate = (adjustment.baseUpAdjustment + adjustment.meritAdjustment) / 100
+      
+      // 직군의 각 레벨별 영향 계산
+      const bandImpact = band.levels.reduce((bandTotal, level) => {
+        return bandTotal + (level.meanBasePay * additionalRate * level.headcount)
+      }, 0)
+      
+      return total + bandImpact
+    }, 0)
+  }
+  
   // 선택된 직군 데이터
   const selectedBandData = bands.find(band => band.id === selectedBand)
 
@@ -224,22 +241,31 @@ function BandDashboardContent() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
           <div className="w-full lg:w-80 bg-white rounded-lg shadow p-2 md:p-4 mb-4 lg:mb-0">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">직군별 분석</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">직군별 분석</h2>
+              {/* 추가 조정 총 영향 - 제목 우측에 깔끔하게 */}
+              <div className="text-right">
+                <div className="text-xs text-gray-500">조정 합계</div>
+                <div className="text-base font-bold text-orange-600">
+                  +{formatKoreanCurrency(calculateTotalAdditionalImpact(), '억원', 100000000)}
+                </div>
+              </div>
+            </div>
             <nav className="space-y-2">
-              {/* 전체 보기 옵션 */}
+              {/* 종합 현황 버튼 - 맨 위 */}
               <button
                 onClick={() => setSelectedBand('all')}
                 className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
                   selectedBand === 'all'
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-gray-600 text-white shadow-md'
                     : 'hover:bg-gray-100 text-gray-700'
                 }`}
               >
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-sm md:text-base">전체</span>
-                  <span className="text-sm md:text-base font-medium">
-                    {summary.totalHeadcount.toLocaleString()}명
-                  </span>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="font-semibold text-sm md:text-base">종합 현황</span>
                 </div>
               </button>
               
@@ -285,13 +311,30 @@ function BandDashboardContent() {
                   <span className="font-semibold text-sm md:text-base">경쟁력 분석</span>
                 </div>
               </button>
+              
+              {/* 종합 현황 버튼 */}
+              <button
+                onClick={() => setSelectedBand('all')}
+                className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
+                  selectedBand === 'all'
+                    ? 'bg-gray-600 text-white shadow-md'
+                    : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="font-semibold text-sm md:text-base">종합 현황</span>
+                </div>
+              </button>
             </nav>
           </div>
           
           {/* 오른쪽: 선택된 직군의 상세 카드 */}
           <div className="flex-1">
             {selectedBand === 'all' ? (
-              // 전체 보기: 직급별로 집계된 통합 카드
+              // 종합 현황: 모든 직군의 조정 결과가 반영된 통합 뷰
               <PayBandCard
                 key="total"
                 bandId="total"
@@ -300,6 +343,8 @@ function BandDashboardContent() {
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
                 levelRates={levelRates}
+                isReadOnly={true}  // 읽기 전용 모드
+                bands={bands}  // 모든 밴드 데이터 전달
                 onRateChange={(bandId, data) => {
                   // 전체 집계에서는 예산 영향 업데이트 처리 생략
                   console.log('Total band rate changed:', data)

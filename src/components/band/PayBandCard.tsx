@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { PayBandLineChart } from './PayBandLineChart'
 import { ComparisonTable } from './ComparisonTable'
 import { RaiseSliderPanel } from './RaiseSliderPanel'
+import { CompetitivenessDistribution } from './CompetitivenessDistribution'
 import { useWageContext } from '@/context/WageContext'
 
 interface LevelData {
@@ -42,6 +43,8 @@ interface PayBandCardProps {
     additionalRate?: number
     meritMultipliers?: Record<string, number>
   }
+  isReadOnly?: boolean  // 읽기 전용 모드
+  bands?: any[]  // 모든 밴드 데이터 (종합 현황용)
 }
 
 export function PayBandCard({
@@ -52,36 +55,64 @@ export function PayBandCard({
   initialMerit,
   levelRates,
   onRateChange,
-  currentRates
+  currentRates,
+  isReadOnly = false,
+  bands = []
 }: PayBandCardProps) {
   const { setBandFinalRates, bandFinalRates, bandAdjustments, setBandAdjustments } = useWageContext()
   
-  // WageContext에서 직군별 조정값 가져오기
-  const bandAdjustment = bandAdjustments[bandName] || { baseUpAdjustment: 0, meritAdjustment: 0 }
-  const [baseUpAdjustment, setBaseUpAdjustment] = useState(bandAdjustment.baseUpAdjustment)
-  const [meritAdjustment, setMeritAdjustment] = useState(bandAdjustment.meritAdjustment)
+  // 읽기 전용 모드일 때는 모든 직군의 조정값 합계를 계산
+  let baseUpAdjustment = 0
+  let meritAdjustment = 0
+  
+  if (isReadOnly) {
+    // 전체 보기 모드: 모든 직군의 조정값 평균 계산
+    const allAdjustments = Object.values(bandAdjustments)
+    if (allAdjustments.length > 0) {
+      baseUpAdjustment = allAdjustments.reduce((sum, adj) => sum + adj.baseUpAdjustment, 0) / allAdjustments.length
+      meritAdjustment = allAdjustments.reduce((sum, adj) => sum + adj.meritAdjustment, 0) / allAdjustments.length
+    }
+  } else {
+    // 개별 직군 모드: 해당 직군의 조정값 사용
+    const bandAdjustment = bandAdjustments[bandName] || { baseUpAdjustment: 0, meritAdjustment: 0 }
+    baseUpAdjustment = bandAdjustment.baseUpAdjustment
+    meritAdjustment = bandAdjustment.meritAdjustment
+  }
+  
+  const [localBaseUpAdjustment, setLocalBaseUpAdjustment] = useState(baseUpAdjustment)
+  const [localMeritAdjustment, setLocalMeritAdjustment] = useState(meritAdjustment)
 
   // WageContext에서 값이 변경되면 로컬 상태 업데이트
   useEffect(() => {
-    const adjustment = bandAdjustments[bandName]
-    if (adjustment) {
-      setBaseUpAdjustment(adjustment.baseUpAdjustment)
-      setMeritAdjustment(adjustment.meritAdjustment)
+    if (isReadOnly) {
+      // 전체 보기 모드: 모든 직군의 평균 계산
+      const allAdjustments = Object.values(bandAdjustments)
+      if (allAdjustments.length > 0) {
+        setLocalBaseUpAdjustment(allAdjustments.reduce((sum, adj) => sum + adj.baseUpAdjustment, 0) / allAdjustments.length)
+        setLocalMeritAdjustment(allAdjustments.reduce((sum, adj) => sum + adj.meritAdjustment, 0) / allAdjustments.length)
+      }
+    } else {
+      // 개별 직군 모드
+      const adjustment = bandAdjustments[bandName]
+      if (adjustment) {
+        setLocalBaseUpAdjustment(adjustment.baseUpAdjustment)
+        setLocalMeritAdjustment(adjustment.meritAdjustment)
+      }
     }
-  }, [bandAdjustments, bandName])
+  }, [bandAdjustments, bandName, isReadOnly])
 
-  // 로컬 조정값 변경 시 WageContext 업데이트
+  // 로컬 조정값 변경 시 WageContext 업데이트 (읽기 전용이 아닐 때만)
   useEffect(() => {
-    if (bandName) {
+    if (!isReadOnly && bandName) {
       setBandAdjustments(prev => ({
         ...prev,
         [bandName]: {
-          baseUpAdjustment,
-          meritAdjustment
+          baseUpAdjustment: localBaseUpAdjustment,
+          meritAdjustment: localMeritAdjustment
         }
       }))
     }
-  }, [bandName, baseUpAdjustment, meritAdjustment, setBandAdjustments])
+  }, [bandName, localBaseUpAdjustment, localMeritAdjustment, setBandAdjustments, isReadOnly])
 
   // 최종 인상률 계산 및 Context 저장
   useEffect(() => {
@@ -214,8 +245,8 @@ export function PayBandCard({
 
       {/* 메인 컨텐츠 */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        {/* 좌측: 차트와 테이블 - 더 넓게 */}
-        <div className="xl:col-span-8 space-y-4">
+        {/* 좌측: 차트와 테이블 - 읽기 전용 모드일 때는 더 좁게 */}
+        <div className={`${isReadOnly ? 'xl:col-span-7' : 'xl:col-span-8'} space-y-4`}>
           {/* 꺾은선 차트 */}
           <div className="p-1 md:p-2 bg-gray-50 rounded-lg min-h-[280px] md:min-h-[450px]">
             <h4 className="text-sm md:text-base font-semibold text-gray-700 mb-1 px-1 md:px-2 pt-1 md:pt-2">보상경쟁력 분석</h4>
@@ -236,9 +267,10 @@ export function PayBandCard({
           </div>
         </div>
 
-        {/* 우측: 슬라이더 패널 - 더 좁게 */}
-        <div className="xl:col-span-4">
-          <div className="sticky top-4">
+        {/* 우측: 슬라이더 패널 또는 경쟁력 분포 */}
+        {!isReadOnly ? (
+          <div className="xl:col-span-4">
+            <div className="sticky top-4">
             <div className="flex justify-between items-center mb-3">
               <h4 className="text-base font-semibold text-gray-700">인상률 조정</h4>
               <button
@@ -257,15 +289,24 @@ export function PayBandCard({
               bandId={bandId}
               bandName={bandName}
               levelRates={levelRates}
-              baseUpAdjustment={baseUpAdjustment}
-              meritAdjustment={meritAdjustment}
-              onBaseUpAdjustmentChange={setBaseUpAdjustment}
-              onMeritAdjustmentChange={setMeritAdjustment}
+              baseUpAdjustment={localBaseUpAdjustment}
+              meritAdjustment={localMeritAdjustment}
+              onBaseUpAdjustmentChange={setLocalBaseUpAdjustment}
+              onMeritAdjustmentChange={setLocalMeritAdjustment}
               onReset={handleReset}
               budgetImpact={calculateBudgetImpact()}
             />
           </div>
         </div>
+        ) : (
+          <div className="xl:col-span-5">
+            <CompetitivenessDistribution 
+              bands={bands}
+              bandAdjustments={bandAdjustments}
+              levelRates={levelRates}
+            />
+          </div>
+        )}
       </div>
     </div>
   )
