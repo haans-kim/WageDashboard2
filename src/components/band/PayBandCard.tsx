@@ -204,8 +204,8 @@ export function PayBandCard({
 
   // 인상률 초기화 (조정값만 0으로 리셋)
   const handleReset = () => {
-    setBaseUpAdjustment(0)
-    setMeritAdjustment(0)
+    setLocalBaseUpAdjustment(0)
+    setLocalMeritAdjustment(0)
     
     // localStorage에서도 삭제
     if (typeof window !== 'undefined' && bandName) {

@@ -45,6 +45,10 @@ interface DashboardData {
     level: string
     averageSalary: number
   }> | null
+  industryComparison?: {
+    ourCompany: number
+    competitor: number
+  }
 }
 
 export function useDashboardData() {

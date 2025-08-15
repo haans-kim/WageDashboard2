@@ -45,7 +45,7 @@ function AIRecommendationCardComponent({
       <div className="text-center mb-4 md:mb-8 pb-4 md:pb-6 border-b">
         <span className="text-sm md:text-base text-gray-600">총 인원</span>
         <p className="text-xl md:text-3xl font-bold text-gray-900 mt-1">
-          {totalEmployees.toLocaleString('ko-KR')}명
+          {(totalEmployees || 0).toLocaleString('ko-KR')}명
         </p>
         <span className="text-xs md:text-sm text-gray-500">({new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')} 기준)</span>
       </div>

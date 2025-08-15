@@ -78,9 +78,9 @@ function BudgetUtilizationDetailComponent({
     aiTotalBudget = baseUpBudget + meritBudget
   } else {
     // 레벨 데이터가 없으면 기존 방식 사용 (fallback)
-    baseUpBudget = totalSalaryBase * (baseUpRate / 100)
+    baseUpBudget = (totalSalaryBase || 0) * (baseUpRate / 100)
     const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
-    meritBudget = totalSalaryBase * (effectiveMeritRate / 100)
+    meritBudget = (totalSalaryBase || 0) * (effectiveMeritRate / 100)
     aiTotalBudget = baseUpBudget + meritBudget
   }
   
