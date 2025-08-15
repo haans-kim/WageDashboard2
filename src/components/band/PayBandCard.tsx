@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { PayBandLineChart } from './PayBandLineChart'
 import { ComparisonTable } from './ComparisonTable'
 import { RaiseSliderPanel } from './RaiseSliderPanel'
-import { CompetitivenessDistribution } from './CompetitivenessDistribution'
+import { PayBandCompetitivenessHeatmapCards } from './PayBandCompetitivenessHeatmapCards'
 import { useWageContext } from '@/context/WageContext'
 
 interface LevelData {
@@ -300,7 +300,7 @@ export function PayBandCard({
         </div>
         ) : (
           <div className="xl:col-span-5">
-            <CompetitivenessDistribution 
+            <PayBandCompetitivenessHeatmapCards 
               bands={bands}
               bandAdjustments={bandAdjustments}
               levelRates={levelRates}
