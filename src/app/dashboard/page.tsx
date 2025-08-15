@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDashboardData } from '@/hooks/useDashboardData'
-import { useScenarios } from '@/hooks/useScenarios'
 import { useWageContext } from '@/context/WageContext'
 import { ScenarioManager } from '@/components/ScenarioManager'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
@@ -107,15 +106,15 @@ export default function Home() {
   const [weightedAverageRate, setWeightedAverageRate] = useState(0)
   const [meritWeightedAverage, setMeritWeightedAverage] = useState(0) // 성과인상률 가중평균
   
-  // 시나리오 관리
+  // 시나리오 관리 - WageContext에서 가져오기
   const {
     scenarios,
     activeScenarioId,
-    saveScenario,
-    loadScenario,
+    saveScenario: saveScenarioContext,
+    loadScenario: loadScenarioContext,
     deleteScenario,
     renameScenario
-  } = useScenarios()
+  } = useWageContext()
   
   // 데이터가 없으면 홈으로 리다이렉트
   useEffect(() => {
@@ -257,74 +256,15 @@ export default function Home() {
   }
   
   // 시나리오 저장 핸들러
-  const handleSaveScenario = (name: string) => {
-    // 실제 사용 예산 계산 (budgetDetails의 합계)
-    const totalUsedBudget = budgetDetails.aiRecommendation + 
-                           budgetDetails.promotion + 
-                           budgetDetails.additional + 
-                           budgetDetails.indirect
-    
-    saveScenario(name, {
-      baseUpRate,
-      meritRate,
-      levelRates,
-      totalBudget: totalUsedBudget || totalBudget || undefined, // 실제 사용 예산 저장
-      
-      // 예산활용내역 상세
-      promotionBudgets,
-      additionalBudget,
-      enableAdditionalIncrease,
-      calculatedAdditionalBudget,
-      
-      // 계산된 값들
-      levelTotalRates,
-      weightedAverageRate,
-      meritWeightedAverage,
-      
-      // GradeSalaryAdjustmentTable의 세부 인상률
-      detailedLevelRates
-    })
+  const handleSaveScenario = async (name: string) => {
+    // Context로 저장 (모든 페이지 데이터 포함)
+    await saveScenarioContext(name)
   }
   
   // 시나리오 불러오기 핸들러
   const handleLoadScenario = (id: string) => {
-    const scenarioData = loadScenario(id)
-    if (scenarioData) {
-      setBaseUpRate(scenarioData.baseUpRate)
-      setMeritRate(scenarioData.meritRate)
-      setLevelRates(scenarioData.levelRates as typeof levelRates)
-      setTotalBudget(scenarioData.totalBudget || null)
-      
-      // 예산활용내역 상세 복원
-      if (scenarioData.promotionBudgets) {
-        setPromotionBudgets(scenarioData.promotionBudgets)
-      }
-      if (scenarioData.additionalBudget !== undefined) {
-        setAdditionalBudget(scenarioData.additionalBudget)
-      }
-      if (scenarioData.enableAdditionalIncrease !== undefined) {
-        setEnableAdditionalIncrease(scenarioData.enableAdditionalIncrease)
-      }
-      if (scenarioData.calculatedAdditionalBudget !== undefined) {
-        setCalculatedAdditionalBudget(scenarioData.calculatedAdditionalBudget)
-      }
-      
-      // 계산된 값들 복원
-      if (scenarioData.levelTotalRates) {
-        setLevelTotalRates(scenarioData.levelTotalRates)
-      }
-      if (scenarioData.weightedAverageRate !== undefined) {
-        setWeightedAverageRate(scenarioData.weightedAverageRate)
-      }
-      if (scenarioData.meritWeightedAverage !== undefined) {
-        setMeritWeightedAverage(scenarioData.meritWeightedAverage)
-      }
-      
-      // GradeSalaryAdjustmentTable의 세부 인상률 복원
-      if (scenarioData.detailedLevelRates) {
-        setDetailedLevelRates(scenarioData.detailedLevelRates)
-      }
-    }
+    // Context에서 불러오기 (모든 페이지 데이터 포함)
+    loadScenarioContext(id)
   }
   
   // GradeSalaryAdjustmentTable용 직원 데이터

@@ -33,6 +33,22 @@ export interface Scenario {
       advancement: number
       additional: number
     }>
+    
+    // Pay Band 페이지 데이터
+    bandAdjustments?: {
+      [bandName: string]: {
+        baseUpAdjustment: number
+        meritAdjustment: number
+      }
+    }
+    
+    // 직원관리 페이지 데이터
+    employeeWeights?: {
+      [employeeId: string]: {
+        performanceRating: string
+        meritMultiplier: number
+      }
+    }
   }
 }
 

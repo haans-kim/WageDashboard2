@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PayBandCard } from '@/components/band/PayBandCard'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { ScenarioManager } from '@/components/ScenarioManager'
 import { PayBandCompetitivenessHeatmap } from '@/components/analytics/PayBandCompetitivenessHeatmap'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { useMetadata } from '@/hooks/useMetadata'
@@ -52,7 +53,17 @@ function BandDashboardContent() {
   const searchParams = useSearchParams()
   const { bands: availableBands, loading: metadataLoading } = useMetadata()
   const { bands: bandsFromHook, loading: bandsLoading } = useBandData()
-  const { baseUpRate: contextBaseUp, meritRate: contextMerit, levelRates } = useWageContext()
+  const { 
+    baseUpRate: contextBaseUp, 
+    meritRate: contextMerit, 
+    levelRates,
+    scenarios,
+    activeScenarioId,
+    saveScenario,
+    loadScenario,
+    deleteScenario,
+    renameScenario
+  } = useWageContext()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
@@ -223,6 +234,15 @@ function BandDashboardContent() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center h-12 gap-2">
+            <ScenarioManager
+              scenarios={scenarios}
+              activeScenarioId={activeScenarioId}
+              onSave={saveScenario}
+              onLoad={loadScenario}
+              onDelete={deleteScenario}
+              onRename={renameScenario}
+              isNavigation={true}
+            />
             <SimpleExportButton 
               isNavigation={true}
             />

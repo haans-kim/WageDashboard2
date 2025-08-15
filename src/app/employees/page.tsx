@@ -5,12 +5,23 @@ import { useMetadata } from '@/hooks/useMetadata'
 import { useWageContext } from '@/context/WageContext'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { ScenarioManager } from '@/components/ScenarioManager'
 import { PerformanceWeightModal } from '@/components/employees/PerformanceWeightModal'
 import { RateInfoCard } from '@/components/common/RateInfoCard'
 
 export default function EmployeesPage() {
   const { departments, levels, ratings, loading: metadataLoading } = useMetadata()
-  const { baseUpRate, meritRate, levelRates } = useWageContext()
+  const { 
+    baseUpRate, 
+    meritRate, 
+    levelRates,
+    scenarios,
+    activeScenarioId,
+    saveScenario,
+    loadScenario,
+    deleteScenario,
+    renameScenario
+  } = useWageContext()
   const [selectedLevel, setSelectedLevel] = useState<string>('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<string>('')
@@ -36,6 +47,15 @@ export default function EmployeesPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center h-12 gap-2">
+            <ScenarioManager
+              scenarios={scenarios}
+              activeScenarioId={activeScenarioId}
+              onSave={saveScenario}
+              onLoad={loadScenario}
+              onDelete={deleteScenario}
+              onRename={renameScenario}
+              isNavigation={true}
+            />
             <button
               onClick={() => setIsWeightModalOpen(true)}
               className="h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"

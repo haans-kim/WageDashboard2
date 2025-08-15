@@ -1,6 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useScenarios } from '@/hooks/useScenarios'
+import { Scenario } from '@/types/scenario'
 
 interface PerformanceWeights {
   S: number
@@ -54,6 +56,14 @@ interface WageContextType {
     }
   }
   
+  // 직원별 성과 가중치 (직원관리 페이지)
+  employeeWeights: {
+    [employeeId: string]: {
+      performanceRating: string
+      meritMultiplier: number
+    }
+  }
+  
   // 총 예산
   totalBudget: number
   
@@ -77,7 +87,21 @@ interface WageContextType {
       }
     }
   }>>
+  setEmployeeWeights: React.Dispatch<React.SetStateAction<{
+    [employeeId: string]: {
+      performanceRating: string
+      meritMultiplier: number
+    }
+  }>>
   setTotalBudget: (budget: number) => void
+  
+  // 시나리오 관리
+  scenarios: Scenario[]
+  activeScenarioId: string | null
+  saveScenario: (name: string) => Promise<Scenario>
+  loadScenario: (id: string) => void
+  deleteScenario: (id: string) => Promise<void>
+  renameScenario: (id: string, newName: string) => Promise<void>
   
   // TO-BE 급여 계산 함수
   calculateToBeSalary: (
@@ -126,7 +150,23 @@ export function WageProvider({ children }: { children: ReactNode }) {
       }
     }
   }>({})
+  const [employeeWeights, setEmployeeWeights] = useState<{
+    [employeeId: string]: {
+      performanceRating: string
+      meritMultiplier: number
+    }
+  }>({})
   const [totalBudget, setTotalBudget] = useState(0)
+  
+  // 시나리오 관리
+  const {
+    scenarios,
+    activeScenarioId,
+    saveScenario: saveScenarioHook,
+    loadScenario: loadScenarioHook,
+    deleteScenario: deleteScenarioHook,
+    renameScenario: renameScenarioHook
+  } = useScenarios()
   
   // localStorage에서 저장된 값 불러오기
   useEffect(() => {
@@ -154,6 +194,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
           })
           setBandAdjustments(parsed.bandAdjustments ?? {})
           setBandFinalRates(parsed.bandFinalRates ?? {})
+          setEmployeeWeights(parsed.employeeWeights ?? {})
           setTotalBudget(parsed.totalBudget ?? 0)
         } catch (e) {
           console.error('Failed to parse saved wage settings:', e)
@@ -173,11 +214,44 @@ export function WageProvider({ children }: { children: ReactNode }) {
         detailedLevelRates,
         bandAdjustments,
         bandFinalRates,
+        employeeWeights,
         totalBudget
       }
       localStorage.setItem('wageSettings', JSON.stringify(stateToSave))
     }
-  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandAdjustments, bandFinalRates, totalBudget])
+  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandAdjustments, bandFinalRates, employeeWeights, totalBudget])
+  
+  // 시나리오 저장
+  const saveScenario = async (name: string) => {
+    const scenarioData = {
+      baseUpRate,
+      meritRate,
+      levelRates,
+      detailedLevelRates,
+      totalBudget,
+      bandAdjustments,
+      employeeWeights,
+      performanceWeights
+    }
+    return await saveScenarioHook(name, scenarioData)
+  }
+  
+  // 시나리오 불러오기
+  const loadScenario = (id: string) => {
+    const scenarioData = loadScenarioHook(id)
+    if (scenarioData) {
+      setBaseUpRate(scenarioData.baseUpRate || 0)
+      setMeritRate(scenarioData.meritRate || 0)
+      setLevelRates(scenarioData.levelRates || {})
+      setDetailedLevelRates(scenarioData.detailedLevelRates || {})
+      setTotalBudget(scenarioData.totalBudget || 0)
+      setBandAdjustments(scenarioData.bandAdjustments || {})
+      setEmployeeWeights(scenarioData.employeeWeights || {})
+      if (scenarioData.performanceWeights) {
+        setPerformanceWeights(scenarioData.performanceWeights)
+      }
+    }
+  }
   
   // TO-BE 급여 계산 함수
   const calculateToBeSalary = (
@@ -214,6 +288,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
     detailedLevelRates,
     bandAdjustments,
     bandFinalRates,
+    employeeWeights,
     totalBudget,
     setBaseUpRate,
     setMeritRate,
@@ -222,7 +297,14 @@ export function WageProvider({ children }: { children: ReactNode }) {
     setDetailedLevelRates,
     setBandAdjustments,
     setBandFinalRates,
+    setEmployeeWeights,
     setTotalBudget,
+    scenarios,
+    activeScenarioId,
+    saveScenario,
+    loadScenario,
+    deleteScenario: deleteScenarioHook,
+    renameScenario: renameScenarioHook,
     calculateToBeSalary
   }
   
