@@ -272,6 +272,26 @@ function BandDashboardContent() {
                   </div>
                 </button>
               ))}
+              
+              {/* 구분선 */}
+              <div className="border-t border-gray-200 my-3"></div>
+              
+              {/* 경쟁력 분석 버튼 */}
+              <button
+                onClick={() => setSelectedBand('competitiveness')}
+                className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
+                  selectedBand === 'competitiveness'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="font-semibold text-sm md:text-base">경쟁력 분석</span>
+                </div>
+              </button>
             </nav>
           </div>
           
@@ -291,6 +311,9 @@ function BandDashboardContent() {
                   console.log('Total band rate changed:', data)
                 }}
               />
+            ) : selectedBand === 'competitiveness' ? (
+              // 경쟁력 분석 보기
+              <PayBandCompetitivenessHeatmap />
             ) : selectedBandData ? (
               // 개별 직군 보기
               <PayBandCard
@@ -314,11 +337,6 @@ function BandDashboardContent() {
               </div>
             )}
           </div>
-        </div>
-        
-        {/* Pay Band 경쟁력 분석 - 맨 아래 별도 섹션 */}
-        <div className="mt-6">
-          <PayBandCompetitivenessHeatmap />
         </div>
       </div>
     </main>

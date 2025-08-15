@@ -32,6 +32,9 @@ export function formatKoreanCurrency(value: number, unit: '원' | '만원' | '�
  * @returns 포맷된 문자열
  */
 export function formatPercentage(value: number, decimals: number = 1): string {
+  if (!isFinite(value) || isNaN(value)) {
+    return '0.0%'
+  }
   return `${value.toFixed(decimals)}%`
 }
 

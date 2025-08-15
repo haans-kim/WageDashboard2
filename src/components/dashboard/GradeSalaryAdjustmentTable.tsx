@@ -16,7 +16,7 @@ interface EmployeeData {
 
 // 직급별 인상률 인터페이스
 interface LevelRates {
-  baseUp: number      // Base-up (고정 3.20%)
+  baseUp: number      // Base-up
   merit: number       // 성과 인상률 (수정가능)
   promotion: number   // 승급 인상률 (수정가능)
   advancement: number // 승격 인상률 (수정가능)
@@ -34,6 +34,7 @@ interface GradeSalaryAdjustmentTableProps {
   onLevelTotalRatesChange?: (levelRates: {[key: string]: number}, weightedAverage: number) => void  // 직급별 총 인상률 및 가중평균 콜백
   onMeritWeightedAverageChange?: (weightedAverage: number) => void  // 성과인상률 가중평균 콜백
   initialRates?: { [key: string]: LevelRates }  // 초기 인상률 값
+  onTotalSummaryChange?: (summary: { avgBaseUp: number; avgMerit: number; totalRate: number }) => void  // 전체 평균 콜백
 }
 
 // 하드코딩된 직원 데이터 (추후 엑셀로 대체 가능)
@@ -59,32 +60,32 @@ const DEFAULT_EMPLOYEE_DATA: EmployeeData = {
   }
 }
 
-// 초기 인상률 값 - 성과인상률만 2.5%, 나머지는 0
+// 초기 인상률 값 - 모두 0으로 초기화
 const DEFAULT_RATES: { [key: string]: LevelRates } = {
   'Lv.4': {
     baseUp: 0,
-    merit: 2.50,
+    merit: 0,
     promotion: 0,
     advancement: 0,
     additional: 0
   },
   'Lv.3': {
     baseUp: 0,
-    merit: 2.50,
+    merit: 0,
     promotion: 0,
     advancement: 0,
     additional: 0
   },
   'Lv.2': {
     baseUp: 0,
-    merit: 2.50,
+    merit: 0,
     promotion: 0,
     advancement: 0,
     additional: 0
   },
   'Lv.1': {
     baseUp: 0,
-    merit: 2.50,
+    merit: 0,
     promotion: 0,
     advancement: 0,
     additional: 0
@@ -93,7 +94,7 @@ const DEFAULT_RATES: { [key: string]: LevelRates } = {
 
 function GradeSalaryAdjustmentTableComponent({
   baseUpRate = 0,
-  meritRate = 2.50,
+  meritRate = 0,
   employeeData = DEFAULT_EMPLOYEE_DATA,
   onRateChange,
   onTotalBudgetChange,
@@ -101,7 +102,8 @@ function GradeSalaryAdjustmentTableComponent({
   onAdditionalBudgetChange,
   onLevelTotalRatesChange,
   onMeritWeightedAverageChange,
-  initialRates
+  initialRates,
+  onTotalSummaryChange
 }: GradeSalaryAdjustmentTableProps) {
   
   // 직급별 인상률 상태 관리 - initialRates가 있으면 사용, 없으면 props 기반 기본값 사용
@@ -286,6 +288,17 @@ function GradeSalaryAdjustmentTableComponent({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rates]) // employeeData를 의존성에서 제거
+  
+  // 전체 요약 정보를 상위 컴포넌트에 알림
+  useEffect(() => {
+    if (onTotalSummaryChange) {
+      onTotalSummaryChange({
+        avgBaseUp: totalSummary.avgBaseUp,
+        avgMerit: totalSummary.avgMerit,
+        totalRate: totalSummary.totalRate
+      })
+    }
+  }, [totalSummary, onTotalSummaryChange])
   
   const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
   

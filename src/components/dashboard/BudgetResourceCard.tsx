@@ -27,8 +27,8 @@ interface BudgetResourceCardProps {
 
 function BudgetResourceCardComponent({ 
   totalBudget = 30000000000, // 300억원으로 변경
-  baseUpRate = 3.2,
-  meritRate = 2.5,
+  baseUpRate = 0,
+  meritRate = 0,
   totalEmployees = 4167,
   averageSalary,
   levelRates,
@@ -87,10 +87,15 @@ function BudgetResourceCardComponent({
                   <div className="flex items-center gap-1 bg-white rounded-lg border-2 border-blue-300 px-3 py-1.5">
                     <input
                       type="text"
-                      value={customTotalBudget ? customTotalBudget.toLocaleString('ko-KR') : actualBudget.toLocaleString('ko-KR')}
+                      value={customTotalBudget !== null && customTotalBudget !== undefined ? customTotalBudget.toLocaleString('ko-KR') : actualBudget.toLocaleString('ko-KR')}
                       onChange={(e) => {
                         const value = e.target.value.replace(/,/g, '')
-                        onTotalBudgetChange(value ? parseFloat(value) : null)
+                        // 빈 문자열이거나 0을 포함한 모든 숫자를 허용
+                        if (value === '' || value === '0') {
+                          onTotalBudgetChange(0)
+                        } else if (value) {
+                          onTotalBudgetChange(parseFloat(value))
+                        }
                       }}
                       className="w-44 text-xl font-bold text-blue-600 outline-none text-right"
                       placeholder="0"

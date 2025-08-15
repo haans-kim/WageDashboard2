@@ -58,12 +58,30 @@ function BudgetUtilizationDetailComponent({
   onBudgetCalculated
 }: BudgetUtilizationDetailProps) {
   
-  // 카드 1: AI 적정 인상률 예산 (자동 계산 - 총급여베이스 기반)
-  const baseUpBudget = totalSalaryBase * (baseUpRate / 100)
-  // 성과 예산은 가중평균이 있으면 가중평균 사용, 없으면 기본 meritRate 사용
-  const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
-  const meritBudget = totalSalaryBase * (effectiveMeritRate / 100)
-  const aiTotalBudget = baseUpBudget + meritBudget
+  // 카드 1: AI 적정 인상률 예산 (자동 계산 - 직급별 데이터 기반)
+  let baseUpBudget = 0
+  let meritBudget = 0
+  let aiTotalBudget = 0
+  
+  if (levelStatistics && levelStatistics.length > 0) {
+    // 직급별 계산 (BudgetResourceCard와 동일한 방식)
+    levelStatistics.forEach((level) => {
+      const levelAvgSalary = parseFloat(level.averageSalary)
+      const levelBaseUpBudget = level.employeeCount * levelAvgSalary * (baseUpRate / 100)
+      const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+      const levelMeritBudget = level.employeeCount * levelAvgSalary * (effectiveMeritRate / 100)
+      
+      baseUpBudget += levelBaseUpBudget
+      meritBudget += levelMeritBudget
+    })
+    aiTotalBudget = baseUpBudget + meritBudget
+  } else {
+    // 레벨 데이터가 없으면 기존 방식 사용 (fallback)
+    baseUpBudget = totalSalaryBase * (baseUpRate / 100)
+    const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+    meritBudget = totalSalaryBase * (effectiveMeritRate / 100)
+    aiTotalBudget = baseUpBudget + meritBudget
+  }
   
   // 카드 2: 승급/승격 인상률 예산 (사용자 입력)
   const promotionLv2 = promotionBudgets.lv2

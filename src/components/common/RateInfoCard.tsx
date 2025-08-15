@@ -21,7 +21,7 @@ export function RateInfoCard() {
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-3xl font-bold text-slate-900">
-                    {baseUpRate}
+                    {baseUpRate.toFixed(2)}
                   </span>
                   <span className="text-lg text-slate-900 font-medium">%</span>
                 </div>
@@ -31,7 +31,7 @@ export function RateInfoCard() {
               <div className="bg-slate-50 rounded-lg p-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-3xl font-bold text-slate-900">
-                    {meritRate}
+                    {meritRate.toFixed(2)}
                   </span>
                   <span className="text-lg text-slate-900 font-medium">%</span>
                 </div>
@@ -41,7 +41,7 @@ export function RateInfoCard() {
               <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-3xl font-bold text-indigo-700">
-                    {(baseUpRate + meritRate).toFixed(1)}
+                    {(baseUpRate + meritRate).toFixed(2)}
                   </span>
                   <span className="text-lg text-indigo-700 font-medium">%</span>
                 </div>
@@ -64,7 +64,7 @@ export function RateInfoCard() {
                 <div key={level} className="flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-600">{level}</span>
                   <span className="text-sm font-bold text-slate-900">
-                    {(rates.baseUp + rates.merit).toFixed(1)}%
+                    {(rates.baseUp + rates.merit).toFixed(2)}%
                   </span>
                 </div>
               ))}

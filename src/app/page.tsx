@@ -29,21 +29,30 @@ export default function Home() {
     setTotalBudget: setContextTotalBudget
   } = useWageContext()
   
-  // 로컬 상태 (대시보드 페이지에서만 사용)
-  const [baseUpRate, setBaseUpRate] = useState(contextBaseUpRate)
-  const [meritRate, setMeritRate] = useState(contextMeritRate)
-  const [totalBudget, setTotalBudget] = useState<number | null>(contextTotalBudget)
-  const [levelRates, setLevelRates] = useState(contextLevelRates)
+  // AI 추천값 (대시보드 표시용, 읽기 전용)
+  const [aiBaseUpRate, setAiBaseUpRate] = useState(0)
+  const [aiMeritRate, setAiMeritRate] = useState(0)
   
-  // 대시보드 값이 변경될 때 WageContext 업데이트
+  // 사용자 조정값 (슬라이더로 변경 가능)
+  const [baseUpRate, setBaseUpRate] = useState(0)
+  const [meritRate, setMeritRate] = useState(0)
+  const [totalBudget, setTotalBudget] = useState<number | null>(null)
+  const [levelRates, setLevelRates] = useState({
+    'Lv.1': { baseUp: 0, merit: 0 },
+    'Lv.2': { baseUp: 0, merit: 0 },
+    'Lv.3': { baseUp: 0, merit: 0 },
+    'Lv.4': { baseUp: 0, merit: 0 }
+  })
+  
+  // 사용자 조정값이 변경될 때만 WageContext 업데이트
   useEffect(() => {
-    setContextBaseUpRate(baseUpRate)
-    setContextMeritRate(meritRate)
+    // GradeSalaryAdjustmentTable에서 계산된 값이 있으면 그것을 우선 사용
+    // 없으면 사용자가 직접 조정한 값 사용
     setContextLevelRates(levelRates)
     if (totalBudget !== null) {
       setContextTotalBudget(totalBudget)
     }
-  }, [baseUpRate, meritRate, levelRates, totalBudget, setContextBaseUpRate, setContextMeritRate, setContextLevelRates, setContextTotalBudget])
+  }, [levelRates, totalBudget, setContextLevelRates, setContextTotalBudget])
   
   // 예산활용내역 상세를 위한 상태 - 모두 0원으로 초기화
   const [promotionBudgets, setPromotionBudgets] = useState({
@@ -99,12 +108,29 @@ export default function Home() {
     renameScenario
   } = useScenarios()
   
-  // AI 설정 데이터가 로드되면 상태 동기화
+  // AI 설정 데이터가 로드되면 상태 동기화 (첫 로드 시에만)
+  const [hasInitialized, setHasInitialized] = useState(false)
+  
   useEffect(() => {
-    if (data?.aiRecommendation) {
+    if (data?.aiRecommendation && !hasInitialized) {
       const aiData = data.aiRecommendation
+      
+      // AI 추천값은 항상 엑셀 데이터로 설정 (고정값, 변경되지 않음)
+      setAiBaseUpRate(aiData.baseUpPercentage)
+      setAiMeritRate(aiData.meritIncreasePercentage)
+      
+      // 항상 AI 데이터로 초기화 (localStorage와 관계없이)
       setBaseUpRate(aiData.baseUpPercentage)
       setMeritRate(aiData.meritIncreasePercentage)
+      
+      // 총예산도 엑셀 데이터에서 설정 (budget.totalBudget이 있으면 사용)
+      if (data.budget?.totalBudget) {
+        const budgetValue = parseFloat(data.budget.totalBudget.replace(/[^0-9.-]/g, ''))
+        setTotalBudget(budgetValue)
+      } else {
+        // 엑셀 데이터가 없으면 기본값 300억 사용
+        setTotalBudget(30000000000)
+      }
       
       // 개별 레벨 인상률도 업데이트
       setLevelRates({
@@ -121,8 +147,11 @@ export default function Home() {
         'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
         'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
       })
+      
+      console.log('대시보드 초기화 완료 - AI 추천값:', aiData.baseUpPercentage, aiData.meritIncreasePercentage)
+      setHasInitialized(true)
     }
-  }, [data?.aiRecommendation])
+  }, [data?.aiRecommendation, hasInitialized])
   
   // 새로운 인터페이스에 맞춰 수정
   const updateLevelRate = (level: string, rates: any) => {
@@ -343,16 +372,29 @@ export default function Home() {
               onClick={() => {
                 // API 데이터 새로고침
                 refresh()
-                // 사용자 조정 값들을 초기값으로 리셋
-                setBaseUpRate(3.2)
-                setMeritRate(2.5)
-                setTotalBudget(30000000000)
-                setLevelRates({
-                  'Lv.1': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.2': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.3': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.4': { baseUp: 3.2, merit: 2.5 }
-                })
+                // 엑셀 AI 데이터로 리셋
+                if (data?.aiRecommendation) {
+                  const aiData = data.aiRecommendation
+                  // AI 추천값 복원
+                  setAiBaseUpRate(aiData.baseUpPercentage)
+                  setAiMeritRate(aiData.meritIncreasePercentage)
+                  // 사용자 조정값도 AI 값으로 초기화
+                  setBaseUpRate(aiData.baseUpPercentage)
+                  setMeritRate(aiData.meritIncreasePercentage)
+                  setTotalBudget(30000000000)
+                  setLevelRates({
+                    'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+                    'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+                    'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+                    'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage }
+                  })
+                  setDetailedLevelRates({
+                    'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                    'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                    'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                    'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
+                  })
+                }
                 setPromotionBudgets({ lv2: 0, lv3: 0, lv4: 0 })
                 setAdditionalBudget(0)
                 setEnableAdditionalIncrease(false)
@@ -365,12 +407,6 @@ export default function Home() {
                 })
                 setWeightedAverageRate(0)
                 setMeritWeightedAverage(0)
-                setDetailedLevelRates({
-                  'Lv.4': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-                  'Lv.3': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-                  'Lv.2': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-                  'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
-                })
               }}
               className="h-8 md:h-9 px-2 md:px-4 text-xs md:text-sm font-medium bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
@@ -394,38 +430,25 @@ export default function Home() {
             <AIRecommendationCard 
               data={data?.aiRecommendation || null} 
               totalEmployees={data?.summary?.totalEmployees || 0}
-              baseUpRate={baseUpRate}
-              meritRate={meritRate}
+              baseUpRate={aiBaseUpRate}
+              meritRate={aiMeritRate}
               meritWeightedAverage={meritWeightedAverage}
               onBaseUpChange={(value) => {
-                setBaseUpRate(value)
-                // 전체 슬라이더 변경 시 모든 레벨 업데이트
-                setLevelRates({
-                  'Lv.1': { baseUp: value, merit: levelRates['Lv.1'].merit },
-                  'Lv.2': { baseUp: value, merit: levelRates['Lv.2'].merit },
-                  'Lv.3': { baseUp: value, merit: levelRates['Lv.3'].merit },
-                  'Lv.4': { baseUp: value, merit: levelRates['Lv.4'].merit }
-                })
+                // AI 추천값은 읽기 전용이므로 실제로는 변경하지 않음
+                // 사용자가 슬라이더 조정 시 별도 로직으로 처리
+                console.log('AI 추천값은 읽기 전용입니다. 직급별 조정 테이블을 사용하세요.')
               }}
               onMeritChange={(value) => {
-                setMeritRate(value)
-                // 전체 슬라이더 변경 시 모든 레벨 업데이트
-                setLevelRates({
-                  'Lv.1': { ...levelRates['Lv.1'], merit: value },
-                  'Lv.2': { ...levelRates['Lv.2'], merit: value },
-                  'Lv.3': { ...levelRates['Lv.3'], merit: value },
-                  'Lv.4': { ...levelRates['Lv.4'], merit: value }
-                })
+                // AI 추천값은 읽기 전용이므로 실제로는 변경하지 않음
+                console.log('AI 추천값은 읽기 전용입니다. 직급별 조정 테이블을 사용하세요.')
               }}
               onReset={() => {
-                setBaseUpRate(3.2)
-                setMeritRate(2.5)
-                setLevelRates({
-                  'Lv.1': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.2': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.3': { baseUp: 3.2, merit: 2.5 },
-                  'Lv.4': { baseUp: 3.2, merit: 2.5 }
-                })
+                // AI 추천값 리셋 (엑셀 데이터로 복원)
+                if (data?.aiRecommendation) {
+                  const aiData = data.aiRecommendation
+                  setAiBaseUpRate(aiData.baseUpPercentage)
+                  setAiMeritRate(aiData.meritIncreasePercentage)
+                }
               }}
             />
             
@@ -482,6 +505,12 @@ export default function Home() {
               setWeightedAverageRate(avgRate)
             }}
             onMeritWeightedAverageChange={setMeritWeightedAverage}
+            onTotalSummaryChange={(summary) => {
+              // GradeSalaryAdjustmentTable의 전체 평균값을 WageContext에만 반영
+              // 대시보드 AI 추천값은 유지하고, 조정값만 Context로 전달
+              setContextBaseUpRate(summary.avgBaseUp)
+              setContextMeritRate(summary.avgMerit)
+            }}
           />
         </div>
         
@@ -492,6 +521,8 @@ export default function Home() {
             meritRate={meritRate}
             levelTotalRates={levelTotalRates}
             weightedAverageRate={weightedAverageRate}
+            levelStatistics={data?.levelStatistics || []}
+            competitorData={data?.competitorData}  // 엑셀에서 C사 데이터 가져오기
           />
         </div>
 

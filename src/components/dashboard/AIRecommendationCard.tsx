@@ -23,17 +23,17 @@ interface AIRecommendationCardProps {
 function AIRecommendationCardComponent({ 
   data, 
   totalEmployees = 4925, // 실제 인원 반영
-  baseUpRate = 3.2, 
-  meritRate = 2.5,
+  baseUpRate = 0, 
+  meritRate = 0,
   meritWeightedAverage,
   onBaseUpChange,
   onMeritChange,
   onReset
 }: AIRecommendationCardProps) {
-  // 엑셀에서 가져온 AI 설정 데이터 사용 (fallback으로 기본값 사용)
-  const displayBaseUp = data?.baseUpPercentage ?? 3.2
-  const displayMerit = data?.meritIncreasePercentage ?? 2.5
-  const displayTotal = data?.totalPercentage ?? 5.7
+  // 엑셀에서 가져온 AI 설정 데이터 사용 (fallback으로 props 값 사용)
+  const displayBaseUp = data?.baseUpPercentage ?? baseUpRate
+  const displayMerit = data?.meritIncreasePercentage ?? meritRate
+  const displayTotal = data?.totalPercentage ?? (baseUpRate + meritRate)
 
   return (
     <div className="bg-white rounded-lg shadow p-4 md:p-6 h-full flex flex-col">
