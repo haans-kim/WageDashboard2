@@ -117,13 +117,16 @@ export function useClientExcelData() {
       const processedEmployees = employees.map((emp: any, index: number) => {
         // 평가등급 필드 찾기 - 여러 가능한 컬럼명 확인
         const rating = emp['평가등급'] || emp['평가'] || emp['성과등급'] || emp['성과'] || 
-                      emp['performanceRating'] || emp['Performance'] || emp['Rating'] || ''
+                      emp['performanceRating'] || emp['Performance'] || emp['Rating'] || 
+                      emp['평가 등급'] || emp['성과 등급'] || ''
         
         // 디버깅: 처음 몇 개 직원의 평가등급 확인
         if (index < 3) {
           console.log(`직원 ${index + 1} (${emp['이름'] || emp['name']}) 평가등급 매핑:`, {
-            원본데이터: emp,
-            평가등급: rating
+            원본데이터키: Object.keys(emp),
+            평가등급: rating,
+            '평가등급': emp['평가등급'],
+            '평가': emp['평가']
           })
         }
         
@@ -134,7 +137,7 @@ export function useClientExcelData() {
           band: emp['직군'] || emp['band'] || '',
           department: emp['부서'] || emp['department'] || '',
           currentSalary: emp['현재연봉'] || emp['currentSalary'] || 0,
-          performanceRating: rating,
+          performanceRating: rating || null,
           hireDate: emp['입사일'] || emp['hireDate'] || '',
           position: emp['직책'] || emp['position'] || ''
         }

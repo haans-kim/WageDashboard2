@@ -85,11 +85,15 @@ export function useEmployeesData(filters: {
           
           // ID 추가 (없는 경우) 및 평가등급 확인
           const employeesWithId = paginatedEmployees.map((emp: any, index: number) => {
+            // 평가등급이 빈 문자열인 경우 null로 변환
+            const performanceRating = emp.performanceRating === '' ? null : emp.performanceRating
+            
             if (index < 3) {
-              console.log(`직원 ${emp.name} 평가등급:`, emp.performanceRating)
+              console.log(`직원 ${emp.name} 평가등급:`, performanceRating)
             }
             return {
               ...emp,
+              performanceRating: performanceRating,
               id: emp.id || emp.employeeId || `emp-${index}`
             }
           })
