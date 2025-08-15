@@ -2,37 +2,41 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ExcelUploadButton } from '@/components/ExcelUploadButton'
+import { useClientExcelData } from '@/hooks/useClientExcelData'
+import { getStoredFileInfo } from '@/lib/clientStorage'
 
 export default function HomePage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [hasData, setHasData] = useState(false)
+  const { data, loading, uploadExcel, clearData, hasData } = useClientExcelData()
+  const [uploading, setUploading] = useState(false)
+  const [fileInfo, setFileInfo] = useState<{ fileName: string; uploadedAt: string } | null>(null)
 
-  // 데이터 존재 여부 확인 (자동 리다이렉트 제거)
   useEffect(() => {
-    checkDataAvailability()
-  }, [])
+    const info = getStoredFileInfo()
+    setFileInfo(info)
+  }, [data])
 
-  const checkDataAvailability = async () => {
-    try {
-      const response = await fetch('/api/dashboard')
-      if (response.ok) {
-        const data = await response.json()
-        if (data?.summary?.totalEmployees > 0) {
-          setHasData(true)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check data availability:', error)
-    } finally {
-      setLoading(false)
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const result = await uploadExcel(file)
+    
+    if (result.success) {
+      // 업로드 성공 시 대시보드로 이동
+      router.push('/dashboard')
+    } else {
+      alert('파일 업로드에 실패했습니다. 올바른 엑셀 파일인지 확인해주세요.')
     }
+    setUploading(false)
   }
 
-  const handleUploadSuccess = () => {
-    // 엑셀 업로드 성공 후 대시보드로 이동
-    router.push('/dashboard')
+  const handleClearData = async () => {
+    if (confirm('저장된 데이터를 삭제하시겠습니까?')) {
+      await clearData()
+      setFileInfo(null)
+    }
   }
 
   if (loading) {
@@ -40,49 +44,117 @@ export default function HomePage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">데이터 확인 중...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-xl p-12">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 max-w-2xl w-full">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             인건비 대시보드
           </h1>
+          <p className="text-gray-500 mb-8">Wage Dashboard System</p>
           
-          <div className="flex flex-col items-center gap-4">
-            {hasData ? (
-              <>
-                <p className="text-gray-600 mb-2">
-                  기존 데이터가 있습니다.
+          <div className="bg-blue-50 rounded-lg p-6 mb-8">
+            <h2 className="text-lg font-semibold text-blue-900 mb-3">
+              💡 사용 방법
+            </h2>
+            <ol className="text-left text-sm text-gray-700 space-y-2">
+              <li>1. 엑셀 파일(.xlsx)을 준비합니다</li>
+              <li>2. 아래 버튼을 클릭하여 파일을 업로드합니다</li>
+              <li>3. 데이터는 <strong>브라우저에 저장</strong>되어 새로고침해도 유지됩니다</li>
+              <li>4. 다른 사용자와 데이터가 <strong>완전히 분리</strong>됩니다</li>
+            </ol>
+          </div>
+
+          {hasData && fileInfo ? (
+            <div className="mb-8">
+              <div className="bg-green-50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-green-800 font-medium mb-1">
+                  ✅ 저장된 데이터가 있습니다
                 </p>
-                <p className="text-gray-500 text-sm mb-4">
-                  새 데이터를 업로드하면 기존 데이터가 교체됩니다.
+                <p className="text-xs text-green-600">
+                  파일명: {fileInfo.fileName}
                 </p>
-              </>
-            ) : (
-              <p className="text-gray-600 mb-4">
+                <p className="text-xs text-green-600">
+                  업로드: {new Date(fileInfo.uploadedAt).toLocaleString('ko-KR')}
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  대시보드 보기
+                </button>
+                <label className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                  새 파일 업로드
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+                <button
+                  onClick={handleClearData}
+                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  데이터 삭제
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-8">
+              <p className="text-gray-600 mb-6">
                 엑셀 파일을 업로드하여 시작하세요
               </p>
-            )}
-            
-            <ExcelUploadButton 
-              onUploadSuccess={handleUploadSuccess}
-              className="px-12 py-4 text-lg font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              label={hasData ? "새 데이터 업로드" : "데이터 업로드"}
-            />
-            
-            {hasData && (
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="px-12 py-4 text-lg font-medium bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors mt-2"
+              <label className="inline-block px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                {uploading ? '업로드 중...' : '📊 엑셀 파일 선택'}
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+          )}
+
+          <div className="border-t pt-6">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              📁 테스트용 샘플 파일
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <a
+                href="/data/SBL_employee_data_comp.xlsx"
+                download
+                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               >
-                대시보드로 돌아가기
-              </button>
-            )}
+                샘플 데이터 1
+              </a>
+              <a
+                href="/data/test_data_2.xlsx"
+                download
+                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                샘플 데이터 2
+              </a>
+              <a
+                href="/data/test_data_3.xlsx"
+                download
+                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                샘플 데이터 3
+              </a>
+            </div>
           </div>
         </div>
       </div>

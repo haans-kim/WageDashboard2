@@ -216,12 +216,33 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
         // temp 파일이 없으면 기본 파일 시도
       }
       
-      // 초기 로드 시 public 폴더의 기본 파일 시도
-      const publicPath = path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx')
-      try {
-        await fs.access(publicPath)
-        const fileBuffer = await fs.readFile(publicPath)
-        const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
+      // 초기 로드 시 기본 파일 시도 - Vercel 환경 고려
+      // Vercel에서는 .next/server/app 경로를 확인
+      const possiblePaths = [
+        path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx'),
+        path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx'),
+        path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp.xlsx')
+      ]
+      
+      let fileBuffer: Buffer | null = null
+      let loadedPath = ''
+      
+      for (const tryPath of possiblePaths) {
+        try {
+          await fs.access(tryPath)
+          fileBuffer = await fs.readFile(tryPath)
+          loadedPath = tryPath
+          console.log('파일 로드 성공:', loadedPath)
+          break
+        } catch {
+          console.log('파일 경로 실패:', tryPath)
+          continue
+        }
+      }
+      
+      if (fileBuffer) {
+        try {
+          const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
         
         // AI설정 시트 읽기
         if (workbook.SheetNames.includes('AI설정')) {
@@ -265,29 +286,32 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
         }
         
-        // 직원 데이터 읽기
-        const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
-          ? '직원기본정보' 
-          : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
-        
-        const worksheet = workbook.Sheets[employeeSheetName]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet)
-        
-        const employees = convertFromExcelFormat(jsonData)
-        cachedEmployeeData = employees
-        console.log('기본 Excel 파일에서 데이터 로드 완료:', employees.length, '명')
-        return employees
-      } catch {
-        console.log('파일 로드 실패, 생성된 데이터 사용')
+          // 직원 데이터 읽기
+          const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
+            ? '직원기본정보' 
+            : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+          
+          const worksheet = workbook.Sheets[employeeSheetName]
+          const jsonData = XLSX.utils.sheet_to_json(worksheet)
+          
+          const employees = convertFromExcelFormat(jsonData)
+          cachedEmployeeData = employees
+          console.log('기본 Excel 파일에서 데이터 로드 완료:', employees.length, '명')
+          return employees
+        } catch (fileError) {
+          console.log('파일 로드 실패, 생성된 데이터 사용')
+        }
       }
     } catch (error) {
       console.log('서버 사이드 파일 로드 오류:', error)
     }
   }
   
-  // Excel 파일이 없으면 빈 배열 반환 (데이터 없음 상태)
-  console.log('데이터가 없습니다. 엑셀 파일을 업로드해주세요.')
-  return []
+  // Excel 파일이 없으면 기본 샘플 데이터 반환
+  console.log('기본 샘플 데이터 사용')
+  const sampleEmployees = generateEmployeeData()
+  cachedEmployeeData = sampleEmployees
+  return sampleEmployees
 }
 
 /**
