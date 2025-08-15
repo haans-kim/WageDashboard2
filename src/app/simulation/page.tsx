@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useWageContext } from '@/context/WageContext'
 import { useMetadata } from '@/hooks/useMetadata'
+import { useSimulationData } from '@/hooks/useSimulationData'
 import { SimulationResults } from '@/components/simulation/SimulationResults'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function SimulationPage() {
   const { baseUpRate: globalBaseUp, meritRate: globalMerit } = useWageContext()
   const { departments, levels, ratings, loading: metadataLoading } = useMetadata()
+  const { runSimulation: runSimulationHook, loading: simulationLoading } = useSimulationData()
   const [baseUp, setBaseUp] = useState(3.2)
   const [merit, setMerit] = useState(2.5)
   const [isIndependentMode, setIsIndependentMode] = useState(false)
@@ -38,22 +40,13 @@ export default function SimulationPage() {
   const runSimulation = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/simulation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          baseUpPercentage: baseUp,
-          meritIncreasePercentage: merit,
-          performanceWeights,
-          filters: {
-            ...(selectedLevel && { level: selectedLevel }),
-            ...(selectedDepartment && { department: selectedDepartment }),
-            ...(selectedRating && { performanceRating: selectedRating }),
-          },
-        }),
+      const data = await runSimulationHook({
+        baseUpPercentage: baseUp,
+        meritIncreasePercentage: merit,
+        level: selectedLevel || undefined,
+        department: selectedDepartment || undefined
       })
-
-      const data = await response.json()
+      
       setResults(data)
     } catch (error) {
       console.error('Simulation failed:', error)

@@ -3,24 +3,8 @@
 import { useState, useEffect } from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { useWageContext } from '@/context/WageContext'
+import { useEmployeesData, type Employee } from '@/hooks/useEmployeesData'
 import Link from 'next/link'
-
-interface Employee {
-  id: string
-  employeeNumber: string
-  name: string
-  department: string
-  level: string
-  currentSalary: number
-  performanceRating: string | null
-  hireDate: string
-  latestCalculation: {
-    baseUpPercentage: number
-    meritIncreasePercentage: number
-    totalPercentage: number
-    suggestedSalary: number
-  } | null
-}
 
 interface EmployeeTableProps {
   level?: string
@@ -30,39 +14,20 @@ interface EmployeeTableProps {
 
 export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
   const { calculateToBeSalary, baseUpRate, meritRate, performanceWeights, levelRates } = useWageContext()
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    fetchEmployees()
-  }, [page, level, department, performanceRating, search])
-
-  const fetchEmployees = async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(level && { level }),
-        ...(department && { department }),
-        ...(performanceRating && { performanceRating }),
-        ...(search && { search }),
-      })
-
-      const response = await fetch(`/api/employees?${params}`)
-      const data = await response.json()
-      
-      setEmployees(data.data)
-      setTotalPages(data.pagination.totalPages)
-    } catch (error) {
-      console.error('Failed to fetch employees:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  
+  const { data, loading } = useEmployeesData({
+    page,
+    limit: 10,
+    level,
+    department,
+    rating: performanceRating,
+    search
+  })
+  
+  const employees = data?.employees || []
+  const totalPages = data?.totalPages || 1
 
   const levelColors = {
     'Lv.1': 'bg-purple-100 text-purple-700',
@@ -146,7 +111,7 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                 {employees.map((employee) => (
                   <tr key={`${employee.id}-${baseUpRate}-${meritRate}`} className="hover:bg-gray-50">
                     <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-gray-900">
-                      {employee.employeeNumber}
+                      {employee.employeeNumber || employee.employeeId || '-'}
                     </td>
                     <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
                       {employee.name}
