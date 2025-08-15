@@ -22,7 +22,7 @@ const DEFAULT_SCENARIO: Scenario = {
       'Lv.4': { baseUp: 3.2, merit: 2.5 }
     },
     totalBudget: 30000000000,
-    promotionBudgets: { lv2: 0, lv3: 0, lv4: 0 },
+    promotionBudgets: { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
     additionalBudget: 0,
     enableAdditionalIncrease: false,
     calculatedAdditionalBudget: 0,

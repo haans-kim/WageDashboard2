@@ -7,12 +7,7 @@ interface RaiseSliderPanelProps {
   bandId: string
   baseUpRate: number
   additionalRate: number
-  meritMultipliers: {
-    'Lv.1': number
-    'Lv.2': number
-    'Lv.3': number
-    'Lv.4': number
-  }
+  meritMultipliers: Record<string, number>
   onBaseUpChange: (value: number) => void
   onAdditionalChange: (value: number) => void
   onMeritMultiplierChange: (level: string, value: number) => void

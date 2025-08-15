@@ -78,6 +78,7 @@ export default function Home() {
   
   // 예산활용내역 상세를 위한 상태 - 모두 0원으로 초기화
   const [promotionBudgets, setPromotionBudgets] = useState({
+    lv1: 0,
     lv2: 0,
     lv3: 0,
     lv4: 0
@@ -139,8 +140,17 @@ export default function Home() {
         setDetailedLevelRates(contextDetailedLevelRates)
         
         // levelRates도 Context에서 가져오기
-        if (contextLevelRates) {
-          setLevelRates(contextLevelRates)
+        if (contextLevelRates && 
+            'Lv.1' in contextLevelRates && 
+            'Lv.2' in contextLevelRates && 
+            'Lv.3' in contextLevelRates && 
+            'Lv.4' in contextLevelRates) {
+          setLevelRates({
+            'Lv.1': contextLevelRates['Lv.1'],
+            'Lv.2': contextLevelRates['Lv.2'],
+            'Lv.3': contextLevelRates['Lv.3'],
+            'Lv.4': contextLevelRates['Lv.4']
+          })
         }
         
         // baseUpRate와 meritRate는 평균값 계산
@@ -460,7 +470,7 @@ export default function Home() {
                     'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
                   })
                 }
-                setPromotionBudgets({ lv2: 0, lv3: 0, lv4: 0 })
+                setPromotionBudgets({ lv1: 0, lv2: 0, lv3: 0, lv4: 0 })
                 setAdditionalBudget(0)
                 setEnableAdditionalIncrease(false)
                 setCalculatedAdditionalBudget(0)

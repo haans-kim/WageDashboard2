@@ -11,6 +11,7 @@ export interface Scenario {
     
     // 예산활용내역 상세
     promotionBudgets?: {
+      lv1: number
       lv2: number
       lv3: number
       lv4: number

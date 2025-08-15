@@ -27,7 +27,7 @@ interface IndustryComparisonSectionProps {
       'Lv.3'?: number
       'Lv.4'?: number
     }
-  }
+  } | null
 }
 
 function IndustryComparisonSectionComponent({

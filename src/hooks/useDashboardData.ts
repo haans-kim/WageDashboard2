@@ -38,6 +38,12 @@ interface DashboardData {
     rating: string
     count: number
   }>
+  competitorData?: Array<{
+    company: string
+    band: string
+    level: string
+    averageSalary: number
+  }> | null
 }
 
 export function useDashboardData() {

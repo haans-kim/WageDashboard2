@@ -18,6 +18,7 @@ interface BudgetUtilizationDetailProps {
   
   // 승급/승격 예산 (사용자 입력)
   promotionBudgets?: {
+    lv1: number
     lv2: number
     lv3: number
     lv4: number

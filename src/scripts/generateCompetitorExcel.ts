@@ -23,7 +23,7 @@ const competitorSalaryData = [
 
 // 직원 샘플 데이터 생성
 function generateEmployeeData() {
-  const employees = []
+  const employees: any[] = []
   let empId = 1
   
   // 각 직군별로 직원 생성
