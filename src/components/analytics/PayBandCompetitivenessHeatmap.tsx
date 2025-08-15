@@ -20,9 +20,12 @@ interface BandData {
 
 interface Props {
   bandRates?: Record<string, {
-    baseUpRate: number
-    additionalRate: number
-    meritMultipliers: Record<string, number>
+    baseUpAdjustment?: number
+    meritAdjustment?: number
+    // 이전 버전 호환성
+    baseUpRate?: number
+    additionalRate?: number
+    meritMultipliers?: Record<string, number>
   }>
   levelRates?: {  // 대시보드에서 설정한 직급별 인상률
     [level: string]: {
