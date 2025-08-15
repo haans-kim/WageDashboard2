@@ -162,17 +162,12 @@ export function PayBandCard({
     })
     .filter(item => item !== null)
 
-  // 예산 영향 계산
+  // 예산 영향 계산 - 추가 조정분만 계산
   const calculateBudgetImpact = () => {
     return levels.reduce((total, level) => {
-      if (levelRates && levelRates[level.level]) {
-        const baseRate = levelRates[level.level]
-        const finalBaseUp = (baseRate.baseUp + baseUpAdjustment) / 100
-        const finalMerit = (baseRate.merit + meritAdjustment) / 100
-        const totalRate = finalBaseUp + finalMerit
-        return total + (level.meanBasePay * totalRate * level.headcount)
-      }
-      return total
+      // 추가 조정 비율만 계산 (대시보드 기준값 제외)
+      const additionalRate = (baseUpAdjustment + meritAdjustment) / 100
+      return total + (level.meanBasePay * additionalRate * level.headcount)
     }, 0)
   }
 
