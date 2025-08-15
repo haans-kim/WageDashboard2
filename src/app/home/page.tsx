@@ -128,34 +128,6 @@ export default function HomePage() {
             </div>
           )}
 
-          <div className="border-t pt-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              📁 테스트용 샘플 파일
-            </h3>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <a
-                href="/data/SBL_employee_data_comp.xlsx"
-                download
-                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-              >
-                샘플 데이터 1
-              </a>
-              <a
-                href="/data/test_data_2.xlsx"
-                download
-                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-              >
-                샘플 데이터 2
-              </a>
-              <a
-                href="/data/test_data_3.xlsx"
-                download
-                className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-              >
-                샘플 데이터 3
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </main>

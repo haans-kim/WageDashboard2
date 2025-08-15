@@ -35,7 +35,10 @@ export function formatPercentage(value: number, decimals: number = 1): string {
   if (!isFinite(value) || isNaN(value)) {
     return '0.0%'
   }
-  return `${value.toFixed(decimals)}%`
+  // 정확한 반올림을 위해 Math.round 사용
+  const multiplier = Math.pow(10, decimals)
+  const rounded = Math.round(value * multiplier) / multiplier
+  return `${rounded.toFixed(decimals)}%`
 }
 
 /**
