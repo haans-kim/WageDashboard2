@@ -124,9 +124,9 @@ export function useClientExcelData() {
         if (index < 3) {
           console.log(`직원 ${index + 1} (${emp['이름'] || emp['name']}) 평가등급 매핑:`, {
             원본데이터키: Object.keys(emp),
-            평가등급: rating,
-            '평가등급': emp['평가등급'],
-            '평가': emp['평가']
+            최종평가등급: rating,
+            평가등급필드: emp['평가등급'],
+            평가필드: emp['평가']
           })
         }
         
