@@ -86,13 +86,19 @@ export function useClientExcelData() {
       
       // C사인상률 시트 읽기
       let competitorIncreaseRate = 0
+      console.log('엑셀 시트 목록:', workbook.SheetNames)
+      
       if (workbook.SheetNames.includes('C사인상률')) {
         const competitorRateSheet = workbook.Sheets['C사인상률']
         const competitorRateData = XLSX.utils.sheet_to_json(competitorRateSheet)
+        console.log('C사인상률 시트 데이터:', competitorRateData)
         const rateRow = competitorRateData.find((row: any) => row['항목'] === 'C사 인상률(%)')
         if (rateRow) {
           competitorIncreaseRate = (rateRow as any)['값'] || 0
+          console.log('C사 인상률 찾음:', competitorIncreaseRate)
         }
+      } else {
+        console.log('C사인상률 시트를 찾을 수 없음')
       }
       
       // C사데이터 시트 읽기
@@ -100,6 +106,7 @@ export function useClientExcelData() {
       if (workbook.SheetNames.includes('C사데이터')) {
         const competitorSheet = workbook.Sheets['C사데이터']
         const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
+        console.log('C사데이터 시트 원본:', competitorRawData)
         
         competitorRawData.forEach((row: any) => {
           const band = row['직군']
@@ -116,6 +123,9 @@ export function useClientExcelData() {
             })
           }
         })
+        console.log('처리된 C사 데이터:', competitorData.length, '개 항목')
+      } else {
+        console.log('C사데이터 시트를 찾을 수 없음')
       }
       
       // 직원 데이터 읽기

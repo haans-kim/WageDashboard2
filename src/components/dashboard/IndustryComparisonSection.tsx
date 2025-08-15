@@ -49,6 +49,14 @@ function IndustryComparisonSectionComponent({
   // C사 데이터 (엑셀에서 가져온 데이터 사용)
   const companyIncrease = Math.round((baseUpRate + meritRate) * 10) / 10 // 우리 회사 (소수점 1자리)
   
+  // 디버그: C사 데이터 확인
+  console.log('IndustryComparisonSection - C사 데이터 디버그:', {
+    competitorData,
+    competitorIncreaseRate,
+    isArray: Array.isArray(competitorData),
+    dataLength: Array.isArray(competitorData) ? competitorData.length : 0
+  })
+  
   // C사 평균 인상률 (엑셀에서 읽어온 값 우선 사용)
   let cCompanyIncrease = competitorIncreaseRate // 엑셀에서 읽어온 C사 인상률
   

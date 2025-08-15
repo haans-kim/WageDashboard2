@@ -59,6 +59,13 @@ export function useDashboardData() {
         if (hasStoredData()) {
           const clientData = await loadExcelData()
           if (clientData) {
+            // 디버그: 클라이언트 데이터 확인
+            console.log('useDashboardData - 클라이언트 데이터:', {
+              competitorData: clientData.competitorData,
+              competitorIncreaseRate: clientData.competitorIncreaseRate,
+              aiSettings: clientData.aiSettings
+            })
+            
             // 클라이언트 데이터를 대시보드 형식으로 변환
             const dashboardData: DashboardData = {
               summary: {
@@ -113,6 +120,13 @@ export function useDashboardData() {
         const response = await fetch('/api/dashboard')
         if (!response.ok) throw new Error('Failed to fetch dashboard data')
         const result = await response.json()
+        
+        // 디버그: 서버 데이터 확인
+        console.log('useDashboardData - 서버 데이터:', {
+          competitorData: result.competitorData,
+          industryComparison: result.industryComparison
+        })
+        
         setData(result)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred')
