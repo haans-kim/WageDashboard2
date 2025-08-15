@@ -58,12 +58,18 @@ export function useAnalyticsData() {
               dept.count++
             })
             
-            const departmentAnalysis = Array.from(deptMap.entries()).map(([name, data]) => ({
-              department: name,
-              employeeCount: data.count,
-              averageSalary: Math.round(data.totalSalary / data.count),
-              totalPayroll: data.totalSalary
-            }))
+            const departmentAnalysis = Array.from(deptMap.entries()).map(([name, data]) => {
+              const salaries = data.employees.map((e: any) => e.currentSalary || 0)
+              return {
+                department: name,
+                employeeCount: data.count,
+                averageSalary: data.count > 0 ? Math.round(data.totalSalary / data.count) : 0,
+                totalPayroll: data.totalSalary,
+                minSalary: salaries.length > 0 ? Math.min(...salaries) : 0,
+                maxSalary: salaries.length > 0 ? Math.max(...salaries) : 0,
+                salaryRange: salaries.length > 0 ? Math.max(...salaries) - Math.min(...salaries) : 0
+              }
+            })
             
             // 성과 분석
             const perfMap = new Map()
@@ -102,15 +108,107 @@ export function useAnalyticsData() {
               }
             }).filter(stat => stat.employeeCount > 0)
             
+            // 예산 활용률 계산
+            const totalPayroll = employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0)
+            const totalBudget = totalPayroll * 1.2 // 총 급여의 120%를 예산으로 가정
+            
+            // 인상률 시뮬레이션 (projections)
+            const projections = []
+            for (let rate = 0; rate <= 10; rate += 0.5) {
+              const totalCurrent = totalPayroll
+              const totalProjected = employees.reduce((sum: number, emp: any) => 
+                sum + Math.round((emp.currentSalary || 0) * (1 + rate / 100)), 0
+              )
+              
+              projections.push({
+                rate,
+                totalCurrent,
+                totalProjected,
+                increase: totalProjected - totalCurrent,
+                budgetImpact: totalCurrent > 0 ? ((totalProjected - totalCurrent) / totalCurrent) * 100 : 0,
+              })
+            }
+            
+            // 근속년수별 통계
+            const currentYear = new Date().getFullYear()
+            const tenureGroups = [
+              { min: 0, max: 2, label: '2년 미만' },
+              { min: 2, max: 5, label: '2-5년' },
+              { min: 5, max: 10, label: '5-10년' },
+              { min: 10, max: Infinity, label: '10년 이상' },
+            ]
+            
+            const tenureStats = tenureGroups.map(group => {
+              const groupEmployees = employees.filter((emp: any) => {
+                const yearsOfService = emp.hireDate 
+                  ? currentYear - new Date(emp.hireDate).getFullYear()
+                  : 0
+                return yearsOfService >= group.min && 
+                       (group.max === Infinity || yearsOfService < group.max)
+              })
+              
+              const avgSalary = groupEmployees.length > 0
+                ? Math.round(groupEmployees.reduce((sum: number, emp: any) => sum + (emp.currentSalary || 0), 0) / groupEmployees.length)
+                : 0
+              
+              return {
+                tenure: group.label,
+                employeeCount: groupEmployees.length,
+                averageSalary: avgSalary,
+              }
+            })
+            
+            // 평가등급 분포
+            const performanceDistribution = ['S', 'A', 'B', 'C'].map(rating => ({
+              rating,
+              count: employees.filter((e: any) => e.performanceRating === rating).length
+            }))
+            
+            // 평가등급별 평균급여
+            const performanceSalary = ['S', 'A', 'B', 'C'].map(rating => {
+              const ratingEmployees = employees.filter((e: any) => e.performanceRating === rating)
+              const avgSalary = ratingEmployees.length > 0
+                ? Math.round(ratingEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / ratingEmployees.length)
+                : 0
+              return {
+                rating,
+                averageSalary: avgSalary,
+                count: ratingEmployees.length,
+              }
+            })
+            
+            // 직급×평가등급 히트맵
+            const levelPerformance = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
+              const levelData: any = { level }
+              ;['S', 'A', 'B', 'C'].forEach(rating => {
+                levelData[rating] = employees.filter((e: any) => 
+                  e.level === level && e.performanceRating === rating
+                ).length
+              })
+              return levelData
+            })
+            
             const analyticsData = {
               salaryDistribution,
               departmentAnalysis,
               performanceAnalysis,
               levelStatistics: levelStats,
+              projections,
+              tenureStats,
+              budgetUtilization: {
+                totalBudget: totalBudget.toString(),
+                usedBudget: totalPayroll.toString(),
+                utilizationRate: totalBudget > 0 ? (totalPayroll / totalBudget) * 100 : 0,
+              },
+              performanceDistribution,
+              performanceSalary,
+              levelPerformance,
               summary: {
                 totalEmployees: employees.length,
-                averageSalary: Math.round(employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / employees.length),
-                totalPayroll: employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0)
+                averageSalary: employees.length > 0 
+                  ? Math.round(totalPayroll / employees.length)
+                  : 0,
+                totalPayroll
               }
             }
             

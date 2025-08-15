@@ -289,6 +289,7 @@ function BandDashboardContent() {
               <PayBandCompetitivenessHeatmap 
                 bandRates={bandRates}
                 initialMerit={initialMerit}
+                bands={bands}
               />
             ) : selectedBandData ? (
               // 개별 직군 보기

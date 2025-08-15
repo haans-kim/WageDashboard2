@@ -19,7 +19,7 @@ export default function SimulationPage() {
   const [selectedRating, setSelectedRating] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<any>(null)
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  // Removed showConfirmDialog - not needed for client-side storage
   
   // 평가등급별 Merit 가중치
   const [performanceWeights, setPerformanceWeights] = useState({
@@ -50,33 +50,6 @@ export default function SimulationPage() {
       setResults(data)
     } catch (error) {
       console.error('Simulation failed:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const applyToAll = async () => {
-    if (!results) return
-
-    setLoading(true)
-    try {
-      const response = await fetch('/api/simulation', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          employees: results.employees,
-          applyToAll: true,
-        }),
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        alert(data.message)
-        setShowConfirmDialog(false)
-        setResults(null)
-      }
-    } catch (error) {
-      console.error('Apply failed:', error)
     } finally {
       setLoading(false)
     }
@@ -292,47 +265,11 @@ export default function SimulationPage() {
                 >
                   결과 초기화
                 </button>
-                <button
-                  onClick={() => setShowConfirmDialog(true)}
-                  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                >
-                  전체 적용
-                </button>
               </div>
             </div>
           </>
         )}
 
-        {/* 확인 다이얼로그 */}
-        {showConfirmDialog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold mb-4">전체 적용 확인</h3>
-              <p className="text-gray-600 mb-4">
-                {results?.simulation.employeeCount}명의 직원에게 총 {(baseUp + merit).toFixed(1)}%의 
-                인상률을 적용하시겠습니까?
-              </p>
-              <p className="text-sm text-gray-500 mb-6">
-                이 작업은 되돌릴 수 없습니다. 모든 직원의 급여가 업데이트되며 급여 이력에 기록됩니다.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowConfirmDialog(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={applyToAll}
-                  disabled={loading}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50"
-                >
-                  {loading ? '적용 중...' : '확인'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </main>
   )

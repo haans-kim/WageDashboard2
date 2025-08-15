@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useBandData } from '@/hooks/useBandData'
 
 interface LevelData {
   level: string
@@ -24,31 +25,29 @@ interface Props {
     meritMultipliers: Record<string, number>
   }>
   initialMerit?: number
+  bands?: BandData[]  // Accept bands as props
 }
 
-export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialMerit = 2.5 }: Props) {
+export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialMerit = 2.5, bands: propsB = [] }: Props) {
+  const { bands: hookBands, loading: hookLoading } = useBandData()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'AS-IS' | 'TO-BE'>('AS-IS')
   
   useEffect(() => {
-    fetchData()
-  }, [])
-  
-  const fetchData = async () => {
-    try {
-      const response = await fetch('/api/bands')
-      const data = await response.json()
-      
-      if (data.success && data.data) {
-        setBands(data.data.bands || [])
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error)
-    } finally {
+    // Use props bands if provided, otherwise use hook bands
+    if (propsB && propsB.length > 0) {
+      setBands(propsB)
+      setLoading(false)
+    } else if (hookBands && hookBands.length > 0) {
+      setBands(hookBands)
+      setLoading(false)
+    } else if (!hookLoading) {
+      // If not loading and no data, set empty
+      setBands([])
       setLoading(false)
     }
-  }
+  }, [propsB, hookBands, hookLoading])
   
   // TO-BE 경쟁력 계산 함수
   const calculateToBECompetitiveness = (band: BandData, level: LevelData) => {
