@@ -329,18 +329,12 @@ function BandDashboardContent() {
                     [bandId]: data.budgetImpact || 0
                   }))
                   
-                  // 직군별 인상률 상태 업데이트 (경쟁력 분석용)
+                  // 직군별 조정값 상태 업데이트 (경쟁력 분석용)
                   setBandRates(prev => ({
                     ...prev,
                     [selectedBandData.name]: {
-                      baseUpRate: data.baseUpRate || (initialBaseUp / 100),
-                      additionalRate: data.additionalRate || 0,
-                      meritMultipliers: data.meritMultipliers || {
-                        'Lv.1': 1.0,
-                        'Lv.2': 1.0,
-                        'Lv.3': 1.0,
-                        'Lv.4': 1.0
-                      }
+                      baseUpAdjustment: data.baseUpAdjustment || 0,
+                      meritAdjustment: data.meritAdjustment || 0
                     }
                   }))
                 }}

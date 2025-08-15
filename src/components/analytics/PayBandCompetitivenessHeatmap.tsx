@@ -64,14 +64,17 @@ export function PayBandCompetitivenessHeatmap({ bandRates = {}, levelRates, init
     if (levelRates && levelRates[level.level]) {
       const levelRate = levelRates[level.level]
       totalRate = levelRate.baseUp / 100 + levelRate.merit / 100
-    } 
-    // 2. 차선책: Pay Band에서 설정한 직군별 인상률 사용
-    else {
+      
+      // 2. Pay Band에서 조정한 값이 있으면 추가 적용
       const rate = bandRates[band.name]
-      const baseUpRate = rate?.baseUpRate ?? (initialBaseUp / 100)
-      const additionalRate = rate?.additionalRate ?? 0
-      const meritMultiplier = rate?.meritMultipliers?.[level.level] ?? 1.0
-      totalRate = baseUpRate + additionalRate + (initialMerit / 100) * meritMultiplier
+      if (rate) {
+        // bandRates는 이제 조정값을 저장
+        totalRate += (rate.baseUpAdjustment || 0) / 100 + (rate.meritAdjustment || 0) / 100
+      }
+    } 
+    // 3. 차선책: 기본값 사용
+    else {
+      totalRate = (initialBaseUp / 100) + (initialMerit / 100)
     }
     
     if (!level.meanBasePay) return level.sblIndex

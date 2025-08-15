@@ -20,7 +20,6 @@ export function Navigation({ children }: NavigationProps) {
   const navItems = [
     { href: '/dashboard', label: '대시보드' },
     { href: '/bands', label: 'Pay Band' },
-    { href: '/analytics', label: '분석' },
     { href: '/employees', label: '직원 관리' },
     { href: '/simulation', label: 'What if' },
   ]

@@ -36,6 +36,16 @@ interface WageContextType {
     }
   }
   
+  // 직군별 최종 인상률 (Pay Band에서 조정된 값)
+  bandFinalRates: {
+    [bandName: string]: {
+      [level: string]: {
+        baseUp: number
+        merit: number
+      }
+    }
+  }
+  
   // 총 예산
   totalBudget: number
   
@@ -45,13 +55,15 @@ interface WageContextType {
   setPerformanceWeights: (weights: PerformanceWeights) => void
   setLevelRates: (rates: any) => void
   setDetailedLevelRates: (rates: any) => void
+  setBandFinalRates: (rates: any) => void
   setTotalBudget: (budget: number) => void
   
   // TO-BE 급여 계산 함수
   calculateToBeSalary: (
     currentSalary: number,
     level: string,
-    performanceRating?: string
+    performanceRating?: string,
+    band?: string
   ) => number
 }
 
@@ -79,6 +91,14 @@ export function WageProvider({ children }: { children: ReactNode }) {
     'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
     'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
   })
+  const [bandFinalRates, setBandFinalRates] = useState<{
+    [bandName: string]: {
+      [level: string]: {
+        baseUp: number
+        merit: number
+      }
+    }
+  }>({})
   const [totalBudget, setTotalBudget] = useState(0)
   
   // localStorage에서 저장된 값 불러오기
@@ -105,6 +125,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
             'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
             'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
           })
+          setBandFinalRates(parsed.bandFinalRates ?? {})
           setTotalBudget(parsed.totalBudget ?? 0)
         } catch (e) {
           console.error('Failed to parse saved wage settings:', e)
@@ -122,19 +143,29 @@ export function WageProvider({ children }: { children: ReactNode }) {
         performanceWeights,
         levelRates,
         detailedLevelRates,
+        bandFinalRates,
         totalBudget
       }
       localStorage.setItem('wageSettings', JSON.stringify(stateToSave))
     }
-  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, totalBudget])
+  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandFinalRates, totalBudget])
   
   // TO-BE 급여 계산 함수
   const calculateToBeSalary = (
     currentSalary: number,
     level: string,
-    performanceRating?: string
+    performanceRating?: string,
+    band?: string
   ): number => {
-    const levelRate = levelRates[level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+    // 1. 우선순위: 직군별 최종 인상률 (Pay Band에서 조정된 값)
+    let levelRate
+    if (band && bandFinalRates[band] && bandFinalRates[band][level]) {
+      levelRate = bandFinalRates[band][level]
+    } else {
+      // 2. 차선책: 대시보드 직급별 인상률
+      levelRate = levelRates[level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+    }
+    
     let effectiveMeritRate = levelRate.merit
     
     // 평가등급별 가중치 적용
@@ -152,12 +183,14 @@ export function WageProvider({ children }: { children: ReactNode }) {
     performanceWeights,
     levelRates,
     detailedLevelRates,
+    bandFinalRates,
     totalBudget,
     setBaseUpRate,
     setMeritRate,
     setPerformanceWeights,
     setLevelRates,
     setDetailedLevelRates,
+    setBandFinalRates,
     setTotalBudget,
     calculateToBeSalary
   }

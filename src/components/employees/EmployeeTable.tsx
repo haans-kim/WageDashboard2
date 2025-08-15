@@ -13,7 +13,7 @@ interface EmployeeTableProps {
 }
 
 export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
-  const { calculateToBeSalary, baseUpRate, meritRate, performanceWeights, levelRates } = useWageContext()
+  const { calculateToBeSalary, baseUpRate, meritRate, performanceWeights, levelRates, bandFinalRates } = useWageContext()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   
@@ -142,7 +142,14 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                     </td>
                     <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
                       {(() => {
-                        const levelRate = levelRates[employee.level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+                        // 직군별 최종 인상률이 있으면 우선 사용, 없으면 대시보드 기준 사용
+                        let levelRate
+                        if (employee.band && bandFinalRates[employee.band] && bandFinalRates[employee.band][employee.level]) {
+                          levelRate = bandFinalRates[employee.band][employee.level]
+                        } else {
+                          levelRate = levelRates[employee.level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+                        }
+                        
                         const effectiveMeritRate = employee.performanceRating && performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
                           ? levelRate.merit * performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
                           : levelRate.merit
@@ -164,7 +171,8 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                         const toBeSalary = calculateToBeSalary(
                           employee.currentSalary,
                           employee.level,
-                          employee.performanceRating || undefined
+                          employee.performanceRating || undefined,
+                          employee.band || undefined
                         )
                         return (
                           <span className="font-semibold text-primary-600">
@@ -178,7 +186,8 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                         const toBeSalary = calculateToBeSalary(
                           employee.currentSalary,
                           employee.level,
-                          employee.performanceRating || undefined
+                          employee.performanceRating || undefined,
+                          employee.band || undefined
                         )
                         const difference = toBeSalary - employee.currentSalary
                         const isPositive = difference > 0
