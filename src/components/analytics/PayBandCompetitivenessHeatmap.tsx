@@ -345,52 +345,88 @@ export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialMerit = 2
           </div>
           
           {/* 요약 정보 */}
-          <div className="space-y-4">
+          <div className="space-y-4 flex flex-col h-full">
             {/* 경쟁력 부족 */}
-            <div className="bg-red-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-red-50 rounded-lg p-4 flex-1">
+              <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-red-900">경쟁력 부족 (&lt;95%)</h4>
-                <span className="text-xl font-bold text-red-600">{summary.totalUnder}명</span>
+                <span className="text-lg font-bold text-red-600">{summary.totalUnder}명</span>
               </div>
-              <div className="text-xs text-red-700">
-                {summary.totalCount > 0 && (
-                  <div>전체 인원의 {((summary.totalUnder / summary.totalCount) * 100).toFixed(1)}%</div>
-                )}
+              <div className="space-y-1.5">
+                {bands.map(band => {
+                  const underLevels = band.levels
+                    .filter(level => {
+                      const value = viewMode === 'TO-BE'
+                        ? calculateToBECompetitiveness(band, level)
+                        : level.sblIndex
+                      return level.headcount > 0 && value < 95
+                    })
+                    .map(level => level.level)
+                  
+                  if (underLevels.length === 0) return null
+                  
+                  return (
+                    <div key={band.id} className="text-sm text-red-700">
+                      <span className="font-semibold">{band.name}:</span> {underLevels.join(', ')}
+                    </div>
+                  )
+                })}
               </div>
             </div>
             
             {/* 적정 */}
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-green-50 rounded-lg p-4 flex-1">
+              <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-green-900">적정 (95-105%)</h4>
-                <span className="text-xl font-bold text-green-600">{summary.totalFit}명</span>
+                <span className="text-lg font-bold text-green-600">{summary.totalFit}명</span>
               </div>
-              <div className="text-xs text-green-700">
-                {summary.totalCount > 0 && (
-                  <div>전체 인원의 {((summary.totalFit / summary.totalCount) * 100).toFixed(1)}%</div>
-                )}
+              <div className="space-y-1.5">
+                {bands.map(band => {
+                  const fitLevels = band.levels
+                    .filter(level => {
+                      const value = viewMode === 'TO-BE'
+                        ? calculateToBECompetitiveness(band, level)
+                        : level.sblIndex
+                      return level.headcount > 0 && value >= 95 && value <= 105
+                    })
+                    .map(level => level.level)
+                  
+                  if (fitLevels.length === 0) return null
+                  
+                  return (
+                    <div key={band.id} className="text-sm text-green-700">
+                      <span className="font-semibold">{band.name}:</span> {fitLevels.join(', ')}
+                    </div>
+                  )
+                })}
               </div>
             </div>
             
             {/* 경쟁력 우위 */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-blue-50 rounded-lg p-4 flex-1">
+              <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-blue-900">경쟁력 우위 (&gt;105%)</h4>
-                <span className="text-xl font-bold text-blue-600">{summary.totalOver}명</span>
+                <span className="text-lg font-bold text-blue-600">{summary.totalOver}명</span>
               </div>
-              <div className="text-xs text-blue-700">
-                {summary.totalCount > 0 && (
-                  <div>전체 인원의 {((summary.totalOver / summary.totalCount) * 100).toFixed(1)}%</div>
-                )}
-              </div>
-            </div>
-            
-            {/* 전체 통계 */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">전체 분석 대상</h4>
-              <div className="text-2xl font-bold text-gray-800">{summary.totalCount}명</div>
-              <div className="text-xs text-gray-600 mt-1">
-                {bands.length}개 직군 × {levels.length}개 직급
+              <div className="space-y-1.5">
+                {bands.map(band => {
+                  const overLevels = band.levels
+                    .filter(level => {
+                      const value = viewMode === 'TO-BE'
+                        ? calculateToBECompetitiveness(band, level)
+                        : level.sblIndex
+                      return level.headcount > 0 && value > 105
+                    })
+                    .map(level => level.level)
+                  
+                  if (overLevels.length === 0) return null
+                  
+                  return (
+                    <div key={band.id} className="text-sm text-blue-700">
+                      <span className="font-semibold">{band.name}:</span> {overLevels.join(', ')}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>

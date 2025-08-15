@@ -78,9 +78,13 @@ export function PayBandCard({
   }, [currentRates])
 
   // 차트 데이터 준비 - 인상률 적용
-  const chartData = levels
-    .filter(level => level.headcount > 0 || level.company.median > 0)
-    .map(level => {
+  const chartData = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
+    .map(levelName => {
+      const level = levels.find(l => l.level === levelName)
+      if (!level || (level.headcount === 0 && level.company.median === 0)) {
+        return null
+      }
+      
       // 각 직급별로 인상률 적용
       const totalRaiseRate = baseUpRate + additionalRate + 
         (initialMerit / 100) * meritMultipliers[level.level as keyof typeof meritMultipliers]
@@ -93,17 +97,16 @@ export function PayBandCard({
         caMedian: level.competitor.median
       }
     })
-    .sort((a, b) => {
-      // Lv.1, Lv.2, Lv.3, Lv.4 순서로 정렬
-      const levelOrder = { 'Lv.1': 1, 'Lv.2': 2, 'Lv.3': 3, 'Lv.4': 4 }
-      return (levelOrder[a.level as keyof typeof levelOrder] || 0) - 
-             (levelOrder[b.level as keyof typeof levelOrder] || 0)
-    })
+    .filter(item => item !== null)
 
   // 테이블 데이터 준비 - 인상률 적용
-  const tableData = levels
-    .filter(level => level.headcount > 0 || level.company.median > 0)
-    .map(level => {
+  const tableData = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
+    .map(levelName => {
+      const level = levels.find(l => l.level === levelName)
+      if (!level || (level.headcount === 0 && level.company.median === 0)) {
+        return null
+      }
+      
       const totalRaiseRate = baseUpRate + additionalRate + 
         (initialMerit / 100) * meritMultipliers[level.level as keyof typeof meritMultipliers]
       const adjustedSblMedian = level.company.median * (1 + totalRaiseRate)
@@ -115,6 +118,7 @@ export function PayBandCard({
         sblMedianAdjusted: adjustedSblMedian
       }
     })
+    .filter(item => item !== null)
 
   // 예산 영향 계산
   const calculateBudgetImpact = () => {
