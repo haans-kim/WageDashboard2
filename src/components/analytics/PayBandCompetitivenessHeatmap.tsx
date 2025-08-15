@@ -24,11 +24,12 @@ interface Props {
     additionalRate: number
     meritMultipliers: Record<string, number>
   }>
+  initialBaseUp?: number
   initialMerit?: number
   bands?: BandData[]  // Accept bands as props
 }
 
-export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialMerit = 2.5, bands: propsB = [] }: Props) {
+export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialBaseUp = 3.2, initialMerit = 2.5, bands: propsB = [] }: Props) {
   const { bands: hookBands, loading: hookLoading } = useBandData()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,11 +53,16 @@ export function PayBandCompetitivenessHeatmap({ bandRates = {}, initialMerit = 2
   // TO-BE 경쟁력 계산 함수
   const calculateToBECompetitiveness = (band: BandData, level: LevelData) => {
     const rate = bandRates[band.name]
-    if (!rate || !level.meanBasePay) return level.sblIndex
+    
+    // bandRates에 해당 직군 설정이 없으면 initialBaseUp 사용
+    const baseUpRate = rate?.baseUpRate ?? (initialBaseUp / 100)
+    const additionalRate = rate?.additionalRate ?? 0
+    const meritMultiplier = rate?.meritMultipliers?.[level.level] ?? 1.0
+    
+    if (!level.meanBasePay) return level.sblIndex
     
     // 인상률 계산
-    const meritMultiplier = rate.meritMultipliers[level.level] || 1.0
-    const totalRate = rate.baseUpRate + rate.additionalRate + (initialMerit / 100) * meritMultiplier
+    const totalRate = baseUpRate + additionalRate + (initialMerit / 100) * meritMultiplier
     
     // 조정된 급여 계산
     const adjustedSalary = level.meanBasePay * (1 + totalRate)
