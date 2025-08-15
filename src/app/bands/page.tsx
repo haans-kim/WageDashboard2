@@ -60,11 +60,14 @@ function BandDashboardContent() {
   const [selectedBand, setSelectedBand] = useState<string | null>(null)
   const [aiSettings, setAiSettings] = useState<any>(null)
   
-  // 직군별 인상률 상태 관리 (경쟁력 분석용) - localStorage에서 초기값 로드
+  // 직군별 조정값 상태 관리 (경쟁력 분석용) - localStorage에서 초기값 로드
   const [bandRates, setBandRates] = useState<Record<string, {
-    baseUpRate: number
-    additionalRate: number
-    meritMultipliers: Record<string, number>
+    baseUpAdjustment?: number
+    meritAdjustment?: number
+    // 이전 버전 호환성을 위해 남겨둠
+    baseUpRate?: number
+    additionalRate?: number
+    meritMultipliers?: Record<string, number>
   }>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('bandRates')
