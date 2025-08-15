@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { loadExcelData, hasStoredData } from '@/lib/clientStorage'
+import { useWageContext } from '@/context/WageContext'
 
 export function useAnalyticsData() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { baseUpRate, meritRate } = useWageContext()
 
   useEffect(() => {
     async function fetchData() {
@@ -95,7 +97,10 @@ export function useAnalyticsData() {
               averageSalary: Math.round(data.totalSalary / data.count)
             }))
             
-            // 직급별 통계
+            // 직급별 통계 - WageContext의 인상률 반영 (0이면 AI 설정 사용)
+            const effectiveBaseUp = baseUpRate || clientData.aiSettings?.baseUpPercentage || 3.2
+            const effectiveMerit = meritRate || clientData.aiSettings?.meritIncreasePercentage || 2.5
+            
             const levelStats = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
               const levelEmployees = employees.filter((e: any) => e.level === level)
               const totalSalary = levelEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0)
@@ -104,7 +109,11 @@ export function useAnalyticsData() {
                 employeeCount: levelEmployees.length,
                 averageSalary: levelEmployees.length > 0 ? Math.round(totalSalary / levelEmployees.length) : 0,
                 minSalary: levelEmployees.length > 0 ? Math.min(...levelEmployees.map((e: any) => e.currentSalary)) : 0,
-                maxSalary: levelEmployees.length > 0 ? Math.max(...levelEmployees.map((e: any) => e.currentSalary)) : 0
+                maxSalary: levelEmployees.length > 0 ? Math.max(...levelEmployees.map((e: any) => e.currentSalary)) : 0,
+                totalSalary: totalSalary.toString(),
+                avgBaseUpPercentage: effectiveBaseUp,  // Context 값 또는 AI 설정값
+                avgMeritPercentage: effectiveMerit,    // Context 값 또는 AI 설정값
+                totalIncreasePercentage: effectiveBaseUp + effectiveMerit  // 합계
               }
             }).filter(stat => stat.employeeCount > 0)
             

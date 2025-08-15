@@ -10,6 +10,8 @@ import { useMetadata } from '@/hooks/useMetadata'
 import { useBandData } from '@/hooks/useBandData'
 import { BandName } from '@/types/band'
 import { RateInfoCard } from '@/components/common/RateInfoCard'
+import { useWageContext } from '@/context/WageContext'
+import { loadExcelData } from '@/lib/clientStorage'
 
 interface BandData {
   id: string
@@ -50,11 +52,13 @@ function BandDashboardContent() {
   const searchParams = useSearchParams()
   const { bands: availableBands, loading: metadataLoading } = useMetadata()
   const { bands: bandsFromHook, loading: bandsLoading } = useBandData()
+  const { baseUpRate: contextBaseUp, meritRate: contextMerit } = useWageContext()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
   const [bandBudgetImpacts, setBandBudgetImpacts] = useState<{ [key: string]: number }>({})
   const [selectedBand, setSelectedBand] = useState<string | null>(null)
+  const [aiSettings, setAiSettings] = useState<any>(null)
   
   // 직군별 인상률 상태 관리 (경쟁력 분석용) - localStorage에서 초기값 로드
   const [bandRates, setBandRates] = useState<Record<string, {
@@ -69,9 +73,20 @@ function BandDashboardContent() {
     return {}
   })
   
-  // 메인 대시보드에서 전달받은 인상률
-  const initialBaseUp = parseFloat(searchParams.get('baseUp') || '3.2')
-  const initialMerit = parseFloat(searchParams.get('merit') || '2.5')
+  // 엑셀 데이터에서 AI 설정 로드
+  useEffect(() => {
+    async function loadAiSettings() {
+      const data = await loadExcelData()
+      if (data?.aiSettings) {
+        setAiSettings(data.aiSettings)
+      }
+    }
+    loadAiSettings()
+  }, [])
+  
+  // 인상률 우선순위: 1. WageContext (사용자가 조정한 값), 2. URL 파라미터, 3. AI 설정, 4. 기본값
+  const initialBaseUp = contextBaseUp || parseFloat(searchParams.get('baseUp') || '') || aiSettings?.baseUpPercentage || 3.2
+  const initialMerit = contextMerit || parseFloat(searchParams.get('merit') || '') || aiSettings?.meritIncreasePercentage || 2.5
   
   // fiscalYear 변경 시 처리 (현재는 사용하지 않음)
   useEffect(() => {
