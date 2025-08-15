@@ -66,8 +66,6 @@ export default function HomePage() {
             <ol className="text-left text-sm text-gray-700 space-y-2">
               <li>1. 엑셀 파일(.xlsx)을 준비합니다</li>
               <li>2. 아래 버튼을 클릭하여 파일을 업로드합니다</li>
-              <li>3. 데이터는 <strong>브라우저에 저장</strong>되어 새로고침해도 유지됩니다</li>
-              <li>4. 다른 사용자와 데이터가 <strong>완전히 분리</strong>됩니다</li>
             </ol>
           </div>
 
