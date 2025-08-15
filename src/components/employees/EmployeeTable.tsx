@@ -29,7 +29,7 @@ interface EmployeeTableProps {
 }
 
 export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
-  const { calculateToBeSalary } = useWageContext()
+  const { calculateToBeSalary, baseUpRate, meritRate, performanceWeights, levelRates } = useWageContext()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -141,7 +141,7 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {employees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
+                  <tr key={`${employee.id}-${baseUpRate}-${meritRate}`} className="hover:bg-gray-50">
                     <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-gray-900">
                       {employee.employeeNumber}
                     </td>

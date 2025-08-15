@@ -259,7 +259,7 @@ export function calculateBandStatistics(employees: EmployeeRecord[]) {
 }
 
 // 백분위수 계산 헬퍼
-function calculatePercentile(values: number[], percentile: number): number {
+export function calculatePercentile(values: number[], percentile: number): number {
   if (values.length === 0) return 0
   
   const sorted = [...values].sort((a, b) => a - b)

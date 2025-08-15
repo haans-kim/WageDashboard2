@@ -9,6 +9,7 @@ import {
   convertFromExcelFormat,
   generateEmployeeData,
   calculateBandStatistics,
+  calculatePercentile,
   LEVEL_INFO
 } from '@/lib/bandDataGenerator'
 
@@ -245,58 +246,78 @@ export async function getBandStatistics() {
  */
 export async function getBandLevelDetails() {
   const employees = await getEmployeeData()
-  const bandStats = calculateBandStatistics(employees)
+  
+  // 실제 데이터에서 유니크한 직군 추출
+  const uniqueBands = Array.from(new Set(employees.map(e => e.band).filter(Boolean))).sort()
   
   const result: any[] = []
   
-  Object.values(bandStats).forEach((band: any) => {
-    const bandData = {
-      id: band.name.toLowerCase().replace(/[&\s]/g, '_'),
-      name: band.name,
-      totalHeadcount: band.totalHeadcount,
-      avgBaseUpRate: 3.2,
-      avgSBLIndex: 95, // 임시값
-      avgCAIndex: 102, // 임시값
-      totalBudgetImpact: band.totalHeadcount * band.avgSalary * 0.057, // 5.7% 인상
-      levels: band.levels.map((level: any) => {
-        // C사 대비 경쟁력 계산을 위한 시장 데이터 (가상)
-        const marketMedian = level.level === 'Lv.4' ? 115000000 :
-                            level.level === 'Lv.3' ? 92000000 :
-                            level.level === 'Lv.2' ? 72000000 :
-                            level.level === 'Lv.1' ? 56000000 : 40000000
-        
-        const competitiveness = (level.meanSalary / marketMedian) * 100
-        
-        return {
-          level: level.level,
-          headcount: level.headcount,
-          meanBasePay: level.meanSalary,
-          baseUpKRW: Math.round(level.meanSalary * 0.032),
-          baseUpRate: 3.2,
-          sblIndex: Math.round(competitiveness),
-          caIndex: Math.round(competitiveness * 1.05),
-          competitiveness: Math.round(competitiveness),
-          market: {
-            min: level.minSalary,
-            q1: level.q1Salary,
-            median: level.medianSalary,
-            q3: level.q3Salary,
-            max: level.maxSalary
-          },
-          company: {
-            median: level.medianSalary,
-            mean: level.meanSalary,
-            values: [] // 개별 급여 값은 제외 (너무 많음)
-          },
-          competitor: {
-            median: marketMedian
-          }
+  // 각 직군별로 통계 계산
+  for (const bandName of uniqueBands) {
+    const bandEmployees = employees.filter(e => e.band === bandName)
+    const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1', '신입']
+    
+    const levelStats = levels.map(level => {
+      const levelEmployees = bandEmployees.filter(e => e.level === level)
+      const salaries = levelEmployees.map(e => e.currentSalary)
+      
+      // 시장 데이터 (가상)
+      const marketMedian = level === 'Lv.4' ? 115000000 :
+                          level === 'Lv.3' ? 92000000 :
+                          level === 'Lv.2' ? 72000000 :
+                          level === 'Lv.1' ? 56000000 : 40000000
+      
+      const meanSalary = salaries.length > 0 
+        ? salaries.reduce((a, b) => a + b, 0) / salaries.length 
+        : 0
+      
+      const competitiveness = meanSalary ? (meanSalary / marketMedian) * 100 : 0
+      
+      return {
+        level,
+        headcount: levelEmployees.length,
+        meanBasePay: meanSalary,
+        baseUpKRW: Math.round(meanSalary * 0.032),
+        baseUpRate: 3.2,
+        sblIndex: Math.round(competitiveness),
+        caIndex: Math.round(competitiveness * 1.05),
+        competitiveness: Math.round(competitiveness),
+        market: {
+          min: salaries.length > 0 ? Math.min(...salaries) : 0,
+          q1: calculatePercentile(salaries, 25),
+          median: calculatePercentile(salaries, 50),
+          q3: calculatePercentile(salaries, 75),
+          max: salaries.length > 0 ? Math.max(...salaries) : 0
+        },
+        company: {
+          median: calculatePercentile(salaries, 50),
+          mean: meanSalary,
+          values: []
+        },
+        competitor: {
+          median: marketMedian
         }
-      })
+      }
+    }).filter(level => level.level !== '신입') // 신입 제외
+    
+    const totalHeadcount = bandEmployees.length
+    const avgSalary = totalHeadcount > 0
+      ? bandEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / totalHeadcount
+      : 0
+    
+    const bandData = {
+      id: bandName.toLowerCase().replace(/[&\s]/g, '_'),
+      name: bandName,
+      totalHeadcount,
+      avgBaseUpRate: 3.2,
+      avgSBLIndex: 95,
+      avgCAIndex: 102,
+      totalBudgetImpact: totalHeadcount * avgSalary * 0.057,
+      levels: levelStats
     }
     
     result.push(bandData)
-  })
+  }
   
   return result
 }

@@ -6,6 +6,7 @@ import { PayBandCard } from '@/components/band/PayBandCard'
 import { ExcelUploadButton } from '@/components/ExcelUploadButton'
 import { SimpleExportButton } from '@/components/ExportButton'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
+import { useMetadata } from '@/hooks/useMetadata'
 import { BandName } from '@/types/band'
 
 interface BandData {
@@ -45,6 +46,7 @@ interface BandData {
 
 function BandDashboardContent() {
   const searchParams = useSearchParams()
+  const { bands: availableBands, loading: metadataLoading } = useMetadata()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
@@ -162,7 +164,7 @@ function BandDashboardContent() {
     })
   }
 
-  if (loading) {
+  if (loading || metadataLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">

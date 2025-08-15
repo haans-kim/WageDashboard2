@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useWageContext } from '@/context/WageContext'
+import { useMetadata } from '@/hooks/useMetadata'
 import { SimulationResults } from '@/components/simulation/SimulationResults'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function SimulationPage() {
   const { baseUpRate: globalBaseUp, meritRate: globalMerit } = useWageContext()
+  const { departments, levels, ratings, loading: metadataLoading } = useMetadata()
   const [baseUp, setBaseUp] = useState(3.2)
   const [merit, setMerit] = useState(2.5)
   const [isIndependentMode, setIsIndependentMode] = useState(false)
@@ -24,10 +26,6 @@ export default function SimulationPage() {
     B: 1.0,
     C: 0.8
   })
-
-  const levels = ['', 'Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
-  const departments = ['', '영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
-  const ratings = ['', 'S', 'A', 'B', 'C']
   
   // 독립 모드가 아닐 때 대시보드 값과 동기화
   useEffect(() => {
@@ -89,6 +87,20 @@ export default function SimulationPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 메타데이터 로딩 중일 때 로딩 화면 표시
+  if (metadataLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-1/4 mb-8"></div>
+            <div className="bg-white rounded-lg shadow h-96"></div>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -188,9 +200,10 @@ export default function SimulationPage() {
                     onChange={(e) => setSelectedLevel(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
+                    <option value="">전체</option>
                     {levels.map(level => (
                       <option key={level} value={level}>
-                        {level || '전체'}
+                        {level}
                       </option>
                     ))}
                   </select>
@@ -204,9 +217,10 @@ export default function SimulationPage() {
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
+                    <option value="">전체</option>
                     {departments.map(dept => (
                       <option key={dept} value={dept}>
-                        {dept || '전체'}
+                        {dept}
                       </option>
                     ))}
                   </select>
@@ -220,9 +234,10 @@ export default function SimulationPage() {
                     onChange={(e) => setSelectedRating(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
+                    <option value="">전체</option>
                     {ratings.map(rating => (
                       <option key={rating} value={rating}>
-                        {rating || '전체'}
+                        {rating ? `${rating}등급` : ''}
                       </option>
                     ))}
                   </select>

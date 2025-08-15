@@ -1,17 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { useMetadata } from '@/hooks/useMetadata'
 import { EmployeeTable } from '@/components/employees/EmployeeTable'
 import { SimpleExportButton } from '@/components/ExportButton'
 
 export default function EmployeesPage() {
+  const { departments, levels, ratings, loading: metadataLoading } = useMetadata()
   const [selectedLevel, setSelectedLevel] = useState<string>('')
   const [selectedDepartment, setSelectedDepartment] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<string>('')
 
-  const levels = ['', 'Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
-  const departments = ['', '영업1팀', '영업2팀', '개발팀', '인사팀', '재무팀', '마케팅팀']
-  const ratings = ['', 'S', 'A', 'B', 'C']
+  // 메타데이터 로딩 중일 때 로딩 화면 표시
+  if (metadataLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-1/4 mb-8"></div>
+            <div className="bg-white rounded-lg shadow h-96"></div>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -36,9 +48,10 @@ export default function EmployeesPage() {
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
+                <option value="">전체</option>
                 {levels.map(level => (
                   <option key={level} value={level}>
-                    {level || '전체'}
+                    {level}
                   </option>
                 ))}
               </select>
@@ -52,9 +65,10 @@ export default function EmployeesPage() {
                 onChange={(e) => setSelectedDepartment(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
+                <option value="">전체</option>
                 {departments.map(dept => (
                   <option key={dept} value={dept}>
-                    {dept || '전체'}
+                    {dept}
                   </option>
                 ))}
               </select>
@@ -68,9 +82,10 @@ export default function EmployeesPage() {
                 onChange={(e) => setSelectedRating(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
+                <option value="">전체</option>
                 {ratings.map(rating => (
                   <option key={rating} value={rating}>
-                    {rating ? `${rating}등급` : '전체'}
+                    {rating}등급
                   </option>
                 ))}
               </select>
