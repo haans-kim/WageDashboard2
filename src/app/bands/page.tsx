@@ -54,6 +54,19 @@ function BandDashboardContent() {
   const [bandBudgetImpacts, setBandBudgetImpacts] = useState<{ [key: string]: number }>({})
   const [selectedBand, setSelectedBand] = useState<string | null>(null)
   
+  // 직군별 인상률 상태 관리 (경쟁력 분석용) - localStorage에서 초기값 로드
+  const [bandRates, setBandRates] = useState<Record<string, {
+    baseUpRate: number
+    additionalRate: number
+    meritMultipliers: Record<string, number>
+  }>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bandRates')
+      return saved ? JSON.parse(saved) : {}
+    }
+    return {}
+  })
+  
   // 메인 대시보드에서 전달받은 인상률
   const initialBaseUp = parseFloat(searchParams.get('baseUp') || '3.2')
   const initialMerit = parseFloat(searchParams.get('merit') || '2.5')
@@ -62,6 +75,13 @@ function BandDashboardContent() {
   useEffect(() => {
     fetchBandData()
   }, [fiscalYear])
+  
+  // bandRates가 변경될 때 localStorage에 저장
+  useEffect(() => {
+    if (typeof window !== 'undefined' && Object.keys(bandRates).length > 0) {
+      localStorage.setItem('bandRates', JSON.stringify(bandRates))
+    }
+  }, [bandRates])
   
   // 첫 번째 직군을 기본 선택 (전체가 기본)
   useEffect(() => {
@@ -282,7 +302,10 @@ function BandDashboardContent() {
               />
             ) : selectedBand === 'competitiveness' ? (
               // 경쟁력 분석 보기
-              <PayBandCompetitivenessHeatmap />
+              <PayBandCompetitivenessHeatmap 
+                bandRates={bandRates}
+                initialMerit={initialMerit}
+              />
             ) : selectedBandData ? (
               // 개별 직군 보기
               <PayBandCard
@@ -292,11 +315,27 @@ function BandDashboardContent() {
                 levels={selectedBandData.levels}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
+                currentRates={bandRates[selectedBandData.name]}  // 저장된 인상률 전달
                 onRateChange={(bandId, data) => {
                   // 인상률 변경 시 예산 영향 업데이트
                   setBandBudgetImpacts(prev => ({
                     ...prev,
                     [bandId]: data.budgetImpact || 0
+                  }))
+                  
+                  // 직군별 인상률 상태 업데이트 (경쟁력 분석용)
+                  setBandRates(prev => ({
+                    ...prev,
+                    [selectedBandData.name]: {
+                      baseUpRate: data.baseUpRate || 0.032,
+                      additionalRate: data.additionalRate || 0.01,
+                      meritMultipliers: data.meritMultipliers || {
+                        'Lv.1': 1.0,
+                        'Lv.2': 1.0,
+                        'Lv.3': 1.0,
+                        'Lv.4': 1.0
+                      }
+                    }
                   }))
                 }}
               />

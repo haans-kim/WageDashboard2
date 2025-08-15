@@ -16,6 +16,7 @@ interface RaiseSliderPanelProps {
   onBaseUpChange: (value: number) => void
   onAdditionalChange: (value: number) => void
   onMeritMultiplierChange: (level: string, value: number) => void
+  onReset?: () => void
   budgetImpact?: number
 }
 
@@ -27,6 +28,7 @@ export function RaiseSliderPanel({
   onBaseUpChange,
   onAdditionalChange,
   onMeritMultiplierChange,
+  onReset,
   budgetImpact = 0
 }: RaiseSliderPanelProps) {
   return (

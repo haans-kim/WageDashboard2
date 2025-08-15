@@ -30,6 +30,11 @@ interface PayBandCardProps {
   initialBaseUp: number
   initialMerit: number
   onRateChange?: (bandId: string, updatedData: any) => void
+  currentRates?: {  // 현재 저장된 인상률 값
+    baseUpRate?: number
+    additionalRate?: number
+    meritMultipliers?: Record<string, number>
+  }
 }
 
 export function PayBandCard({
@@ -38,17 +43,39 @@ export function PayBandCard({
   levels,
   initialBaseUp,
   initialMerit,
-  onRateChange
+  onRateChange,
+  currentRates
 }: PayBandCardProps) {
-  // 인상률 상태 관리
-  const [baseUpRate, setBaseUpRate] = useState(initialBaseUp / 100)
-  const [additionalRate, setAdditionalRate] = useState(0.01) // 기본 1%
-  const [meritMultipliers, setMeritMultipliers] = useState({
-    'Lv.1': 1.0,
-    'Lv.2': 1.0,
-    'Lv.3': 1.0,
-    'Lv.4': 1.0
-  })
+  // 인상률 상태 관리 - currentRates가 있으면 사용, 없으면 초기값 사용
+  const [baseUpRate, setBaseUpRate] = useState(
+    currentRates?.baseUpRate ?? initialBaseUp / 100
+  )
+  const [additionalRate, setAdditionalRate] = useState(
+    currentRates?.additionalRate ?? 0.01
+  )
+  const [meritMultipliers, setMeritMultipliers] = useState(
+    currentRates?.meritMultipliers ?? {
+      'Lv.1': 1.0,
+      'Lv.2': 1.0,
+      'Lv.3': 1.0,
+      'Lv.4': 1.0
+    }
+  )
+
+  // currentRates prop이 변경될 때 상태 업데이트
+  useEffect(() => {
+    if (currentRates) {
+      if (currentRates.baseUpRate !== undefined) {
+        setBaseUpRate(currentRates.baseUpRate)
+      }
+      if (currentRates.additionalRate !== undefined) {
+        setAdditionalRate(currentRates.additionalRate)
+      }
+      if (currentRates.meritMultipliers) {
+        setMeritMultipliers(currentRates.meritMultipliers)
+      }
+    }
+  }, [currentRates])
 
   // 차트 데이터 준비 - 인상률 적용
   const chartData = levels
@@ -105,6 +132,32 @@ export function PayBandCard({
       ...prev,
       [level]: value
     }))
+  }
+  
+  // 인상률 초기화
+  const handleReset = () => {
+    const defaultBaseUp = initialBaseUp / 100
+    const defaultAdditional = 0.01
+    const defaultMerit = {
+      'Lv.1': 1.0,
+      'Lv.2': 1.0,
+      'Lv.3': 1.0,
+      'Lv.4': 1.0
+    }
+    
+    setBaseUpRate(defaultBaseUp)
+    setAdditionalRate(defaultAdditional)
+    setMeritMultipliers(defaultMerit)
+    
+    // 상위 컴포넌트에 초기화 알림
+    if (onRateChange) {
+      onRateChange(bandId, {
+        baseUpRate: defaultBaseUp,
+        additionalRate: defaultAdditional,
+        meritMultipliers: defaultMerit,
+        budgetImpact: calculateBudgetImpact()
+      })
+    }
   }
 
   // 인상률 변경 시 상위 컴포넌트에 알림
@@ -168,7 +221,20 @@ export function PayBandCard({
         {/* 우측: 슬라이더 패널 - 더 좁게 */}
         <div className="xl:col-span-4">
           <div className="sticky top-4">
-            <h4 className="text-base font-semibold text-gray-700 mb-3">인상률 조정</h4>
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="text-base font-semibold text-gray-700">인상률 조정</h4>
+              <button
+                onClick={handleReset}
+                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>초기값</span>
+                </div>
+              </button>
+            </div>
             <RaiseSliderPanel
               bandId={bandId}
               baseUpRate={baseUpRate}
