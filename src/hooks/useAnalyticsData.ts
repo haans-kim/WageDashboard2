@@ -99,8 +99,8 @@ export function useAnalyticsData() {
             
             // 직급별 통계 - WageContext의 인상률 반영 (0이면 AI 설정 사용)
             // baseUpRate와 meritRate의 값이 실제로 숫자인지 검증
-            const aiBaseUp = clientData.aiSettings?.baseUpPercentage || 3.2
-            const aiMerit = clientData.aiSettings?.meritIncreasePercentage || 2.5
+            const aiBaseUp = clientData.aiSettings?.baseUpPercentage || 0
+            const aiMerit = clientData.aiSettings?.meritIncreasePercentage || 0
             const effectiveBaseUp = (baseUpRate && !isNaN(baseUpRate) && isFinite(baseUpRate)) ? baseUpRate : aiBaseUp
             const effectiveMerit = (meritRate && !isNaN(meritRate) && isFinite(meritRate)) ? meritRate : aiMerit
             

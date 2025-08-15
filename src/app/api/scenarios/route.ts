@@ -13,32 +13,32 @@ const DEFAULT_SCENARIO: Scenario = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   data: {
-    baseUpRate: 3.2,
-    meritRate: 2.5,
+    baseUpRate: 0,
+    meritRate: 0,
     levelRates: {
-      'Lv.1': { baseUp: 3.2, merit: 2.5 },
-      'Lv.2': { baseUp: 3.2, merit: 2.5 },
-      'Lv.3': { baseUp: 3.2, merit: 2.5 },
-      'Lv.4': { baseUp: 3.2, merit: 2.5 }
+      'Lv.1': { baseUp: 0, merit: 0 },
+      'Lv.2': { baseUp: 0, merit: 0 },
+      'Lv.3': { baseUp: 0, merit: 0 },
+      'Lv.4': { baseUp: 0, merit: 0 }
     },
-    totalBudget: 30000000000,
+    totalBudget: 0,
     promotionBudgets: { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
     additionalBudget: 0,
     enableAdditionalIncrease: false,
     calculatedAdditionalBudget: 0,
     levelTotalRates: {
-      'Lv.1': 5.7,
-      'Lv.2': 5.7,
-      'Lv.3': 5.7,
-      'Lv.4': 5.7
+      'Lv.1': 0,
+      'Lv.2': 0,
+      'Lv.3': 0,
+      'Lv.4': 0
     },
-    weightedAverageRate: 5.7,
-    meritWeightedAverage: 2.5,
+    weightedAverageRate: 0,
+    meritWeightedAverage: 0,
     detailedLevelRates: {
-      'Lv.4': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.3': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.2': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.1': { baseUp: 3.20, merit: 2.50, promotion: 0, advancement: 0, additional: 0 }
+      'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+      'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
     }
   }
 }

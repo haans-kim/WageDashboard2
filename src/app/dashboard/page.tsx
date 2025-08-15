@@ -590,7 +590,7 @@ export default function Home() {
           />
         </div>
         
-        {/* 하단: 동종업계 대비 비교 */}
+        {/* 하단: C사 대비 비교 */}
         <div className="mb-4">
           <IndustryComparisonSection
             baseUpRate={baseUpRate}
@@ -599,6 +599,7 @@ export default function Home() {
             weightedAverageRate={weightedAverageRate}
             levelStatistics={data?.levelStatistics || []}
             competitorData={data?.competitorData}  // 엑셀에서 C사 데이터 가져오기
+            competitorIncreaseRate={data?.industryComparison?.competitor || 0}  // C사 인상률
           />
         </div>
 

@@ -114,8 +114,8 @@ export function useBandData() {
                   level,
                   headcount: levelEmployees.length,
                   meanBasePay: avgSalary,
-                  baseUpKRW: Math.round(avgSalary * 0.032),
-                  baseUpRate: 3.2,
+                  baseUpKRW: 0,
+                  baseUpRate: 0,
                   sblIndex: competitiveness,
                   caIndex: competitorAvgSalary,
                   competitiveness: competitiveness,
@@ -146,10 +146,10 @@ export function useBandData() {
                 id: bandName.toLowerCase().replace(/[&\s]/g, '_'),
                 name: bandName as BandName,
                 totalHeadcount,
-                avgBaseUpRate: 3.2,
-                avgSBLIndex: 95,
-                avgCAIndex: 102,
-                totalBudgetImpact: totalHeadcount * avgSalary * 0.057,
+                avgBaseUpRate: 0,
+                avgSBLIndex: 0,
+                avgCAIndex: 0,
+                totalBudgetImpact: 0,
                 levels: levelData
               })
             })

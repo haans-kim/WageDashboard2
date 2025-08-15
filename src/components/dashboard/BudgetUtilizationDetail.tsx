@@ -46,9 +46,9 @@ function BudgetUtilizationDetailComponent({
   baseUpRate = 0,
   meritRate = 0,
   meritWeightedAverage,
-  totalEmployees = 4925,
-  totalSalaryBase = 283034052564, // 총급여베이스
-  totalBudget = 30000000000, // 총예산 기본값 300억
+  totalEmployees,
+  totalSalaryBase, // 총급여베이스 - props로 전달받음
+  totalBudget = 0, // 총예산 기본값
   levelStatistics,
   promotionBudgets = { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
   onPromotionBudgetChange,

@@ -22,7 +22,7 @@ interface AIRecommendationCardProps {
 
 function AIRecommendationCardComponent({ 
   data, 
-  totalEmployees = 4925, // 실제 인원 반영
+  totalEmployees, // props로 전달받음
   baseUpRate = 0, 
   meritRate = 0,
   meritWeightedAverage,
@@ -47,7 +47,7 @@ function AIRecommendationCardComponent({
         <p className="text-xl md:text-3xl font-bold text-gray-900 mt-1">
           {totalEmployees.toLocaleString('ko-KR')}명
         </p>
-        <span className="text-xs md:text-sm text-gray-500">(2025.06.07 기준)</span>
+        <span className="text-xs md:text-sm text-gray-500">({new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')} 기준)</span>
       </div>
       
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}

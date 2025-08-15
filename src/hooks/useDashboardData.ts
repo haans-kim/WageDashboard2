@@ -70,15 +70,19 @@ export function useDashboardData() {
               },
               aiRecommendation: clientData.aiSettings,
               budget: {
-                totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+                totalBudget: '0', // 초기값 0
                 usedBudget: '0',
-                remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+                remainingBudget: '0', // 초기값 0
                 usagePercentage: 0
               },
               levelStatistics: [],
               departmentDistribution: [],
               performanceDistribution: [],
-              competitorData: clientData.competitorData
+              competitorData: clientData.competitorData,
+              industryComparison: {
+                ourCompany: clientData.aiSettings?.totalPercentage || 0,
+                competitor: clientData.competitorIncreaseRate || 0
+              }
             }
             
             // 직급별 통계 계산
@@ -138,15 +142,19 @@ export function useDashboardData() {
             },
             aiRecommendation: clientData.aiSettings,
             budget: {
-              totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+              totalBudget: '0', // 초기값 0
               usedBudget: '0',
-              remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+              remainingBudget: '0', // 초기값 0
               usagePercentage: 0
             },
             levelStatistics: [],
             departmentDistribution: [],
             performanceDistribution: [],
-            competitorData: clientData.competitorData
+            competitorData: clientData.competitorData,
+            industryComparison: {
+              ourCompany: clientData.aiSettings?.totalPercentage || 0,
+              competitor: clientData.competitorIncreaseRate || 0
+            }
           }
           
           // 직급별 통계 계산

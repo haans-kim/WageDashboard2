@@ -6,6 +6,7 @@
 interface StoredData {
   employees: any[]
   competitorData: any[]
+  competitorIncreaseRate?: number
   aiSettings: any
   uploadedAt: string
   fileName: string

@@ -9,6 +9,7 @@ import { saveExcelData, loadExcelData, clearExcelData, hasStoredData } from '@/l
 export interface ClientExcelData {
   employees: any[]
   competitorData: any[]
+  competitorIncreaseRate: number
   aiSettings: {
     baseUpPercentage: number
     meritIncreasePercentage: number
@@ -38,6 +39,7 @@ export function useClientExcelData() {
         setData({
           employees: storedData.employees,
           competitorData: storedData.competitorData,
+          competitorIncreaseRate: storedData.competitorIncreaseRate || 0,
           aiSettings: storedData.aiSettings,
           fileName: storedData.fileName,
           uploadedAt: storedData.uploadedAt
@@ -62,11 +64,11 @@ export function useClientExcelData() {
       
       // AI설정 시트 읽기
       let aiSettings = {
-        baseUpPercentage: 3.2,
-        meritIncreasePercentage: 2.5,
-        totalPercentage: 5.7,
-        minRange: 5.7,
-        maxRange: 5.9
+        baseUpPercentage: 0,
+        meritIncreasePercentage: 0,
+        totalPercentage: 0,
+        minRange: 0,
+        maxRange: 0
       }
       
       if (workbook.SheetNames.includes('AI설정')) {
@@ -74,11 +76,22 @@ export function useClientExcelData() {
         const aiData = XLSX.utils.sheet_to_json(aiSheet)
         
         aiSettings = {
-          baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 3.2,
-          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 2.5,
-          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
-          minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
-          maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
+          baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 0,
+          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 0,
+          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+          minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+          maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
+        }
+      }
+      
+      // C사인상률 시트 읽기
+      let competitorIncreaseRate = 0
+      if (workbook.SheetNames.includes('C사인상률')) {
+        const competitorRateSheet = workbook.Sheets['C사인상률']
+        const competitorRateData = XLSX.utils.sheet_to_json(competitorRateSheet)
+        const rateRow = competitorRateData.find((row: any) => row['항목'] === 'C사 인상률(%)')
+        if (rateRow) {
+          competitorIncreaseRate = (rateRow as any)['값'] || 0
         }
       }
       
@@ -146,6 +159,7 @@ export function useClientExcelData() {
       const newData: ClientExcelData = {
         employees: processedEmployees,
         competitorData,
+        competitorIncreaseRate,
         aiSettings,
         fileName: file.name,
         uploadedAt: new Date().toISOString()

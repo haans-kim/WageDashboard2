@@ -28,6 +28,7 @@ interface IndustryComparisonSectionProps {
       'Lv.4'?: number
     }
   } | null
+  competitorIncreaseRate?: number  // C사 인상률 (엑셀에서 읽어온 값)
 }
 
 function IndustryComparisonSectionComponent({
@@ -41,19 +42,18 @@ function IndustryComparisonSectionComponent({
   },
   weightedAverageRate = 0,
   levelStatistics,
-  competitorData
+  competitorData,
+  competitorIncreaseRate = 0
 }: IndustryComparisonSectionProps) {
   
   // C사 데이터 (엑셀에서 가져온 데이터 사용)
   const companyIncrease = Math.round((baseUpRate + meritRate) * 10) / 10 // 우리 회사 (소수점 1자리)
   
-  // C사 평균 인상률 계산 (새 구조에서는 직접 계산 필요)
-  let cCompanyIncrease = 4.2 // 기본값
-  if (Array.isArray(competitorData)) {
-    // 새로운 구조에서는 인상률을 별도로 관리하지 않으므로 기본값 사용
-    cCompanyIncrease = 4.2
-  } else if (competitorData?.averageIncrease) {
-    // 구 형식
+  // C사 평균 인상률 (엑셀에서 읽어온 값 우선 사용)
+  let cCompanyIncrease = competitorIncreaseRate // 엑셀에서 읽어온 C사 인상률
+  
+  // 엑셀에서 값이 없으면 구 형식 확인
+  if (cCompanyIncrease === 0 && competitorData?.averageIncrease) {
     cCompanyIncrease = competitorData.averageIncrease
   }
   
@@ -180,7 +180,7 @@ function IndustryComparisonSectionComponent({
   
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-xl font-bold mb-3">동종업계 대비 비교</h2>
+      <h2 className="text-xl font-bold mb-3">C사 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
       <div className="grid grid-cols-3 gap-4 mb-4">
@@ -195,9 +195,9 @@ function IndustryComparisonSectionComponent({
           <p className="text-sm text-gray-600">직급별 가중평균</p>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
-          <p className="text-base text-gray-700 font-medium">C사 평균</p>
+          <p className="text-base text-gray-700 font-medium">C사</p>
           <p className="text-3xl font-bold text-green-600">{formatPercentage(cCompanyIncrease)}</p>
-          <p className="text-sm text-gray-600">동종업계 기준</p>
+          <p className="text-sm text-gray-600">경쟁사 인상률</p>
         </div>
       </div>
       
