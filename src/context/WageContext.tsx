@@ -242,14 +242,44 @@ export function WageProvider({ children }: { children: ReactNode }) {
     if (scenarioData) {
       setBaseUpRate(scenarioData.baseUpRate || 0)
       setMeritRate(scenarioData.meritRate || 0)
-      setLevelRates(scenarioData.levelRates || {})
-      setDetailedLevelRates(scenarioData.detailedLevelRates || {})
+      
+      // levelRates 처리 - 타입 호환성 보장
+      const defaultLevelRates = {
+        'Lv.1': { baseUp: 0, merit: 0 },
+        'Lv.2': { baseUp: 0, merit: 0 },
+        'Lv.3': { baseUp: 0, merit: 0 },
+        'Lv.4': { baseUp: 0, merit: 0 }
+      }
+      if (scenarioData.levelRates && 
+          'Lv.1' in scenarioData.levelRates && 
+          'Lv.2' in scenarioData.levelRates &&
+          'Lv.3' in scenarioData.levelRates &&
+          'Lv.4' in scenarioData.levelRates) {
+        setLevelRates(scenarioData.levelRates as typeof defaultLevelRates)
+      } else {
+        setLevelRates(defaultLevelRates)
+      }
+      
+      // detailedLevelRates 처리 - 타입 호환성 보장
+      const defaultDetailedLevelRates = {
+        'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
+      }
+      if (scenarioData.detailedLevelRates &&
+          'Lv.1' in scenarioData.detailedLevelRates &&
+          'Lv.2' in scenarioData.detailedLevelRates &&
+          'Lv.3' in scenarioData.detailedLevelRates &&
+          'Lv.4' in scenarioData.detailedLevelRates) {
+        setDetailedLevelRates(scenarioData.detailedLevelRates as typeof defaultDetailedLevelRates)
+      } else {
+        setDetailedLevelRates(defaultDetailedLevelRates)
+      }
+      
       setTotalBudget(scenarioData.totalBudget || 0)
       setBandAdjustments(scenarioData.bandAdjustments || {})
       setEmployeeWeights(scenarioData.employeeWeights || {})
-      if (scenarioData.performanceWeights) {
-        setPerformanceWeights(scenarioData.performanceWeights)
-      }
     }
   }
   
