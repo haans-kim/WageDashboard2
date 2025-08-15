@@ -91,7 +91,7 @@ const DEFAULT_RATES: { [key: string]: LevelRates } = {
   }
 }
 
-export function GradeSalaryAdjustmentTable({
+function GradeSalaryAdjustmentTableComponent({
   baseUpRate = 0,
   meritRate = 2.50,
   employeeData = DEFAULT_EMPLOYEE_DATA,
@@ -492,3 +492,5 @@ export function GradeSalaryAdjustmentTable({
     </div>
   )
 }
+
+export const GradeSalaryAdjustmentTable = React.memo(GradeSalaryAdjustmentTableComponent)

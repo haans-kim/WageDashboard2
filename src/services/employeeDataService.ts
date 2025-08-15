@@ -55,11 +55,11 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         const aiData = XLSX.utils.sheet_to_json(aiSheet)
         
         cachedAISettings = {
-          baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-          meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-          totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-          minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-          maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+          baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 3.2,
+          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 2.5,
+          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
+          minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
+          maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
         }
       }
       
@@ -123,11 +123,11 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           const aiData = XLSX.utils.sheet_to_json(aiSheet)
           
           cachedAISettings = {
-            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+            baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 3.2,
+            meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 2.5,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
           }
         }
         
@@ -160,11 +160,11 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           const aiData = XLSX.utils.sheet_to_json(aiSheet)
           
           cachedAISettings = {
-            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+            baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 3.2,
+            meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 2.5,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
           }
         }
         

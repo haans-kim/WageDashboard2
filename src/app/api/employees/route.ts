@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       department: emp.department,
       level: emp.level,
       currentSalary: emp.currentSalary,
-      hireDate: emp.joinDate,
+      hireDate: emp.hireDate,
       performanceRating: emp.performanceRating || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

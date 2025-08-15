@@ -16,9 +16,15 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
   const [loadedFileName, setLoadedFileName] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 초기 로드 시 localStorage에서 파일명 가져오기
+  // 초기 로드 시 쿠키에서 파일명 가져오기
   useEffect(() => {
-    const savedFileName = localStorage.getItem('loadedExcelFile')
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`
+      const parts = value.split(`; ${name}=`)
+      if (parts.length === 2) return parts.pop()?.split(';').shift()
+      return null
+    }
+    const savedFileName = getCookie('loadedExcelFile')
     setLoadedFileName(savedFileName || 'default_employee_data.xlsx')
   }, [])
 
@@ -56,9 +62,9 @@ export function ExcelUploadButton({ onUploadSuccess, isNavigation = false }: Exc
           message: result.message
         })
         
-        // 파일명 저장 (localStorage에도 저장)
+        // 파일명 저장 (쿠키에 저장)
         setLoadedFileName(file.name)
-        localStorage.setItem('loadedExcelFile', file.name)
+        document.cookie = `loadedExcelFile=${file.name}; path=/; max-age=${60 * 60 * 24 * 7}` // 7일
         
         // 성공 시 콜백 실행 (페이지 새로고침 등)
         if (onUploadSuccess) {

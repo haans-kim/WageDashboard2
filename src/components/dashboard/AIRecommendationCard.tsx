@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatPercentage } from '@/lib/utils'
 
 interface AIRecommendationCardProps {
@@ -19,7 +20,7 @@ interface AIRecommendationCardProps {
   onReset?: () => void
 }
 
-export function AIRecommendationCard({ 
+function AIRecommendationCardComponent({ 
   data, 
   totalEmployees = 4925, // 실제 인원 반영
   baseUpRate = 3.2, 
@@ -89,3 +90,5 @@ export function AIRecommendationCard({
     </div>
   )
 }
+
+export const AIRecommendationCard = React.memo(AIRecommendationCardComponent)

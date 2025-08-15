@@ -18,10 +18,8 @@ export async function POST(request: NextRequest) {
     const simulation = await simulateSalaryIncrease({
       level: filters?.level,
       department: filters?.department,
-      performanceRating: filters?.performanceRating,
       baseUpPercentage,
-      meritIncreasePercentage,
-      performanceWeights
+      meritIncreasePercentage
     })
 
     // API 응답 형식에 맞게 변환

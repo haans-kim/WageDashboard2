@@ -21,7 +21,7 @@ console.log('🔄 파일 2: 테스트용 직원 데이터 생성 중...')
 const testEmployees = generateEmployeeData(1000).map(emp => {
   // 테스트용으로 다른 평가등급 분포 적용 (S:20%, A:40%, B:30%, C:10%)
   const rand = Math.random()
-  const performanceRating = rand < 0.2 ? 'S' :
+  const performanceRating: 'S' | 'A' | 'B' | 'C' = rand < 0.2 ? 'S' :
                            rand < 0.6 ? 'A' :
                            rand < 0.9 ? 'B' : 'C'
   return { ...emp, performanceRating }

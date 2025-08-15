@@ -41,7 +41,7 @@ interface BudgetUtilizationDetailProps {
   }) => void
 }
 
-export function BudgetUtilizationDetail({
+function BudgetUtilizationDetailComponent({
   baseUpRate = 0,
   meritRate = 0,
   meritWeightedAverage,
@@ -303,3 +303,5 @@ export function BudgetUtilizationDetail({
     </div>
   )
 }
+
+export const BudgetUtilizationDetail = React.memo(BudgetUtilizationDetailComponent)

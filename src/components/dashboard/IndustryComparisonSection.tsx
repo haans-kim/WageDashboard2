@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatPercentage } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line, ComposedChart, Scatter } from 'recharts'
 
@@ -10,7 +11,7 @@ interface IndustryComparisonSectionProps {
   weightedAverageRate?: number  // 가중평균 인상률
 }
 
-export function IndustryComparisonSection({
+function IndustryComparisonSectionComponent({
   baseUpRate = 3.2,
   meritRate = 2.5,
   levelTotalRates = {
@@ -181,7 +182,7 @@ export function IndustryComparisonSection({
                   position: 'top', 
                   fontSize: 12, 
                   fontWeight: 'bold',
-                  formatter: (value: number) => `${value}%` 
+                  formatter: (value: any) => `${value}%` 
                 }}
               >
                 {increaseComparisonData.map((entry, index) => (
@@ -194,7 +195,7 @@ export function IndustryComparisonSection({
                 fill="#9333EA"
                 shape={(props: any) => {
                   const { cx, cy, payload } = props
-                  if (payload.adjustedValue === null) return null
+                  if (payload.adjustedValue === null) return <g />
                   return (
                     <g>
                       <circle 
@@ -373,3 +374,5 @@ export function IndustryComparisonSection({
     </div>
   )
 }
+
+export const IndustryComparisonSection = React.memo(IndustryComparisonSectionComponent)

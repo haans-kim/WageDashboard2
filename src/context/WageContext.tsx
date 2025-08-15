@@ -109,7 +109,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
     level: string,
     performanceRating?: string
   ): number => {
-    const levelRate = levelRates[level] || { baseUp: baseUpRate, merit: meritRate }
+    const levelRate = levelRates[level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
     let effectiveMeritRate = levelRate.merit
     
     // 평가등급별 가중치 적용

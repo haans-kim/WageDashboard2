@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 
 interface BudgetResourceCardProps {
@@ -24,7 +25,7 @@ interface BudgetResourceCardProps {
   }
 }
 
-export function BudgetResourceCard({ 
+function BudgetResourceCardComponent({ 
   totalBudget = 30000000000, // 300억원으로 변경
   baseUpRate = 3.2,
   meritRate = 2.5,
@@ -185,3 +186,5 @@ export function BudgetResourceCard({
     </div>
   )
 }
+
+export const BudgetResourceCard = React.memo(BudgetResourceCardComponent)

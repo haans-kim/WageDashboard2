@@ -106,7 +106,7 @@ export async function GET() {
     // 5. 근속년수별 분석
 
     const tenureAnalysis = employees.map(emp => {
-      const yearsOfService = currentYear - new Date(emp.joinDate).getFullYear()
+      const yearsOfService = currentYear - new Date(emp.hireDate).getFullYear()
       return {
         yearsOfService,
         salary: emp.currentSalary,
