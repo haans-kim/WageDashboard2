@@ -22,6 +22,17 @@ let cachedAISettings: {
   maxRange: number
 } | null = null
 
+// 경쟁사 데이터 캐시
+let cachedCompetitorData: {
+  averageIncrease?: number
+  levelSalaries?: {
+    'Lv.1'?: number
+    'Lv.2'?: number
+    'Lv.3'?: number
+    'Lv.4'?: number
+  }
+} | null = null
+
 // 메모리 내 수정된 데이터 저장
 let modifiedEmployeeData: EmployeeRecord[] | null = null
 
@@ -35,6 +46,7 @@ export function clearCache() {
   if (typeof window === 'undefined') {
     cachedEmployeeData = null
     cachedAISettings = null
+    cachedCompetitorData = null
     modifiedEmployeeData = null
     console.log('서버 사이드 캐시가 초기화되었습니다.')
   }
@@ -61,6 +73,22 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
           totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
           minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
           maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
+        }
+      }
+      
+      // 경쟁사데이터 시트 읽기
+      if (workbook.SheetNames.includes('경쟁사데이터')) {
+        const competitorSheet = workbook.Sheets['경쟁사데이터']
+        const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+        
+        cachedCompetitorData = {
+          averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
+          levelSalaries: {
+            'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
+            'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
+            'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
+            'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+          }
         }
       }
       
@@ -132,6 +160,22 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           }
         }
         
+        // 경쟁사데이터 시트 읽기
+        if (workbook.SheetNames.includes('경쟁사데이터')) {
+          const competitorSheet = workbook.Sheets['경쟁사데이터']
+          const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+          
+          cachedCompetitorData = {
+            averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
+            levelSalaries: {
+              'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
+              'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
+              'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
+              'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+            }
+          }
+        }
+        
         // 직원 데이터 읽기
         const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
           ? '직원기본정보' 
@@ -169,6 +213,22 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           }
         }
         
+        // 경쟁사데이터 시트 읽기
+        if (workbook.SheetNames.includes('경쟁사데이터')) {
+          const competitorSheet = workbook.Sheets['경쟁사데이터']
+          const competitorData = XLSX.utils.sheet_to_json(competitorSheet)
+          
+          cachedCompetitorData = {
+            averageIncrease: (competitorData.find((row: any) => row['항목'] === 'C사평균인상률') as any)?.['값'] || 4.2,
+            levelSalaries: {
+              'Lv.1': (competitorData.find((row: any) => row['직급'] === 'Lv.1') as any)?.['C사평균급여'] || 56000,
+              'Lv.2': (competitorData.find((row: any) => row['직급'] === 'Lv.2') as any)?.['C사평균급여'] || 72000,
+              'Lv.3': (competitorData.find((row: any) => row['직급'] === 'Lv.3') as any)?.['C사평균급여'] || 92000,
+              'Lv.4': (competitorData.find((row: any) => row['직급'] === 'Lv.4') as any)?.['C사평균급여'] || 115000
+            }
+          }
+        }
+        
         // 직원 데이터 읽기
         const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
           ? '직원기본정보' 
@@ -189,11 +249,9 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
     }
   }
   
-  // Excel 파일이 없으면 기본 데이터 생성
-  console.log('기본 데이터 생성 중...')
-  const employees = generateEmployeeData(4925)
-  cachedEmployeeData = employees
-  return employees
+  // Excel 파일이 없으면 빈 배열 반환 (데이터 없음 상태)
+  console.log('데이터가 없습니다. 엑셀 파일을 업로드해주세요.')
+  return []
 }
 
 /**
@@ -327,6 +385,23 @@ export async function getBandLevelDetails() {
  */
 export async function getDashboardSummary() {
   const employees = await getEmployeeData()
+  
+  // 데이터가 없으면 빈 응답 반환
+  if (!employees || employees.length === 0) {
+    return {
+      summary: {
+        totalEmployees: 0,
+        averageSalary: 0,
+        totalPayroll: 0,
+        lastUpdated: new Date().toISOString()
+      },
+      aiRecommendation: null,
+      budget: null,
+      levelStatistics: [],
+      industryComparison: null
+    }
+  }
+  
   const levelStats = await getLevelStatistics()
   
   // 전체 평균 급여
@@ -342,8 +417,10 @@ export async function getDashboardSummary() {
     maxRange: 5.9
   }
   
-  // 예산 정보 (AI 설정값 기반으로 동적 계산)
-  const totalBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
+  // 예산 정보 (AI 설정값 기반으로 동적 계산 + 간접비용 22.6% 포함)
+  const directBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
+  const indirectCost = directBudget * 0.226 // 간접비용 22.6%
+  const totalBudget = directBudget + indirectCost // 총예산 = 직접비용 + 간접비용
   
   return {
     summary: {
@@ -354,7 +431,7 @@ export async function getDashboardSummary() {
     },
     aiRecommendation,
     budget: {
-      totalBudget,
+      totalBudget: totalBudget.toString(), // 총예산 (간접비용 포함)
       baseUpBudget: totalSalary * (aiRecommendation.baseUpPercentage / 100),
       meritBudget: totalSalary * (aiRecommendation.meritIncreasePercentage / 100),
       usedBudget: 0,
@@ -365,7 +442,8 @@ export async function getDashboardSummary() {
       ourCompany: aiRecommendation.totalPercentage,
       competitor: 4.2,
       industry: 4.5
-    }
+    },
+    competitorData: cachedCompetitorData // 경쟁사 데이터 추가
   }
 }
 

@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PayBandCard } from '@/components/band/PayBandCard'
-import { ExcelUploadButton } from '@/components/ExcelUploadButton'
 import { SimpleExportButton } from '@/components/ExportButton'
 import { PayBandCompetitivenessHeatmap } from '@/components/analytics/PayBandCompetitivenessHeatmap'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
@@ -182,12 +181,6 @@ function BandDashboardContent() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center h-12 gap-2">
-            <ExcelUploadButton 
-              onUploadSuccess={() => {
-                fetchBandData()
-              }}
-              isNavigation={true}
-            />
             <SimpleExportButton 
               isNavigation={true}
             />
