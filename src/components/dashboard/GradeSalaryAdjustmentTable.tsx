@@ -131,21 +131,22 @@ function GradeSalaryAdjustmentTableComponent({
     }
   }, [initialRates])
   
-  // AI 제안값이 변경되거나 추가 인상 활성화 상태가 변경되면 업데이트
+  // 추가 인상 활성화 상태가 변경되면 업데이트
   useEffect(() => {
-    setRates(prev => {
-      const updated = { ...prev }
-      Object.keys(updated).forEach(level => {
-        updated[level] = {
-          ...updated[level],
-          baseUp: baseUpRate, // Base-up은 항상 AI 제안값으로 고정
-          merit: meritRate, // Merit도 AI 제안값으로 고정
-          additional: enableAdditionalIncrease ? updated[level].additional : 0 // 비활성화시 0으로 리셋
-        }
+    if (!enableAdditionalIncrease) {
+      // 추가 인상이 비활성화되면 additional 값만 0으로 리셋
+      setRates(prev => {
+        const updated = { ...prev }
+        Object.keys(updated).forEach(level => {
+          updated[level] = {
+            ...updated[level],
+            additional: 0
+          }
+        })
+        return updated
       })
-      return updated
-    })
-  }, [baseUpRate, meritRate, enableAdditionalIncrease])
+    }
+  }, [enableAdditionalIncrease])
   
   // 직급별 총계 계산 (① + ③만, 승급/승격은 제외)
   const calculateLevelTotal = (levelRates: LevelRates): number => {

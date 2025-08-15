@@ -25,6 +25,17 @@ interface WageContextType {
     }
   }
   
+  // 직급별 상세 인상률 (promotion, advancement, additional 포함)
+  detailedLevelRates: {
+    [level: string]: {
+      baseUp: number
+      merit: number
+      promotion: number
+      advancement: number
+      additional: number
+    }
+  }
+  
   // 총 예산
   totalBudget: number
   
@@ -33,6 +44,7 @@ interface WageContextType {
   setMeritRate: (rate: number) => void
   setPerformanceWeights: (weights: PerformanceWeights) => void
   setLevelRates: (rates: any) => void
+  setDetailedLevelRates: (rates: any) => void
   setTotalBudget: (budget: number) => void
   
   // TO-BE 급여 계산 함수
@@ -61,6 +73,12 @@ export function WageProvider({ children }: { children: ReactNode }) {
     'Lv.3': { baseUp: 0, merit: 0 },
     'Lv.4': { baseUp: 0, merit: 0 }
   })
+  const [detailedLevelRates, setDetailedLevelRates] = useState({
+    'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
+  })
   const [totalBudget, setTotalBudget] = useState(0)
   
   // localStorage에서 저장된 값 불러오기
@@ -81,6 +99,12 @@ export function WageProvider({ children }: { children: ReactNode }) {
             'Lv.3': { baseUp: 0, merit: 0 },
             'Lv.4': { baseUp: 0, merit: 0 }
           })
+          setDetailedLevelRates(parsed.detailedLevelRates ?? {
+            'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+            'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+            'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+            'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
+          })
           setTotalBudget(parsed.totalBudget ?? 0)
         } catch (e) {
           console.error('Failed to parse saved wage settings:', e)
@@ -97,11 +121,12 @@ export function WageProvider({ children }: { children: ReactNode }) {
         meritRate,
         performanceWeights,
         levelRates,
+        detailedLevelRates,
         totalBudget
       }
       localStorage.setItem('wageSettings', JSON.stringify(stateToSave))
     }
-  }, [baseUpRate, meritRate, performanceWeights, levelRates, totalBudget])
+  }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, totalBudget])
   
   // TO-BE 급여 계산 함수
   const calculateToBeSalary = (
@@ -126,11 +151,13 @@ export function WageProvider({ children }: { children: ReactNode }) {
     meritRate,
     performanceWeights,
     levelRates,
+    detailedLevelRates,
     totalBudget,
     setBaseUpRate,
     setMeritRate,
     setPerformanceWeights,
     setLevelRates,
+    setDetailedLevelRates,
     setTotalBudget,
     calculateToBeSalary
   }

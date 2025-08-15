@@ -23,12 +23,17 @@ export default function Home() {
     baseUpRate: contextBaseUpRate,
     meritRate: contextMeritRate,
     levelRates: contextLevelRates,
+    detailedLevelRates: contextDetailedLevelRates,
     totalBudget: contextTotalBudget,
     setBaseUpRate: setContextBaseUpRate,
     setMeritRate: setContextMeritRate,
     setLevelRates: setContextLevelRates,
+    setDetailedLevelRates: setContextDetailedLevelRates,
     setTotalBudget: setContextTotalBudget
   } = useWageContext()
+  
+  // AI 설정 데이터가 로드되면 상태 동기화 (첫 로드 시에만)
+  const [hasInitialized, setHasInitialized] = useState(false)
   
   // AI 추천값 (대시보드 표시용, 읽기 전용)
   const [aiBaseUpRate, setAiBaseUpRate] = useState(0)
@@ -45,15 +50,31 @@ export default function Home() {
     'Lv.4': { baseUp: 0, merit: 0 }
   })
   
-  // 사용자 조정값이 변경될 때만 WageContext 업데이트
+  // GradeSalaryAdjustmentTable의 세부 인상률 상태 - 모두 0으로 초기화 (여기로 이동)
+  const [detailedLevelRates, setDetailedLevelRates] = useState<Record<string, {
+    baseUp: number
+    merit: number
+    promotion: number
+    advancement: number
+    additional: number
+  }>>({
+    'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
+    'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
+  })
+  
+  // 사용자 조정값이 변경될 때 WageContext 업데이트
   useEffect(() => {
-    // GradeSalaryAdjustmentTable에서 계산된 값이 있으면 그것을 우선 사용
-    // 없으면 사용자가 직접 조정한 값 사용
-    setContextLevelRates(levelRates)
-    if (totalBudget !== null) {
-      setContextTotalBudget(totalBudget)
+    // 초기화가 완료된 후에만 Context 업데이트
+    if (hasInitialized) {
+      setContextLevelRates(levelRates)
+      setContextDetailedLevelRates(detailedLevelRates)
+      if (totalBudget !== null) {
+        setContextTotalBudget(totalBudget)
+      }
     }
-  }, [levelRates, totalBudget, setContextLevelRates, setContextTotalBudget])
+  }, [levelRates, detailedLevelRates, totalBudget, hasInitialized, setContextLevelRates, setContextDetailedLevelRates, setContextTotalBudget])
   
   // 예산활용내역 상세를 위한 상태 - 모두 0원으로 초기화
   const [promotionBudgets, setPromotionBudgets] = useState({
@@ -85,20 +106,6 @@ export default function Home() {
   const [weightedAverageRate, setWeightedAverageRate] = useState(0)
   const [meritWeightedAverage, setMeritWeightedAverage] = useState(0) // 성과인상률 가중평균
   
-  // GradeSalaryAdjustmentTable의 세부 인상률 상태 - 모두 0으로 초기화
-  const [detailedLevelRates, setDetailedLevelRates] = useState<Record<string, {
-    baseUp: number
-    merit: number
-    promotion: number
-    advancement: number
-    additional: number
-  }>>({
-    'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-    'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
-  })
-  
   // 시나리오 관리
   const {
     scenarios,
@@ -108,9 +115,6 @@ export default function Home() {
     deleteScenario,
     renameScenario
   } = useScenarios()
-  
-  // AI 설정 데이터가 로드되면 상태 동기화 (첫 로드 시에만)
-  const [hasInitialized, setHasInitialized] = useState(false)
   
   // 데이터가 없으면 홈으로 리다이렉트
   useEffect(() => {
@@ -127,41 +131,76 @@ export default function Home() {
       setAiBaseUpRate(aiData.baseUpPercentage)
       setAiMeritRate(aiData.meritIncreasePercentage)
       
-      // 항상 AI 데이터로 초기화 (localStorage와 관계없이)
-      setBaseUpRate(aiData.baseUpPercentage)
-      setMeritRate(aiData.meritIncreasePercentage)
-      
-      // 총예산 설정 (엑셀 데이터에서 계산된 값 사용 - 간접비용 포함)
-      if (data.budget?.totalBudget) {
-        const budgetValue = typeof data.budget.totalBudget === 'string' 
-          ? parseFloat(data.budget.totalBudget.replace(/[^0-9.-]/g, ''))
-          : data.budget.totalBudget
-        setTotalBudget(budgetValue)
+      // Context에 저장된 값이 있으면 그것을 사용, 없으면 AI 데이터로 초기화
+      if (contextDetailedLevelRates && Object.values(contextDetailedLevelRates).some((rate: any) => 
+        rate.baseUp > 0 || rate.merit > 0 || rate.promotion > 0 || rate.advancement > 0 || rate.additional > 0
+      )) {
+        // Context에 저장된 상세 인상률 사용
+        setDetailedLevelRates(contextDetailedLevelRates)
+        
+        // levelRates도 Context에서 가져오기
+        if (contextLevelRates) {
+          setLevelRates(contextLevelRates)
+        }
+        
+        // baseUpRate와 meritRate는 평균값 계산
+        let totalBaseUp = 0, totalMerit = 0, totalHeadcount = 0
+        if (data?.levelStatistics) {
+          data.levelStatistics.forEach(level => {
+            const detailedRate = contextDetailedLevelRates[level.level]
+            if (detailedRate) {
+              totalBaseUp += detailedRate.baseUp * level.employeeCount
+              totalMerit += detailedRate.merit * level.employeeCount
+              totalHeadcount += level.employeeCount
+            }
+          })
+          if (totalHeadcount > 0) {
+            setBaseUpRate(totalBaseUp / totalHeadcount)
+            setMeritRate(totalMerit / totalHeadcount)
+          }
+        }
+        
+        // Context의 totalBudget 사용
+        if (contextTotalBudget > 0) {
+          setTotalBudget(contextTotalBudget)
+        }
       } else {
-        // 엑셀 데이터가 없으면 0원
-        setTotalBudget(0)
+        // Context에 저장된 값이 없으면 AI 데이터로 초기화
+        setBaseUpRate(aiData.baseUpPercentage)
+        setMeritRate(aiData.meritIncreasePercentage)
+        
+        // 개별 레벨 인상률도 업데이트
+        setLevelRates({
+          'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+          'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+          'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
+          'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage }
+        })
+        
+        // 세부 인상률도 업데이트
+        setDetailedLevelRates({
+          'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
+        })
+        
+        // 총예산 설정 (엑셀 데이터에서 계산된 값 사용 - 간접비용 포함)
+        if (data.budget?.totalBudget) {
+          const budgetValue = typeof data.budget.totalBudget === 'string' 
+            ? parseFloat(data.budget.totalBudget.replace(/[^0-9.-]/g, ''))
+            : data.budget.totalBudget
+          setTotalBudget(budgetValue)
+        } else {
+          // 엑셀 데이터가 없으면 0원
+          setTotalBudget(0)
+        }
       }
       
-      // 개별 레벨 인상률도 업데이트
-      setLevelRates({
-        'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
-        'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
-        'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage },
-        'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage }
-      })
-      
-      // 세부 인상률도 업데이트
-      setDetailedLevelRates({
-        'Lv.4': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
-        'Lv.3': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
-        'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
-        'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
-      })
-      
-      console.log('대시보드 초기화 완료 - AI 추천값:', aiData.baseUpPercentage, aiData.meritIncreasePercentage)
+      console.log('대시보드 초기화 완료 - Context값 우선 사용')
       setHasInitialized(true)
     }
-  }, [data?.aiRecommendation, hasInitialized])
+  }, [data?.aiRecommendation, data?.levelStatistics, hasInitialized, contextDetailedLevelRates, contextLevelRates, contextTotalBudget])
   
   // 새로운 인터페이스에 맞춰 수정
   const updateLevelRate = (level: string, rates: any) => {
