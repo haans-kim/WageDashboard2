@@ -104,7 +104,7 @@ function IndustryComparisonSectionComponent({
       level: 'Lv.1',
       cCompany: getCCompanySalary('Lv.1'), // C사 평균 (천원)
       ourCompany: getOurCompanySalary('Lv.1'), // 실제 평균 급여 (천원)
-      competitiveness: Math.round((getOurCompanySalary('Lv.1') / getCCompanySalary('Lv.1')) * 100), // 보상경쟁력%
+      competitiveness: Math.round((getOurCompanySalary('Lv.1') / getCCompanySalary('Lv.1')) * 100), // 보상 경쟁력%
       ourCompanyToBe: getOurCompanySalary('Lv.1') * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100), // 조정된 인상률로 계산
       competitivenessToBe: Math.round((getOurCompanySalary('Lv.1') * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100)) / getCCompanySalary('Lv.1') * 100) // 인상 후 경쟁력
     },
@@ -282,7 +282,7 @@ function IndustryComparisonSectionComponent({
         
         {/* 2열: 직급별 경쟁력 테이블 (3칸) */}
         <div className="bg-gray-50 rounded-lg p-3 col-span-3 flex flex-col" style={{height: '320px'}}>
-          <h3 className="text-sm font-bold text-gray-800 mb-3">직급별 보상경쟁력</h3>
+          <h3 className="text-sm font-bold text-gray-800 mb-3">직급별 보상 경쟁력</h3>
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto">
               <table className="w-full text-xs">

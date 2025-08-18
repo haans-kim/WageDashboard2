@@ -70,7 +70,7 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         
         cachedAISettings = {
           baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 0,
-          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 0,
+          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과 인상률(%)') as any)?.['값'] || 0,
           totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
           minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
           maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
@@ -184,7 +184,7 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           console.log('[서버] AI설정 시트 데이터:', aiData)
           
           const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
-          const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)')
           
           cachedAISettings = {
             baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
@@ -302,7 +302,7 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           console.log('[서버] AI설정 시트 데이터:', aiData)
           
           const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
-          const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)')
           
           cachedAISettings = {
             baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,

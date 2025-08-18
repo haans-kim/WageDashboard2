@@ -188,7 +188,7 @@ export function PayBandCompetitivenessHeatmap({ bandRates = {}, levelRates, init
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              TO-BE (조정후)
+              TO-BE (조정 후)
             </button>
           </div>
         </div>

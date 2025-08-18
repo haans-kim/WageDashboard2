@@ -55,7 +55,7 @@ export function useScenarios(
   // 초기에는 빈 배열로 시작하거나 AI 데이터가 있으면 사용
   const [scenarios, setScenarios] = useState<Scenario[]>(() => {
     if (aiData && (aiData.baseUpPercentage || aiData.meritIncreasePercentage)) {
-      return [createDefaultScenario(aiData)]
+      return [createDefaultScenario(aiData || undefined)]
     }
     return [createDefaultScenario()]
   })
@@ -118,7 +118,7 @@ export function useScenarios(
     } catch (error) {
       console.error('Failed to load scenarios:', error)
       // API 실패시에도 기본 시나리오는 유지
-      setScenarios([createDefaultScenario(aiData)])
+      setScenarios([createDefaultScenario(aiData || undefined)])
     } finally {
       setLoading(false)
     }
@@ -167,7 +167,7 @@ export function useScenarios(
       if (response.ok) {
         // 기본 시나리오는 항상 첫 번째 위치 유지
         const nonDefaultScenarios = scenarios.filter(s => s.id !== 'default')
-        const defaultScenario = scenarios.find(s => s.id === 'default') || createDefaultScenario(aiData)
+        const defaultScenario = scenarios.find(s => s.id === 'default') || createDefaultScenario(aiData || undefined)
         const updatedScenarios = [defaultScenario, ...nonDefaultScenarios, newScenario]
         setScenarios(updatedScenarios)
         setActiveScenarioId(newScenario.id)
@@ -250,7 +250,7 @@ export function useScenarios(
   const updateDefaultScenario = useCallback((newAiData?: { baseUpPercentage?: number, meritIncreasePercentage?: number } | null) => {
     const dataToUse = newAiData || aiData
     console.log('[updateDefaultScenario] 업데이트할 AI 데이터:', dataToUse)
-    const updatedDefaultScenario = createDefaultScenario(dataToUse)
+    const updatedDefaultScenario = createDefaultScenario(dataToUse || undefined)
     setScenarios(prevScenarios => {
       const nonDefaultScenarios = prevScenarios.filter(s => s.id !== 'default')
       return [updatedDefaultScenario, ...nonDefaultScenarios]

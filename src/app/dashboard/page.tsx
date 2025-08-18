@@ -242,7 +242,12 @@ export default function Home() {
         
         // 직급별 인상률도 업데이트
         if (contextLevelRates) {
-          setLevelRates(contextLevelRates)
+          setLevelRates(contextLevelRates as {
+            'Lv.1': { baseUp: number; merit: number }
+            'Lv.2': { baseUp: number; merit: number }
+            'Lv.3': { baseUp: number; merit: number }
+            'Lv.4': { baseUp: number; merit: number }
+          })
         }
         
         // 상세 인상률도 업데이트
@@ -534,7 +539,7 @@ export default function Home() {
               }}
             />
             
-            {/* 인상재원예산현황 */}
+            {/* 인상 재원 예산 현황 */}
             <BudgetResourceCard
               totalBudget={totalBudget || 0}
               baseUpRate={baseUpRate}

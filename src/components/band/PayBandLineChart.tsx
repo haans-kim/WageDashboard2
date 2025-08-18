@@ -66,7 +66,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             </p>
             {payload.find((p: any) => p.dataKey === 'sblMedianAdjusted') && (
               <p className="text-xs font-semibold">
-                보상경쟁력 (조정 후): {(
+                보상 경쟁력 (조정 후): {(
                   Math.round((payload.find((p: any) => p.dataKey === 'sblMedianAdjusted')?.value / 
                    payload.find((p: any) => p.dataKey === 'caMedian')?.value) * 100 * 10) / 10
                 ).toFixed(1)}%
@@ -115,7 +115,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             wrapperStyle={{ fontSize: '12px', paddingTop: '0px' }}
           />
           
-          {/* SBL사 현재 중위수 (점선) */}
+          {/* SBL 현재 중위수 (점선) */}
           <Line
             type="monotone"
             dataKey="sblMedian"
@@ -124,10 +124,10 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             strokeDasharray="5 5"
             dot={{ r: 4, fill: '#6b7280' }}
             activeDot={{ r: 6 }}
-            name="SBL사 (현재)"
+            name="SBL (현재)"
           />
           
-          {/* SBL사 조정 후 중위수 (실선) */}
+          {/* SBL 조정 후 중위수 (실선) */}
           {data[0]?.sblMedianAdjusted && (
             <Line
               type="monotone"
@@ -136,7 +136,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
               strokeWidth={3}
               dot={{ r: 6, fill: '#2563eb' }}
               activeDot={{ r: 8 }}
-              name="SBL사 (조정 후)"
+              name="SBL (조정 후)"
             />
           )}
           
