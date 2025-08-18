@@ -15,7 +15,7 @@ interface ComparisonTableProps {
 }
 
 export function ComparisonTable({ data }: ComparisonTableProps) {
-  // 보상경쟁력 색상 결정
+  // 보상 경쟁력 색상 결정
   const getCompetitivenessColor = (percentage: number) => {
     if (percentage < 95) return 'bg-red-100 text-red-700'
     if (percentage > 105) return 'bg-green-100 text-green-700'
@@ -46,9 +46,9 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             ))}
           </tr>
           
-          {/* SBL사 현재 행 */}
+          {/* SBL 현재 행 */}
           <tr className="border-b border-gray-100">
-            <td className="py-2 px-3 font-medium text-red-300">SBL사 (현재)</td>
+            <td className="py-2 px-3 font-medium text-red-300">SBL (현재)</td>
             {data.map((item) => (
               <td key={`sbl-${item.level}`} className="text-center py-2 px-3 text-gray-600">
                 {formatKoreanCurrency(item.sblMedian, '만원')}
@@ -56,10 +56,10 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             ))}
           </tr>
           
-          {/* SBL사 조정 후 행 */}
+          {/* SBL 조정 후 행 */}
           {data[0]?.sblMedianAdjusted && (
             <tr className="border-b border-gray-200 bg-red-50">
-              <td className="py-2 px-3 font-bold text-red-600">SBL사 (조정 후)</td>
+              <td className="py-2 px-3 font-bold text-red-600">SBL (조정 후)</td>
               {data.map((item) => (
                 <td key={`sbl-adj-${item.level}`} className="text-center py-2 px-3 font-semibold">
                   {formatKoreanCurrency(item.sblMedianAdjusted || item.sblMedian, '만원')}
@@ -68,9 +68,9 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             </tr>
           )}
           
-          {/* 보상경쟁력 행 (현재) */}
+          {/* 보상 경쟁력 행 (현재) */}
           <tr className="border-b border-gray-100">
-            <td className="py-2 px-3 font-semibold text-gray-500">경쟁력 (현재)</td>
+            <td className="py-2 px-3 font-semibold text-gray-500">보상 경쟁력 (현재)</td>
             {data.map((item) => {
               const competitiveness = Math.round((item.sblMedian / item.caMedian) * 100 * 10) / 10
               return (
@@ -83,10 +83,10 @@ export function ComparisonTable({ data }: ComparisonTableProps) {
             })}
           </tr>
           
-          {/* 보상경쟁력 행 (조정 후) */}
+          {/* 보상 경쟁력 행 (조정 후) */}
           {data[0]?.sblMedianAdjusted && (
             <tr className="bg-yellow-50">
-              <td className="py-2 px-3 font-bold text-gray-700">경쟁력 (조정 후)</td>
+              <td className="py-2 px-3 font-bold text-gray-700">보상 경쟁력 (조정 후)</td>
               {data.map((item) => {
                 const adjustedCompetitiveness = Math.round(((item.sblMedianAdjusted || item.sblMedian) / item.caMedian) * 100 * 10) / 10
                 return (

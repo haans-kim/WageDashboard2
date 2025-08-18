@@ -54,7 +54,7 @@ export function CompetitivenessHeatmap({
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-lg text-gray-900">보상경쟁력 Heatmap</h3>
+        <h3 className="font-bold text-lg text-gray-900">보상 경쟁력 Heatmap</h3>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">기준:</span>
           <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-sm font-semibold">
