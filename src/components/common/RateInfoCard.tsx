@@ -35,7 +35,7 @@ export function RateInfoCard() {
                   </span>
                   <span className="text-lg text-slate-900 font-medium">%</span>
                 </div>
-                <p className="text-sm text-slate-600 mt-1">Merit</p>
+                <p className="text-sm text-slate-600 mt-1">성과 인상률</p>
               </div>
               
               <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4">

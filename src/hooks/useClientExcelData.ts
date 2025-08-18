@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
-import { saveExcelData, loadExcelData, clearExcelData, hasStoredData } from '@/lib/clientStorage'
+import { saveExcelData, loadExcelData, clearExcelData, hasStoredData, generateFileId, getCurrentFileId } from '@/lib/clientStorage'
 
 export interface ClientExcelData {
   employees: any[]
@@ -19,6 +19,7 @@ export interface ClientExcelData {
   }
   fileName: string
   uploadedAt: string
+  fileId?: string  // 파일 ID 추가
 }
 
 export function useClientExcelData() {
@@ -42,7 +43,8 @@ export function useClientExcelData() {
           competitorIncreaseRate: storedData.competitorIncreaseRate || 0,
           aiSettings: storedData.aiSettings,
           fileName: storedData.fileName,
-          uploadedAt: storedData.uploadedAt
+          uploadedAt: storedData.uploadedAt,
+          fileId: storedData.fileId
         })
       }
     } catch (err) {
@@ -176,17 +178,21 @@ export function useClientExcelData() {
         }
       })
       
+      // 파일 ID 생성
+      const fileId = generateFileId(file.name, file.size)
+      
       const newData: ClientExcelData = {
         employees: processedEmployees,
         competitorData,
         competitorIncreaseRate,
         aiSettings,
         fileName: file.name,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
+        fileId
       }
       
-      // IndexedDB에 저장
-      await saveExcelData(newData)
+      // IndexedDB에 저장 (fileId 포함)
+      await saveExcelData({ ...newData, fileId })
       
       // 상태 업데이트
       setData(newData)

@@ -195,7 +195,7 @@ function IndustryComparisonSectionComponent({
         <div className="bg-blue-50 rounded-lg p-3 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(AI제안)</p>
           <p className="text-3xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
-          <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + Merit {formatPercentage(meritRate)}</p>
+          <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + 성과 인상률 {formatPercentage(meritRate)}</p>
         </div>
         <div className="bg-purple-50 rounded-lg p-3 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(조정)</p>

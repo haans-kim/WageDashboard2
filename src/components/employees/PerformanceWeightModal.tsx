@@ -41,7 +41,7 @@ export function PerformanceWeightModal({ isOpen, onClose }: PerformanceWeightMod
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-slate-900">
-              평가등급별 Merit 가중치 설정
+              평가등급별 성과 인상률 가중치 설정
             </h2>
             <button
               onClick={onClose}
@@ -54,7 +54,7 @@ export function PerformanceWeightModal({ isOpen, onClose }: PerformanceWeightMod
           </div>
           
           <p className="text-sm text-slate-600 mb-6">
-            각 평가등급에 대한 Merit 인상률 가중치를 조정하세요.
+            각 평가등급에 대한 성과 인상률 가중치를 조정하세요.
           </p>
 
           <div className="space-y-6">
@@ -99,7 +99,7 @@ export function PerformanceWeightModal({ isOpen, onClose }: PerformanceWeightMod
 
           {/* 미리보기 */}
           <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-            <p className="text-xs font-medium text-slate-600 mb-2">예시 계산 (Merit 2.5% 기준)</p>
+            <p className="text-xs font-medium text-slate-600 mb-2">예시 계산 (성과 인상률 2.5% 기준)</p>
             <div className="grid grid-cols-4 gap-2 text-xs">
               {Object.entries(localWeights).map(([grade, weight]) => (
                 <div key={grade} className="text-center">

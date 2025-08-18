@@ -13,7 +13,7 @@ interface RaiseSliderPanelProps {
     }
   }
   baseUpAdjustment: number  // 직군별 Base-up 조정값
-  meritAdjustment: number   // 직군별 Merit 조정값
+  meritAdjustment: number   // 직군별 성과 인상률 조정값
   onBaseUpAdjustmentChange: (value: number) => void
   onMeritAdjustmentChange: (value: number) => void
   onReset?: () => void
@@ -85,10 +85,10 @@ export function RaiseSliderPanel({
         </div>
       </div>
 
-      {/* Merit 조정 슬라이더 */}
+      {/* 성과 인상률 조정 슬라이더 */}
       <div className="p-3 bg-gray-50 rounded-lg">
         <div className="flex justify-between items-center mb-2">
-          <label className="text-base font-semibold text-gray-700">Merit 조정</label>
+          <label className="text-base font-semibold text-gray-700">성과 인상률 조정</label>
           <span className="text-base font-bold text-green-600">
             {meritAdjustment > 0 ? '+' : ''}{formatPercentage(meritAdjustment)}
           </span>
@@ -126,7 +126,7 @@ export function RaiseSliderPanel({
                   Base-up: {formatPercentage(rate.baseUp)}
                 </span>
                 <span className="text-gray-600">
-                  Merit: {formatPercentage(rate.merit)}
+                  성과 인상률: {formatPercentage(rate.merit)}
                 </span>
                 <span className="font-bold text-green-700">
                   = {formatPercentage(rate.total)}

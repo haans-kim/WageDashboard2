@@ -23,7 +23,7 @@ export function IncreaseTrendChart({ data }: IncreaseTrendChartProps) {
   const chartData = sortedData.map(item => ({
     level: item.level,
     'Base-up': item.avgBaseUpPercentage,
-    'Merit': item.avgMeritPercentage,
+    '성과 인상률': item.avgMeritPercentage,
     '총 인상률': item.totalIncreasePercentage,
   }))
 
@@ -71,7 +71,7 @@ export function IncreaseTrendChart({ data }: IncreaseTrendChartProps) {
             />
             <Line 
               type="monotone" 
-              dataKey="Merit" 
+              dataKey="성과 인상률" 
               stroke="#8B5CF6" 
               strokeWidth={2}
               dot={{ fill: '#8B5CF6', r: 4 }}

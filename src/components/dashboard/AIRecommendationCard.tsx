@@ -76,10 +76,10 @@ function AIRecommendationCardComponent({
           
           <div className="h-4"></div>
           
-          {/* 성과인상률 */}
+          {/* 성과 인상률 */}
           <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
             <div className="flex justify-between items-center w-full">
-              <span className="text-lg text-gray-700 font-medium">성과인상률</span>
+              <span className="text-lg text-gray-700 font-medium">성과 인상률</span>
               <span className="text-3xl font-bold text-pink-600 font-tabular">
                 {formatPercentage(displayMerit)}
               </span>

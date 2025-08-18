@@ -48,7 +48,10 @@ function createDefaultScenario(aiData?: { baseUpPercentage?: number, meritIncrea
   }
 }
 
-export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncreasePercentage?: number } | null) {
+export function useScenarios(
+  aiData?: { baseUpPercentage?: number, meritIncreasePercentage?: number } | null,
+  fileId?: string
+) {
   // 초기에는 빈 배열로 시작하거나 AI 데이터가 있으면 사용
   const [scenarios, setScenarios] = useState<Scenario[]>(() => {
     if (aiData && (aiData.baseUpPercentage || aiData.meritIncreasePercentage)) {
@@ -78,14 +81,22 @@ export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncrease
     }
   }, [aiData, scenarios])
 
-  // Load scenarios from API on mount
+  // Load scenarios from API on mount or when fileId/aiData changes
   useEffect(() => {
     loadScenariosFromAPI()
-  }, [])
+  }, [fileId, aiData])
 
   const loadScenariosFromAPI = async () => {
     try {
-      const response = await fetch('/api/scenarios')
+      // AI 설정을 query parameter로 추가
+      let url = fileId ? `/api/scenarios?fileId=${fileId}` : '/api/scenarios'
+      if (aiData) {
+        const baseUp = aiData.baseUpPercentage || 0
+        const merit = aiData.meritIncreasePercentage || 0
+        url += `${url.includes('?') ? '&' : '?'}baseUp=${baseUp}&merit=${merit}`
+      }
+      
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         // API에서 불러온 시나리오 사용 (Default 포함)
@@ -122,7 +133,8 @@ export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncrease
         },
         body: JSON.stringify({
           scenarios: scenariosData,
-          activeScenarioId: activeId
+          activeScenarioId: activeId,
+          fileId
         })
       })
     } catch (error) {
@@ -146,7 +158,10 @@ export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncrease
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newScenario)
+        body: JSON.stringify({
+          scenario: newScenario,
+          fileId
+        })
       })
       
       if (response.ok) {
@@ -188,7 +203,8 @@ export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncrease
     }
     
     try {
-      const response = await fetch(`/api/scenarios?id=${id}`, {
+      const url = fileId ? `/api/scenarios?id=${id}&fileId=${fileId}` : `/api/scenarios?id=${id}`
+      const response = await fetch(url, {
         method: 'DELETE'
       })
       

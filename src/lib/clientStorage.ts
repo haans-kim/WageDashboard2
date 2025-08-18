@@ -10,6 +10,7 @@ interface StoredData {
   aiSettings: any
   uploadedAt: string
   fileName: string
+  fileId?: string  // 파일 고유 ID 추가
 }
 
 const DB_NAME = 'WageDashboardDB'
@@ -40,6 +41,22 @@ function openDB(): Promise<IDBDatabase> {
 }
 
 /**
+ * 파일 고유 ID 생성
+ */
+export function generateFileId(fileName: string, fileSize?: number): string {
+  const timestamp = Date.now()
+  const baseString = `${fileName}_${fileSize || 0}_${timestamp}`
+  // 간단한 해시 생성 (실제로는 더 복잡한 해시 함수 사용 가능)
+  let hash = 0
+  for (let i = 0; i < baseString.length; i++) {
+    const char = baseString.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36)
+}
+
+/**
  * 데이터 저장
  */
 export async function saveExcelData(data: StoredData): Promise<void> {
@@ -52,6 +69,11 @@ export async function saveExcelData(data: StoredData): Promise<void> {
     const transaction = db.transaction([STORE_NAME], 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
     
+    // 파일 ID가 없으면 생성
+    if (!data.fileId) {
+      data.fileId = generateFileId(data.fileName)
+    }
+    
     // id를 'current'로 고정하여 항상 덮어쓰기
     await store.put({ ...data, id: 'current' })
     
@@ -59,8 +81,9 @@ export async function saveExcelData(data: StoredData): Promise<void> {
     localStorage.setItem('wageDashboard_hasData', 'true')
     localStorage.setItem('wageDashboard_fileName', data.fileName)
     localStorage.setItem('wageDashboard_uploadedAt', data.uploadedAt)
+    localStorage.setItem('wageDashboard_fileId', data.fileId)
     
-    console.log('데이터가 브라우저에 저장되었습니다.')
+    console.log('데이터가 브라우저에 저장되었습니다. File ID:', data.fileId)
   } catch (error) {
     console.error('데이터 저장 실패:', error)
     throw error
@@ -110,6 +133,7 @@ export async function clearExcelData(): Promise<void> {
     localStorage.removeItem('wageDashboard_hasData')
     localStorage.removeItem('wageDashboard_fileName')
     localStorage.removeItem('wageDashboard_uploadedAt')
+    localStorage.removeItem('wageDashboard_fileId')
     
     console.log('저장된 데이터가 삭제되었습니다.')
   } catch (error) {
@@ -131,15 +155,27 @@ export function hasStoredData(): boolean {
 /**
  * 저장된 파일 정보 가져오기
  */
-export function getStoredFileInfo(): { fileName: string; uploadedAt: string } | null {
+export function getStoredFileInfo(): { fileName: string; uploadedAt: string; fileId?: string } | null {
   if (typeof window === 'undefined') {
     return null
   }
   const fileName = localStorage.getItem('wageDashboard_fileName')
   const uploadedAt = localStorage.getItem('wageDashboard_uploadedAt')
+  const fileId = localStorage.getItem('wageDashboard_fileId')
   
   if (fileName && uploadedAt) {
-    return { fileName, uploadedAt }
+    return { fileName, uploadedAt, fileId: fileId || undefined }
   }
   return null
+}
+
+/**
+ * 현재 파일 ID 가져오기
+ */
+export function getCurrentFileId(): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  
+  return localStorage.getItem('wageDashboard_fileId')
 }

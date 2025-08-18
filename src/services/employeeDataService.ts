@@ -187,21 +187,21 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
           
           cachedAISettings = {
-            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 3.2 : 3.2,
-            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 2.5 : 2.5,
-            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
-            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
-            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
+            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
+            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
           }
           console.log('[서버] AI 설정 로드 완료:', cachedAISettings)
         } else {
           console.log('[서버] AI설정 시트가 없음. 기본값 사용')
           cachedAISettings = {
-            baseUpPercentage: 3.2,
-            meritIncreasePercentage: 2.5,
-            totalPercentage: 5.7,
-            minRange: 5.7,
-            maxRange: 5.9
+            baseUpPercentage: 0,
+            meritIncreasePercentage: 0,
+            totalPercentage: 0,
+            minRange: 0,
+            maxRange: 0
           }
         }
         
@@ -305,21 +305,21 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
           
           cachedAISettings = {
-            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 3.2 : 3.2,
-            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 2.5 : 2.5,
-            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 5.7,
-            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 5.7,
-            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 5.9
+            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
+            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
           }
           console.log('[서버] AI 설정 로드 완료:', cachedAISettings)
         } else {
           console.log('[서버] AI설정 시트가 없음. 기본값 사용')
           cachedAISettings = {
-            baseUpPercentage: 3.2,
-            meritIncreasePercentage: 2.5,
-            totalPercentage: 5.7,
-            minRange: 5.7,
-            maxRange: 5.9
+            baseUpPercentage: 0,
+            meritIncreasePercentage: 0,
+            totalPercentage: 0,
+            minRange: 0,
+            maxRange: 0
           }
         }
         

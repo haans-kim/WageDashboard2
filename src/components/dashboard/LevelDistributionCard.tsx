@@ -94,7 +94,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                     </div>
                     <div>
                       <div className="flex justify-between items-center">
-                        <p className="text-xs font-medium text-gray-700">Merit</p>
+                        <p className="text-xs font-medium text-gray-700">성과 인상률</p>
                         <p className="text-xs font-bold text-gray-900">{formatPercentage(displayMerit)}</p>
                       </div>
                       <input
@@ -122,7 +122,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                     </p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-gray-800 font-medium">Merit</p>
+                    <p className="text-gray-800 font-medium">성과 인상률</p>
                     <p className={`font-bold text-base ${isSimulated ? 'text-gray-900' : 'text-gray-900'}`}>
                       {formatPercentage(displayMerit)}
                     </p>
