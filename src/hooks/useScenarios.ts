@@ -55,7 +55,7 @@ export function useScenarios(
   // 초기에는 빈 배열로 시작하거나 AI 데이터가 있으면 사용
   const [scenarios, setScenarios] = useState<Scenario[]>(() => {
     if (aiData && (aiData.baseUpPercentage || aiData.meritIncreasePercentage)) {
-      return [createDefaultScenario(aiData)]
+      return [createDefaultScenario(aiData || undefined)]
     }
     return [createDefaultScenario()]
   })
@@ -167,7 +167,7 @@ export function useScenarios(
       if (response.ok) {
         // 기본 시나리오는 항상 첫 번째 위치 유지
         const nonDefaultScenarios = scenarios.filter(s => s.id !== 'default')
-        const defaultScenario = scenarios.find(s => s.id === 'default') || createDefaultScenario(aiData)
+        const defaultScenario = scenarios.find(s => s.id === 'default') || createDefaultScenario(aiData || undefined)
         const updatedScenarios = [defaultScenario, ...nonDefaultScenarios, newScenario]
         setScenarios(updatedScenarios)
         setActiveScenarioId(newScenario.id)
