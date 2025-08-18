@@ -118,7 +118,7 @@ export function useScenarios(
     } catch (error) {
       console.error('Failed to load scenarios:', error)
       // API 실패시에도 기본 시나리오는 유지
-      setScenarios([createDefaultScenario(aiData)])
+      setScenarios([createDefaultScenario(aiData || undefined)])
     } finally {
       setLoading(false)
     }
