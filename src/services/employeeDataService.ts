@@ -141,9 +141,9 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
           row['항목'] === '총인상률 (%)')
         
         cachedAISettings = {
-          baseUpPercentage: baseUpRow?.['값'] || 0,
-          meritIncreasePercentage: meritRow?.['값'] || 0,
-          totalPercentage: totalRow?.['값'] || 0,
+          baseUpPercentage: (baseUpRow as any)?.['값'] || 0,
+          meritIncreasePercentage: (meritRow as any)?.['값'] || 0,
+          totalPercentage: (totalRow as any)?.['값'] || 0,
           minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
           maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
         }
