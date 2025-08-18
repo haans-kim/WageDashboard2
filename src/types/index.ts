@@ -2,7 +2,7 @@
 export type EmployeeLevel = 'Lv.1' | 'Lv.2' | 'Lv.3' | 'Lv.4'
 
 // 평가 등급
-export type PerformanceRating = 'S' | 'A' | 'B' | 'C'
+export type PerformanceRating = 'ST' | 'AT' | 'OT' | 'BT'
 
 // 직원 정보
 export interface Employee {

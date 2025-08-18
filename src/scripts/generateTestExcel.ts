@@ -21,9 +21,9 @@ console.log('🔄 파일 2: 테스트용 직원 데이터 생성 중...')
 const testEmployees = generateEmployeeData(1000).map(emp => {
   // 테스트용으로 다른 평가등급 분포 적용 (S:20%, A:40%, B:30%, C:10%)
   const rand = Math.random()
-  const performanceRating: 'S' | 'A' | 'B' | 'C' = rand < 0.2 ? 'S' :
-                           rand < 0.6 ? 'A' :
-                           rand < 0.9 ? 'B' : 'C'
+  const performanceRating: 'ST' | 'AT' | 'OT' | 'BT' = rand < 0.2 ? 'ST' :
+                           rand < 0.6 ? 'AT' :
+                           rand < 0.9 ? 'OT' : 'BT'
   return { ...emp, performanceRating }
 })
 
@@ -54,9 +54,9 @@ const levelStandardsData = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => ({
 
 // 평가등급 분포 확인 함수
 function getPerformanceDistribution(employees: any[]) {
-  const dist = { S: 0, A: 0, B: 0, C: 0 }
+  const dist = { ST: 0, AT: 0, OT: 0, BT: 0 }
   employees.forEach(emp => {
-    const rating = emp['평가등급'] || emp.performanceRating || 'B'
+    const rating = emp['평가등급'] || emp.performanceRating || 'OT'
     if (rating in dist) {
       dist[rating as keyof typeof dist]++
     }

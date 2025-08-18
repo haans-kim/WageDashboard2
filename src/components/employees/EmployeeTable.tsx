@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 import { useWageContext } from '@/context/WageContext'
 import { useEmployeesData, type Employee } from '@/hooks/useEmployeesData'
-import Link from 'next/link'
 
 interface EmployeeTableProps {
   level?: string
@@ -37,10 +36,10 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
   }
 
   const ratingColors = {
-    'S': 'bg-emerald-100 text-emerald-700',
-    'A': 'bg-blue-100 text-blue-700',
-    'B': 'bg-amber-100 text-amber-700',
-    'C': 'bg-red-100 text-red-700',
+    'ST': 'bg-emerald-100 text-emerald-700',
+    'AT': 'bg-blue-100 text-blue-700',
+    'OT': 'bg-amber-100 text-amber-700',
+    'BT': 'bg-red-100 text-red-700',
   }
 
   return (
@@ -101,9 +100,6 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                   </th>
                   <th className="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     증감액
-                  </th>
-                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상세
                   </th>
                 </tr>
               </thead>
@@ -197,14 +193,6 @@ export function EmployeeTable({ level, department, performanceRating }: Employee
                           </span>
                         )
                       })()}
-                    </td>
-                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium">
-                      <Link
-                        href={`/employees/${employee.id}`}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        상세
-                      </Link>
                     </td>
                   </tr>
                 ))}

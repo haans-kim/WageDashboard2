@@ -205,8 +205,8 @@ export async function GET() {
     }))
     
     // 12. 평가등급별 인상액 (PerformanceChart용) 
-    const performanceIncrease = ['S', 'A', 'B', 'C'].map(rating => {
-      const weights = { S: 1.5, A: 1.2, B: 1.0, C: 0.8 }
+    const performanceIncrease = ['ST', 'AT', 'OT', 'BT'].map(rating => {
+      const weights = { ST: 1.5, AT: 1.2, OT: 1.0, BT: 0.8 }
       const ratingEmployees = employees.filter(emp => emp.performanceRating === rating)
       const baseUp = 3.2
       const merit = 2.5

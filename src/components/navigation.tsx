@@ -21,7 +21,6 @@ export function Navigation({ children }: NavigationProps) {
     { href: '/dashboard', label: '대시보드' },
     { href: '/bands', label: 'Pay Band' },
     { href: '/employees', label: '직원 관리' },
-    { href: '/simulation', label: 'What if' },
   ]
 
   return (

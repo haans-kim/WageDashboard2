@@ -5,10 +5,10 @@ import { useScenarios } from '@/hooks/useScenarios'
 import { Scenario } from '@/types/scenario'
 
 interface PerformanceWeights {
-  S: number
-  A: number
-  B: number
-  C: number
+  ST: number
+  AT: number
+  OT: number
+  BT: number
 }
 
 interface WageContextType {
@@ -119,10 +119,10 @@ export function WageProvider({ children }: { children: ReactNode }) {
   const [baseUpRate, setBaseUpRate] = useState(0)
   const [meritRate, setMeritRate] = useState(0)
   const [performanceWeights, setPerformanceWeights] = useState<PerformanceWeights>({
-    S: 1.5,
-    A: 1.2,
-    B: 1.0,
-    C: 0.8
+    ST: 1.5,
+    AT: 1.2,
+    OT: 1.0,
+    BT: 0.8
   })
   const [levelRates, setLevelRates] = useState({
     'Lv.1': { baseUp: 0, merit: 0 },
@@ -178,7 +178,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
           setBaseUpRate(parsed.baseUpRate ?? 0)
           setMeritRate(parsed.meritRate ?? 0)
           setPerformanceWeights(parsed.performanceWeights ?? {
-            S: 1.5, A: 1.2, B: 1.0, C: 0.8
+            ST: 1.5, AT: 1.2, OT: 1.0, BT: 0.8
           })
           setLevelRates(parsed.levelRates ?? {
             'Lv.1': { baseUp: 0, merit: 0 },

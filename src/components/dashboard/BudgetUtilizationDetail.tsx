@@ -246,21 +246,10 @@ function BudgetUtilizationDetailComponent({
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-purple-200">
               <span className="font-semibold text-gray-700 text-base">현재 설정</span>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={Math.round(enableAdditionalIncrease ? additionalBudget : 0)}
-                  className={`w-32 px-2 py-1.5 text-right text-base font-bold border rounded ${
-                    enableAdditionalIncrease 
-                      ? 'text-purple-600 border-purple-300 bg-purple-50' 
-                      : 'text-gray-400 border-gray-200 bg-gray-50'
-                  }`}
-                  placeholder="0"
-                  step="1"
-                  disabled={true}  // 항상 읽기 전용
-                  readOnly={true}  // 읽기 전용 명시
-                />
-                <span className="text-base text-gray-600">원</span>
+              <div className="text-right">
+                <span className="font-bold text-purple-600 text-lg">
+                  {formatKoreanCurrency(currentSetting, '백만원', 1000000)}
+                </span>
                 <span className="text-sm text-gray-500 ml-1">
                   ({((currentSetting / totalBudget) * 100).toFixed(1)}% 활용)
                 </span>
