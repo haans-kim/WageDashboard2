@@ -250,7 +250,7 @@ export function useScenarios(
   const updateDefaultScenario = useCallback((newAiData?: { baseUpPercentage?: number, meritIncreasePercentage?: number } | null) => {
     const dataToUse = newAiData || aiData
     console.log('[updateDefaultScenario] 업데이트할 AI 데이터:', dataToUse)
-    const updatedDefaultScenario = createDefaultScenario(dataToUse)
+    const updatedDefaultScenario = createDefaultScenario(dataToUse || undefined)
     setScenarios(prevScenarios => {
       const nonDefaultScenarios = prevScenarios.filter(s => s.id !== 'default')
       return [updatedDefaultScenario, ...nonDefaultScenarios]
