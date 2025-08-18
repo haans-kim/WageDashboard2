@@ -2,63 +2,31 @@
 
 import { useState, useEffect } from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
-import Link from 'next/link'
-
-interface Employee {
-  id: string
-  employeeNumber: string
-  name: string
-  department: string
-  level: string
-  currentSalary: number
-  performanceRating: string | null
-  hireDate: string
-  latestCalculation: {
-    baseUpPercentage: number
-    meritIncreasePercentage: number
-    totalPercentage: number
-    suggestedSalary: number
-  } | null
-}
+import { useWageContext } from '@/context/WageContext'
+import { useEmployeesData, type Employee } from '@/hooks/useEmployeesData'
 
 interface EmployeeTableProps {
   level?: string
   department?: string
+  performanceRating?: string
 }
 
-export function EmployeeTable({ level, department }: EmployeeTableProps) {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [loading, setLoading] = useState(true)
+export function EmployeeTable({ level, department, performanceRating }: EmployeeTableProps) {
+  const { calculateToBeSalary, baseUpRate, meritRate, performanceWeights, levelRates, bandFinalRates } = useWageContext()
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    fetchEmployees()
-  }, [page, level, department, search])
-
-  const fetchEmployees = async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '10',
-        ...(level && { level }),
-        ...(department && { department }),
-        ...(search && { search }),
-      })
-
-      const response = await fetch(`/api/employees?${params}`)
-      const data = await response.json()
-      
-      setEmployees(data.data)
-      setTotalPages(data.pagination.totalPages)
-    } catch (error) {
-      console.error('Failed to fetch employees:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  
+  const { data, loading } = useEmployeesData({
+    page,
+    limit: 10,
+    level,
+    department,
+    rating: performanceRating,
+    search
+  })
+  
+  const employees = data?.employees || []
+  const totalPages = data?.totalPages || 1
 
   const levelColors = {
     'Lv.1': 'bg-purple-100 text-purple-700',
@@ -68,9 +36,10 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
   }
 
   const ratingColors = {
-    'S': 'bg-red-100 text-red-700',
-    'A': 'bg-blue-100 text-blue-700',
-    'B': 'bg-green-100 text-green-700',
+    'ST': 'bg-emerald-100 text-emerald-700',
+    'AT': 'bg-blue-100 text-blue-700',
+    'OT': 'bg-amber-100 text-amber-700',
+    'BT': 'bg-red-100 text-red-700',
   }
 
   return (
@@ -101,83 +70,129 @@ export function EmployeeTable({ level, department }: EmployeeTableProps) {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+            <table className="w-full md:min-w-[800px] text-xs md:text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     사번
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     이름
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     부서
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     직급
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     현재 급여
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    성과
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    평가등급
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    예상 인상률
+                  <th className="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    적용 인상률
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
+                  <th className="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    TO-BE 급여
+                  </th>
+                  <th className="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    증감액
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {employees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {employee.employeeNumber}
+                  <tr key={`${employee.id}-${baseUpRate}-${meritRate}`} className="hover:bg-gray-50">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-gray-900">
+                      {employee.employeeNumber || employee.employeeId || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900">
                       {employee.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500">
                       {employee.department}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
+                      <span className={`px-1 md:px-2 py-0.5 md:py-1 text-xs font-semibold rounded-full ${
                         levelColors[employee.level as keyof typeof levelColors] || 'bg-gray-100'
                       }`}>
                         {employee.level}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-tabular">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
                       {formatKoreanCurrency(employee.currentSalary, '만원')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {employee.performanceRating && (
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
+                      {employee.performanceRating ? (
+                        <span className={`px-1 md:px-2 py-0.5 md:py-1 text-xs font-semibold rounded-full ${
                           ratingColors[employee.performanceRating as keyof typeof ratingColors] || 'bg-gray-100'
                         }`}>
                           {employee.performanceRating}
                         </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {employee.latestCalculation ? (
-                        <span className="font-semibold text-primary-600">
-                          {formatPercentage(employee.latestCalculation.totalPercentage)}
-                        </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link
-                        href={`/employees/${employee.id}`}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        상세보기
-                      </Link>
+                    <td className="hidden md:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
+                      {(() => {
+                        // 직군별 최종 인상률이 있으면 우선 사용, 없으면 대시보드 기준 사용
+                        let levelRate
+                        if (employee.band && bandFinalRates[employee.band] && bandFinalRates[employee.band][employee.level]) {
+                          levelRate = bandFinalRates[employee.band][employee.level]
+                        } else {
+                          levelRate = levelRates[employee.level as keyof typeof levelRates] || { baseUp: baseUpRate, merit: meritRate }
+                        }
+                        
+                        const effectiveMeritRate = employee.performanceRating && performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
+                          ? levelRate.merit * performanceWeights[employee.performanceRating as keyof typeof performanceWeights]
+                          : levelRate.merit
+                        const totalRate = levelRate.baseUp + effectiveMeritRate
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-purple-600">
+                              {totalRate.toFixed(1)}%
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              (B: {levelRate.baseUp}% + M: {effectiveMeritRate.toFixed(1)}%)
+                            </span>
+                          </div>
+                        )
+                      })()}
+                    </td>
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
+                      {(() => {
+                        const toBeSalary = calculateToBeSalary(
+                          employee.currentSalary,
+                          employee.level,
+                          employee.performanceRating || undefined,
+                          employee.band || undefined
+                        )
+                        return (
+                          <span className="font-semibold text-primary-600">
+                            {formatKoreanCurrency(toBeSalary, '만원')}
+                          </span>
+                        )
+                      })()}
+                    </td>
+                    <td className="hidden lg:table-cell px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-900 font-tabular">
+                      {(() => {
+                        const toBeSalary = calculateToBeSalary(
+                          employee.currentSalary,
+                          employee.level,
+                          employee.performanceRating || undefined,
+                          employee.band || undefined
+                        )
+                        const difference = toBeSalary - employee.currentSalary
+                        const isPositive = difference > 0
+                        return (
+                          <span className={`font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                            {isPositive ? '+' : ''}{formatKoreanCurrency(difference, '만원')}
+                          </span>
+                        )
+                      })()}
                     </td>
                   </tr>
                 ))}

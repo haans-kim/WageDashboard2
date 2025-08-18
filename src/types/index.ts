@@ -1,12 +1,16 @@
 // 직급 레벨
 export type EmployeeLevel = 'Lv.1' | 'Lv.2' | 'Lv.3' | 'Lv.4'
 
+// 평가 등급
+export type PerformanceRating = 'ST' | 'AT' | 'OT' | 'BT'
+
 // 직원 정보
 export interface Employee {
   id: string
   name: string
   level: EmployeeLevel
   department: string
+  performanceRating: PerformanceRating
   currentSalary: number
   baseUpAmount: number
   meritIncreaseAmount: number

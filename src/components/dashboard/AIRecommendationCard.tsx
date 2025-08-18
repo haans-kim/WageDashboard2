@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatPercentage } from '@/lib/utils'
 
 interface AIRecommendationCardProps {
@@ -19,34 +20,34 @@ interface AIRecommendationCardProps {
   onReset?: () => void
 }
 
-export function AIRecommendationCard({ 
+function AIRecommendationCardComponent({ 
   data, 
-  totalEmployees = 4925, // 실제 인원 반영
-  baseUpRate = 3.2, 
-  meritRate = 2.5,
+  totalEmployees, // props로 전달받음
+  baseUpRate = 0, 
+  meritRate = 0,
   meritWeightedAverage,
   onBaseUpChange,
   onMeritChange,
   onReset
 }: AIRecommendationCardProps) {
-  // 엑셀에서 가져온 AI 설정 데이터 사용 (fallback으로 기본값 사용)
-  const displayBaseUp = data?.baseUpPercentage ?? 3.2
-  const displayMerit = data?.meritIncreasePercentage ?? 2.5
-  const displayTotal = data?.totalPercentage ?? 5.7
+  // 엑셀에서 가져온 AI 설정 데이터 사용 (fallback으로 props 값 사용)
+  const displayBaseUp = data?.baseUpPercentage ?? baseUpRate
+  const displayMerit = data?.meritIncreasePercentage ?? meritRate
+  const displayTotal = data?.totalPercentage ?? (baseUpRate + meritRate)
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="bg-white rounded-lg shadow p-4 md:p-6 h-full flex flex-col">
+      <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4">
         AI 제안 적정 인상률
       </h2>
       
       {/* 중앙 상단: 총 인원 표시 */}
-      <div className="text-center mb-8 pb-6 border-b">
-        <span className="text-base text-gray-600">총 인원</span>
-        <p className="text-3xl font-bold text-gray-900 mt-1">
-          {totalEmployees.toLocaleString('ko-KR')}명
+      <div className="text-center mb-4 md:mb-8 pb-4 md:pb-6 border-b">
+        <span className="text-sm md:text-base text-gray-600">총 인원</span>
+        <p className="text-xl md:text-3xl font-bold text-gray-900 mt-1">
+          {(totalEmployees || 0).toLocaleString('ko-KR')}명
         </p>
-        <span className="text-sm text-gray-500">(2025.06.07 기준)</span>
+        <span className="text-xs md:text-sm text-gray-500">({new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')} 기준)</span>
       </div>
       
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}
@@ -75,10 +76,10 @@ export function AIRecommendationCard({
           
           <div className="h-4"></div>
           
-          {/* 성과인상률 */}
+          {/* 성과 인상률 */}
           <div className="bg-gray-50 rounded-lg p-4 flex-1 flex items-center">
             <div className="flex justify-between items-center w-full">
-              <span className="text-lg text-gray-700 font-medium">성과인상률</span>
+              <span className="text-lg text-gray-700 font-medium">성과 인상률</span>
               <span className="text-3xl font-bold text-pink-600 font-tabular">
                 {formatPercentage(displayMerit)}
               </span>
@@ -89,3 +90,5 @@ export function AIRecommendationCard({
     </div>
   )
 }
+
+export const AIRecommendationCard = React.memo(AIRecommendationCardComponent)

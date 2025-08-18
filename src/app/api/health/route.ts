@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getEmployeeData, getAISettings } from '@/services/employeeDataService'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET() {
   const checks = {
@@ -12,123 +15,73 @@ export async function GET() {
   }
 
   try {
-    // 1. 데이터베이스 연결 확인
-    const employeeCount = await prisma.employee.count()
+    // 1. 데이터 로드 확인
+    const employees = await getEmployeeData()
     checks.database = true
-    checks.totalEmployees = employeeCount
+    checks.totalEmployees = employees.length
 
     // 2. 데이터 무결성 확인
-    const employeesWithoutSalary = await prisma.employee.count({
-      where: { currentSalary: 0 },
-    })
+    const employeesWithoutSalary = employees.filter(e => !e.currentSalary || e.currentSalary === 0).length
+    const duplicateEmployeeNumbers = employees.reduce((acc, emp) => {
+      const key = emp.employeeId
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
     
-    const duplicateEmployeeNumbers = await prisma.employee.groupBy({
-      by: ['employeeNumber'],
-      having: {
-        employeeNumber: {
-          _count: {
-            gt: 1,
-          },
-        },
-      },
-    })
-
-    if (employeesWithoutSalary === 0 && duplicateEmployeeNumbers.length === 0) {
-      checks.dataIntegrity = true
-    } else {
-      if (employeesWithoutSalary > 0) {
-        checks.errors.push(`${employeesWithoutSalary}명의 직원이 급여 정보가 없습니다.`)
-      }
-      if (duplicateEmployeeNumbers.length > 0) {
-        checks.errors.push(`중복된 사번이 ${duplicateEmployeeNumbers.length}개 있습니다.`)
-      }
+    const duplicates = Object.entries(duplicateEmployeeNumbers).filter(([_, count]) => count > 1)
+    
+    checks.dataIntegrity = employeesWithoutSalary === 0 && duplicates.length === 0
+    
+    if (employeesWithoutSalary > 0) {
+      checks.errors.push(`${employeesWithoutSalary}명의 직원에 급여 정보가 없습니다.`)
+    }
+    
+    if (duplicates.length > 0) {
+      checks.errors.push(`${duplicates.length}개의 중복된 사번이 있습니다.`)
     }
 
     // 3. 예산 정보 확인
-    const currentYear = new Date().getFullYear()
-    const budget = await prisma.budget.findFirst({
-      where: { fiscalYear: currentYear },
-    })
+    const totalSalary = employees.reduce((sum, emp) => sum + emp.currentSalary, 0)
+    const totalBudget = totalSalary * 1.2 // 총 급여의 120%를 예산으로 가정
+    checks.totalBudget = totalBudget.toString()
 
-    if (budget) {
-      checks.totalBudget = budget.totalBudget.toString()
-    } else {
-      checks.errors.push(`${currentYear}년 예산 정보가 없습니다.`)
-    }
-
-    // 4. API 엔드포인트 상태
+    // 4. API 엔드포인트 확인
     const endpoints = [
-      { name: 'Dashboard API', path: '/api/dashboard', status: 'ok' },
-      { name: 'Employees API', path: '/api/employees', status: 'ok' },
-      { name: 'Statistics API', path: '/api/statistics/level', status: 'ok' },
-      { name: 'Simulation API', path: '/api/simulation', status: 'ok' },
-      { name: 'Analytics API', path: '/api/analytics', status: 'ok' },
-      { name: 'Export API', path: '/api/reports/export', status: 'ok' },
+      { name: 'Dashboard', path: '/api/dashboard', status: 'healthy' },
+      { name: 'Employees', path: '/api/employees', status: 'healthy' },
+      { name: 'Analytics', path: '/api/analytics', status: 'healthy' },
+      { name: 'Simulation', path: '/api/simulation', status: 'healthy' },
+      { name: 'Bands', path: '/api/bands', status: 'healthy' },
     ]
-
+    
     checks.apiEndpoints = endpoints
 
     // 5. 직급별 데이터 확인
-    const levelStats = await prisma.employee.groupBy({
-      by: ['level'],
-      _count: true,
-    })
+    const levelStats = employees.reduce((acc, emp) => {
+      acc[emp.level] = (acc[emp.level] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
 
-    const expectedLevels = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4']
-    const actualLevels = levelStats.map(stat => stat.level)
-    const missingLevels = expectedLevels.filter(level => !actualLevels.includes(level))
-
-    if (missingLevels.length > 0) {
-      checks.errors.push(`다음 직급의 직원이 없습니다: ${missingLevels.join(', ')}`)
-    }
-
-    // 6. 최근 임금 계산 확인
-    const recentCalculations = await prisma.wageCalculation.count({
-      where: {
-        calculationDate: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30일 이내
-        },
-      },
-    })
-
-    return NextResponse.json({
+    const summary = {
       status: checks.errors.length === 0 ? 'healthy' : 'warning',
       timestamp: new Date().toISOString(),
-      checks: {
-        database: {
-          connected: checks.database,
-          employeeCount: checks.totalEmployees,
-        },
-        dataIntegrity: {
-          valid: checks.dataIntegrity,
-          errors: checks.errors,
-        },
-        budget: {
-          currentYear,
-          totalBudget: checks.totalBudget,
-          hasBudget: checks.totalBudget !== '0',
-        },
-        apiEndpoints: checks.apiEndpoints,
-        statistics: {
-          levelDistribution: levelStats,
-          recentCalculations,
-        },
+      checks,
+      statistics: {
+        levelDistribution: levelStats,
+        departmentCount: new Set(employees.map(e => e.department)).size,
+        averageSalary: Math.round(totalSalary / employees.length),
       },
-      summary: {
-        totalChecks: 6,
-        passedChecks: 6 - checks.errors.length,
-        warnings: checks.errors.length,
-      },
-    })
+    }
+
+    return NextResponse.json(summary)
   } catch (error) {
-    console.error('Health check error:', error)
-    return NextResponse.json(
-      {
-        status: 'error',
-        error: 'Health check failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    )
+    checks.errors.push(`시스템 오류: ${error}`)
+    
+    return NextResponse.json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      checks,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 })
   }
 }

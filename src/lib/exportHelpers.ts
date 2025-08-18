@@ -35,14 +35,14 @@ export interface ExportData {
     totalAmount: number
   }>
   
-  // 동종업계 비교
+  // C사 비교
   industryComparison: {
     ourCompany: number
-    industryAverage: number
+    competitor: number
     competitiveness: Array<{
       level: string
       ourRate: number
-      industryRate: number
+      competitorRate: number
       gap: number
     }>
   }
@@ -64,7 +64,7 @@ export function prepareExportData(
   detailedLevelRates: any,
   scenarioName?: string
 ): ExportData {
-  const totalBudget = state.totalBudget || 30000000000
+  const totalBudget = state.totalBudget || 0
   const totalUsedBudget = budgetDetails.aiRecommendation + 
                          budgetDetails.promotion + 
                          budgetDetails.additional + 
@@ -75,7 +75,7 @@ export function prepareExportData(
       baseUpRate: state.baseUpRate,
       meritRate: state.meritRate,
       totalRate: state.baseUpRate + state.meritRate,
-      employeeCount: 4925
+      employeeCount: state.totalEmployees || 0
     },
     
     budgetStatus: {
@@ -112,17 +112,15 @@ export function prepareExportData(
     
     industryComparison: {
       ourCompany: state.weightedAverageRate || (state.baseUpRate + state.meritRate),
-      industryAverage: 4.8, // 하드코딩된 업계 평균
+      competitor: state.competitorIncreaseRate || 0, // C사 인상률
       competitiveness: ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
         const ourRate = state.levelTotalRates?.[level] || (state.baseUpRate + state.meritRate)
-        const industryRate = level === 'Lv.1' ? 5.2 : 
-                            level === 'Lv.2' ? 4.8 : 
-                            level === 'Lv.3' ? 4.5 : 4.3
+        const competitorRate = state.competitorIncreaseRate || 0 // C사 인상률
         return {
           level,
           ourRate,
-          industryRate,
-          gap: ourRate - industryRate
+          competitorRate,
+          gap: ourRate - competitorRate
         }
       })
     },
@@ -200,10 +198,10 @@ export function formatExportDataForExcel(data: ExportData) {
       '총금액': formatKoreanCurrency(level.totalAmount)
     })),
     
-    '동종업계비교': data.industryComparison.competitiveness.map(comp => ({
+    'C사비교': data.industryComparison.competitiveness.map(comp => ({
       '직급': comp.level,
       '우리회사(%)': comp.ourRate.toFixed(1),
-      '동종업계(%)': comp.industryRate.toFixed(1),
+      'C사(%)': comp.competitorRate.toFixed(1),
       '격차(%)': comp.gap > 0 ? `+${comp.gap.toFixed(1)}` : comp.gap.toFixed(1),
       '경쟁력': comp.gap >= 0 ? '우위' : '열위'
     })),

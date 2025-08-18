@@ -67,8 +67,8 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
             {payload.find((p: any) => p.dataKey === 'sblMedianAdjusted') && (
               <p className="text-xs font-semibold">
                 보상경쟁력 (조정 후): {(
-                  (payload.find((p: any) => p.dataKey === 'sblMedianAdjusted')?.value / 
-                   payload.find((p: any) => p.dataKey === 'caMedian')?.value) * 100
+                  Math.round((payload.find((p: any) => p.dataKey === 'sblMedianAdjusted')?.value / 
+                   payload.find((p: any) => p.dataKey === 'caMedian')?.value) * 100 * 10) / 10
                 ).toFixed(1)}%
               </p>
             )}
@@ -79,41 +79,40 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
     return null
   }
 
+  // 화면 크기에 따른 차트 높이
+  const chartHeight = typeof window !== 'undefined' && window.innerWidth < 768 ? 250 : 400
+  
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={chartHeight} minHeight={200}>
         <LineChart
           data={data}
-          margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
+          margin={{ top: 2, right: 5, left: 5, bottom: 10 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           
           <XAxis 
             dataKey="level" 
-            tick={{ fontSize: 12 }}
+            tick={{ fontSize: 10 }}
             axisLine={{ stroke: '#9ca3af' }}
+            padding={{ left: 20, right: 20 }}
           />
           
           <YAxis 
             domain={yAxisDomain}
             tickFormatter={(value) => `${(value / 10000).toFixed(0)}`}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 9 }}
             axisLine={{ stroke: '#9ca3af' }}
-            label={{ 
-              value: '연봉(만원)', 
-              angle: -90, 
-              position: 'insideLeft',
-              style: { fontSize: 11, fill: '#6b7280' }
-            }}
+            width={35}
           />
           
           <Tooltip content={<CustomTooltip />} />
           
           <Legend 
             verticalAlign="top" 
-            height={30}
+            height={20}
             iconType="line"
-            wrapperStyle={{ fontSize: '12px' }}
+            wrapperStyle={{ fontSize: '12px', paddingTop: '0px' }}
           />
           
           {/* SBL사 현재 중위수 (점선) */}

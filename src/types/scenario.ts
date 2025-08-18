@@ -8,9 +8,11 @@ export interface Scenario {
     meritRate: number
     levelRates: Record<string, { baseUp: number; merit: number }>
     totalBudget?: number // 총예산 (원 단위)
+    usedBudget?: number // 사용예산 (원 단위)
     
     // 예산활용내역 상세
     promotionBudgets?: {
+      lv1: number
       lv2: number
       lv3: number
       lv4: number
@@ -32,6 +34,30 @@ export interface Scenario {
       advancement: number
       additional: number
     }>
+    
+    // Pay Band 페이지 데이터
+    bandAdjustments?: {
+      [bandName: string]: {
+        baseUpAdjustment: number
+        meritAdjustment: number
+      }
+    }
+    
+    // 직원관리 페이지 데이터
+    employeeWeights?: {
+      [employeeId: string]: {
+        performanceRating: string
+        meritMultiplier: number
+      }
+    }
+    
+    // 평가등급별 가중치
+    performanceWeights?: {
+      ST: number
+      AT: number
+      OT: number
+      BT: number
+    }
   }
 }
 

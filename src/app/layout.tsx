@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { Navigation } from '@/components/Navigation'
+import { Navigation } from '@/components/navigation'
+import { WageProvider } from '@/context/WageContext'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -19,8 +20,12 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="font-sans antialiased">
-        <Navigation />
-        {children}
+        <WageProvider>
+          <Navigation />
+          <main className="min-h-screen">
+            {children}
+          </main>
+        </WageProvider>
       </body>
     </html>
   )

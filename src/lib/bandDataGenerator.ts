@@ -12,6 +12,8 @@ export interface EmployeeRecord {
   position?: string           // 직책
   hireDate: string            // 입사일
   currentSalary: number       // 현재 연봉
+  performanceRating?: 'ST' | 'AT' | 'OT' | 'BT'  // 평가등급
+  company?: string            // 회사 (SBL, C사 등)
 }
 
 // 직군 정의
@@ -183,6 +185,12 @@ export function generateEmployeeData(totalCount: number = 4925): EmployeeRecord[
         hireDate.setMonth(Math.floor(Math.random() * 12))
         hireDate.setDate(Math.floor(Math.random() * 28) + 1)
         
+        // 평가등급 분포 생성 (S:10%, A:30%, B:50%, C:10%)
+        const performanceRand = Math.random()
+        const performanceRating = performanceRand < 0.1 ? 'ST' :
+                                  performanceRand < 0.4 ? 'AT' :
+                                  performanceRand < 0.9 ? 'OT' : 'BT'
+        
         const employee: EmployeeRecord = {
           employeeId: `EMP${String(employeeCounter).padStart(5, '0')}`,
           name: `직원${employeeCounter}`,
@@ -199,7 +207,8 @@ export function generateEmployeeData(totalCount: number = 4925): EmployeeRecord[
             levelInfo.minSalary,
             levelInfo.maxSalary,
             band.salaryMultiplier
-          )
+          ),
+          performanceRating
         }
         
         employees.push(employee)
@@ -251,7 +260,7 @@ export function calculateBandStatistics(employees: EmployeeRecord[]) {
 }
 
 // 백분위수 계산 헬퍼
-function calculatePercentile(values: number[], percentile: number): number {
+export function calculatePercentile(values: number[], percentile: number): number {
   if (values.length === 0) return 0
   
   const sorted = [...values].sort((a, b) => a - b)
@@ -277,20 +286,44 @@ export function convertToExcelFormat(employees: EmployeeRecord[]) {
     '직급': emp.level,
     '직책': emp.position || '',
     '입사일': emp.hireDate,
-    '현재연봉': emp.currentSalary
+    '현재연봉': emp.currentSalary,
+    '평가등급': emp.performanceRating || 'OT'
   }))
 }
 
 // 엑셀에서 읽은 데이터를 내부 형식으로 변환
 export function convertFromExcelFormat(excelData: any[]): EmployeeRecord[] {
-  return excelData.map(row => ({
-    employeeId: row['사번'] || '',
-    name: row['이름'] || '',
-    department: row['부서'] || '',
-    band: row['직군'] || '',
-    level: row['직급'] || '',
-    position: row['직책'] || undefined,
-    hireDate: row['입사일'] || '',
-    currentSalary: Number(row['현재연봉']) || 0
-  }))
+  // 첫 번째 행의 컬럼명 확인을 위한 디버깅
+  if (excelData.length > 0) {
+    console.log('Excel 데이터 첫 번째 행 컬럼:', Object.keys(excelData[0]))
+    console.log('Excel 데이터 샘플:', excelData[0])
+  }
+  
+  return excelData.map((row, index) => {
+    // 평가등급 데이터 체크 - 여러 가능한 컬럼명 확인
+    const rating = row['평가등급'] || row['평가'] || row['성과등급'] || row['성과'] || row['Performance'] || row['Rating']
+    if (index < 5) {
+      console.log(`직원 ${index + 1} 평가등급 매핑:`, {
+        '평가등급': row['평가등급'],
+        '평가': row['평가'],
+        '성과등급': row['성과등급'],
+        '성과': row['성과'],
+        'Performance': row['Performance'],
+        'Rating': row['Rating'],
+        '최종값': rating
+      })
+    }
+    
+    return {
+      employeeId: row['사번'] || '',
+      name: row['이름'] || '',
+      department: row['부서'] || '',
+      band: row['직군'] || '',
+      level: row['직급'] || '',
+      performanceRating: rating as 'ST' | 'AT' | 'OT' | 'BT' | undefined,
+      position: row['직책'] || undefined,
+      hireDate: row['입사일'] || '',
+      currentSalary: Number(row['현재연봉']) || 0
+    }
+  })
 }

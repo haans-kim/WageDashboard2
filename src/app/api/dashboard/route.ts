@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { getDashboardSummary } from '@/services/employeeDataService'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
@@ -20,26 +22,11 @@ export async function GET() {
     const levelStats = dashboardSummary.levelStatistics
     const totalEmployees = dashboardSummary.summary.totalEmployees
 
-    // 부서별 직원 분포 (임시 데이터 - Vercel 배포용)
-    const departmentStats = [
-      { department: '생산', _count: { id: 1478 } },
-      { department: '영업', _count: { id: 887 } },
-      { department: '생산기술', _count: { id: 690 } },
-      { department: '경영지원', _count: { id: 591 } },
-      { department: '품질보증', _count: { id: 443 } },
-      { department: '기획', _count: { id: 345 } },
-      { department: '구매&물류', _count: { id: 296 } },
-      { department: 'Facility', _count: { id: 197 } }
-    ]
+    // 부서별 직원 분포 (엑셀 데이터에서 계산)
+    const departmentStats = dashboardSummary.departmentDistribution || []
 
-    // 성과 등급별 분포 (임시 데이터 - Vercel 배포용)
-    const performanceStats = [
-      { performanceRating: 'S', _count: { id: 200 } },
-      { performanceRating: 'A', _count: { id: 1500 } },
-      { performanceRating: 'B', _count: { id: 2500 } },
-      { performanceRating: 'C', _count: { id: 700 } },
-      { performanceRating: 'D', _count: { id: 27 } }
-    ]
+    // 성과 등급별 분포 (엑셀 데이터에서 계산)
+    const performanceStats = dashboardSummary.performanceDistribution || []
 
     // 응답 데이터 구성
     const dashboardData = {
@@ -55,16 +42,16 @@ export async function GET() {
         totalBudget: budget.totalBudget.toString(),
         usedBudget: budget.usedBudget.toString(),
         remainingBudget: budget.remainingBudget.toString(),
-        usagePercentage: Math.round((budget.usedBudget / budget.totalBudget) * 100),
+        usagePercentage: Math.round((Number(budget.usedBudget) / Number(budget.totalBudget)) * 100),
       } : null,
       levelStatistics: levelStats.map((stat: any) => ({
         level: stat.level,
         employeeCount: stat.employeeCount,
         averageSalary: stat.averageSalary.toString(),
         totalSalary: stat.totalSalary.toString(),
-        avgBaseUpPercentage: 3.2,
-        avgMeritPercentage: 2.5,
-        totalIncreasePercentage: 5.7,
+        avgBaseUpPercentage: aiRecommendation?.baseUpPercentage || 0,
+        avgMeritPercentage: aiRecommendation?.meritIncreasePercentage || 0,
+        totalIncreasePercentage: aiRecommendation?.totalPercentage || 0,
       })),
       departmentDistribution: departmentStats.map(dept => ({
         department: dept.department,
@@ -75,6 +62,7 @@ export async function GET() {
         count: perf._count.id,
       })),
       industryComparison: dashboardSummary.industryComparison,
+      competitorData: dashboardSummary.competitorData,  // C사 데이터 추가
     }
 
     return NextResponse.json(dashboardData)

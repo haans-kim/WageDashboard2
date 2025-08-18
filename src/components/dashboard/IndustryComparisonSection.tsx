@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatPercentage } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LineChart, Line, ComposedChart, Scatter } from 'recharts'
 
@@ -8,62 +9,128 @@ interface IndustryComparisonSectionProps {
   meritRate?: number
   levelTotalRates?: {[key: string]: number}  // 직급별 총 인상률
   weightedAverageRate?: number  // 가중평균 인상률
+  levelStatistics?: Array<{  // 직급별 실제 데이터
+    level: string
+    employeeCount: number
+    averageSalary: string
+  }>
+  competitorData?: Array<{  // 새로운 형식: 직군×직급별 C사 데이터
+    company: string
+    band: string
+    level: string
+    averageSalary: number
+  }> | {  // 구 형식 (임시 지원)
+    averageIncrease?: number
+    levelSalaries?: {
+      'Lv.1'?: number
+      'Lv.2'?: number
+      'Lv.3'?: number
+      'Lv.4'?: number
+    }
+  } | null
+  competitorIncreaseRate?: number  // C사 인상률 (엑셀에서 읽어온 값)
 }
 
-export function IndustryComparisonSection({
-  baseUpRate = 3.2,
-  meritRate = 2.5,
+function IndustryComparisonSectionComponent({
+  baseUpRate = 0,
+  meritRate = 0,
   levelTotalRates = {
-    'Lv.1': 7.77,
-    'Lv.2': 8.43,
-    'Lv.3': 6.60,
-    'Lv.4': 6.80
+    'Lv.1': 0,
+    'Lv.2': 0,
+    'Lv.3': 0,
+    'Lv.4': 0
   },
-  weightedAverageRate = 7.2
+  weightedAverageRate = 0,
+  levelStatistics,
+  competitorData,
+  competitorIncreaseRate = 0
 }: IndustryComparisonSectionProps) {
   
-  // C사 데이터
-  const companyIncrease = baseUpRate + meritRate // 우리 회사
-  const cCompanyIncrease = 4.2 // C사 평균 인상률
+  // C사 데이터 (엑셀에서 가져온 데이터 사용)
+  const companyIncrease = Math.round((baseUpRate + meritRate) * 10) / 10 // 우리 회사 (소수점 1자리)
+  
+  // 디버그: C사 데이터 확인
+  console.log('IndustryComparisonSection - C사 데이터 디버그:', {
+    competitorData,
+    competitorIncreaseRate,
+    isArray: Array.isArray(competitorData),
+    dataLength: Array.isArray(competitorData) ? competitorData.length : 0
+  })
+  
+  // C사 평균 인상률 (엑셀에서 읽어온 값 우선 사용)
+  let cCompanyIncrease = competitorIncreaseRate // 엑셀에서 읽어온 C사 인상률
+  
+  // 엑셀에서 값이 없으면 구 형식 확인 (타입 가드 사용)
+  if (cCompanyIncrease === 0 && competitorData && !Array.isArray(competitorData) && competitorData.averageIncrease) {
+    cCompanyIncrease = competitorData.averageIncrease
+  }
   
   // 동적 Y축 범위 계산
   const maxValue = Math.max(companyIncrease, cCompanyIncrease)
   const yAxisMax = Math.ceil(maxValue + 1) // 최대값보다 1 큰 정수로 설정
   const tickCount = yAxisMax + 1 // 0부터 yAxisMax까지의 눈금 개수
   
-  // 직급별 경쟁력 데이터 (직급별 조정된 인상률 사용) - Lv.1이 맨 왼쪽
+  // 직급별 우리 회사 실제 평균 급여 가져오기
+  const getOurCompanySalary = (level: string) => {
+    const levelData = levelStatistics?.find(l => l.level === level)
+    return levelData ? parseFloat(levelData.averageSalary) / 1000 : 0 // 천원 단위로 변환
+  }
+  
+  // 직급별 C사 급여 (엑셀에서 가져온 데이터 사용)
+  const getCCompanySalary = (level: string) => {
+    // competitorData가 배열 형식인 경우 (새로운 구조)
+    if (Array.isArray(competitorData)) {
+      // 모든 직군의 해당 직급 평균 계산
+      const levelSalaries = competitorData
+        .filter(c => c.level === level)
+        .map(c => c.averageSalary)
+      
+      if (levelSalaries.length > 0) {
+        const avgSalary = levelSalaries.reduce((sum, sal) => sum + sal, 0) / levelSalaries.length
+        return avgSalary / 1000 // 천원 단위로 변환
+      }
+    }
+    // 구 형식 지원 (나중에 제거 예정)
+    else if (competitorData?.levelSalaries) {
+      return competitorData.levelSalaries[level as keyof typeof competitorData.levelSalaries] || 0
+    }
+    
+    return 0
+  }
+  
+  // 직급별 경쟁력 데이터 (실제 데이터 기반) - Lv.1이 맨 왼쪽
   const competitivenessData = [
     {
       level: 'Lv.1',
-      cCompany: 56000, // C사 평균 (천원)
-      ourCompany: 51977.513, // SBL (천원)
-      competitiveness: 93, // 보상경쟁력%
-      ourCompanyToBe: 51977.513 * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100), // 조정된 인상률로 계산
-      competitivenessToBe: Math.round((51977.513 * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100)) / 56000 * 100) // 인상 후 경쟁력
+      cCompany: getCCompanySalary('Lv.1'), // C사 평균 (천원)
+      ourCompany: getOurCompanySalary('Lv.1'), // 실제 평균 급여 (천원)
+      competitiveness: Math.round((getOurCompanySalary('Lv.1') / getCCompanySalary('Lv.1')) * 100), // 보상경쟁력%
+      ourCompanyToBe: getOurCompanySalary('Lv.1') * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100), // 조정된 인상률로 계산
+      competitivenessToBe: Math.round((getOurCompanySalary('Lv.1') * (1 + (levelTotalRates['Lv.1'] || companyIncrease) / 100)) / getCCompanySalary('Lv.1') * 100) // 인상 후 경쟁력
     },
     {
       level: 'Lv.2',
-      cCompany: 70000,
-      ourCompany: 67376.032,
-      competitiveness: 96,
-      ourCompanyToBe: 67376.032 * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100),
-      competitivenessToBe: Math.round((67376.032 * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100)) / 70000 * 100)
+      cCompany: getCCompanySalary('Lv.2'),
+      ourCompany: getOurCompanySalary('Lv.2'),
+      competitiveness: Math.round((getOurCompanySalary('Lv.2') / getCCompanySalary('Lv.2')) * 100),
+      ourCompanyToBe: getOurCompanySalary('Lv.2') * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((getOurCompanySalary('Lv.2') * (1 + (levelTotalRates['Lv.2'] || companyIncrease) / 100)) / getCCompanySalary('Lv.2') * 100)
     },
     {
       level: 'Lv.3',
-      cCompany: 80000,
-      ourCompany: 87599.520,
-      competitiveness: 109,
-      ourCompanyToBe: 87599.520 * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100),
-      competitivenessToBe: Math.round((87599.520 * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100)) / 80000 * 100)
+      cCompany: getCCompanySalary('Lv.3'),
+      ourCompany: getOurCompanySalary('Lv.3'),
+      competitiveness: Math.round((getOurCompanySalary('Lv.3') / getCCompanySalary('Lv.3')) * 100),
+      ourCompanyToBe: getOurCompanySalary('Lv.3') * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((getOurCompanySalary('Lv.3') * (1 + (levelTotalRates['Lv.3'] || companyIncrease) / 100)) / getCCompanySalary('Lv.3') * 100)
     },
     {
       level: 'Lv.4',
-      cCompany: 100000,
-      ourCompany: 108469.574,
-      competitiveness: 108,
-      ourCompanyToBe: 108469.574 * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100),
-      competitivenessToBe: Math.round((108469.574 * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100)) / 100000 * 100)
+      cCompany: getCCompanySalary('Lv.4'),
+      ourCompany: getOurCompanySalary('Lv.4'),
+      competitiveness: Math.round((getOurCompanySalary('Lv.4') / getCCompanySalary('Lv.4')) * 100),
+      ourCompanyToBe: getOurCompanySalary('Lv.4') * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100),
+      competitivenessToBe: Math.round((getOurCompanySalary('Lv.4') * (1 + (levelTotalRates['Lv.4'] || companyIncrease) / 100)) / getCCompanySalary('Lv.4') * 100)
     }
   ]
   
@@ -72,7 +139,7 @@ export function IndustryComparisonSection({
     {
       name: '우리 회사',
       value: companyIncrease,
-      adjustedValue: weightedAverageRate,
+      adjustedValue: Math.round(weightedAverageRate * 10) / 10,
       color: '#3B82F6'
     },
     {
@@ -121,14 +188,14 @@ export function IndustryComparisonSection({
   
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-xl font-bold mb-3">동종업계 대비 비교</h2>
+      <h2 className="text-xl font-bold mb-3">C사 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="bg-blue-50 rounded-lg p-3 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(AI제안)</p>
           <p className="text-3xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
-          <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + Merit {formatPercentage(meritRate)}</p>
+          <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + 성과 인상률 {formatPercentage(meritRate)}</p>
         </div>
         <div className="bg-purple-50 rounded-lg p-3 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(조정)</p>
@@ -136,9 +203,9 @@ export function IndustryComparisonSection({
           <p className="text-sm text-gray-600">직급별 가중평균</p>
         </div>
         <div className="bg-green-50 rounded-lg p-3 text-center">
-          <p className="text-base text-gray-700 font-medium">C사 평균</p>
+          <p className="text-base text-gray-700 font-medium">C사</p>
           <p className="text-3xl font-bold text-green-600">{formatPercentage(cCompanyIncrease)}</p>
-          <p className="text-sm text-gray-600">동종업계 기준</p>
+          <p className="text-sm text-gray-600">경쟁사 인상률</p>
         </div>
       </div>
       
@@ -164,16 +231,6 @@ export function IndustryComparisonSection({
                 width={30}
                 type="number"
               />
-              <Tooltip 
-                formatter={(value: number) => [`${value}%`, '인상률']}
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #d1d5db', 
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}
-              />
               <Bar 
                 dataKey="value" 
                 radius={[6, 6, 0, 0]} 
@@ -181,7 +238,7 @@ export function IndustryComparisonSection({
                   position: 'top', 
                   fontSize: 12, 
                   fontWeight: 'bold',
-                  formatter: (value: number) => `${value}%` 
+                  formatter: (value: any) => `${Math.round(value * 10) / 10}%` 
                 }}
               >
                 {increaseComparisonData.map((entry, index) => (
@@ -194,7 +251,7 @@ export function IndustryComparisonSection({
                 fill="#9333EA"
                 shape={(props: any) => {
                   const { cx, cy, payload } = props
-                  if (payload.adjustedValue === null) return null
+                  if (payload.adjustedValue === null) return <g />
                   return (
                     <g>
                       <circle 
@@ -213,7 +270,7 @@ export function IndustryComparisonSection({
                         fontWeight="bold" 
                         textAnchor="middle"
                       >
-                        조정: {payload.adjustedValue.toFixed(1)}%
+                        조정: {Math.round(payload.adjustedValue * 10) / 10}%
                       </text>
                     </g>
                   )
@@ -373,3 +430,5 @@ export function IndustryComparisonSection({
     </div>
   )
 }
+
+export const IndustryComparisonSection = React.memo(IndustryComparisonSectionComponent)

@@ -211,7 +211,7 @@ export default function EmployeeDetailPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Merit increase (%)
+                  성과 인상률 (%)
                 </label>
                 <input
                   type="number"

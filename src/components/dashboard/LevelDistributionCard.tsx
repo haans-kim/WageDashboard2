@@ -37,7 +37,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
       </h2>
       <div className="space-y-4">
         {data.map((level) => {
-          const percentage = totalEmployees > 0 ? (level.employeeCount / totalEmployees) * 100 : 0
+          const percentage = totalEmployees > 0 ? Math.round((level.employeeCount / totalEmployees) * 100 * 10) / 10 : 0
           const colorClass = levelColors[level.level as keyof typeof levelColors] || 'bg-gray-100 text-gray-700'
           
           // 개별 레벨 값이 있으면 사용, 없으면 전체 값, 그것도 없으면 원래 값 사용
@@ -94,7 +94,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                     </div>
                     <div>
                       <div className="flex justify-between items-center">
-                        <p className="text-xs font-medium text-gray-700">Merit</p>
+                        <p className="text-xs font-medium text-gray-700">성과 인상률</p>
                         <p className="text-xs font-bold text-gray-900">{formatPercentage(displayMerit)}</p>
                       </div>
                       <input
@@ -122,7 +122,7 @@ export function LevelDistributionCard({ data, baseUpRate, meritRate, levelRates,
                     </p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-gray-800 font-medium">Merit</p>
+                    <p className="text-gray-800 font-medium">성과 인상률</p>
                     <p className={`font-bold text-base ${isSimulated ? 'text-gray-900' : 'text-gray-900'}`}>
                       {formatPercentage(displayMerit)}
                     </p>

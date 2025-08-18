@@ -1,13 +1,16 @@
 {
   "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "devCommand": "next dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["icn1"],
   "functions": {
-    "app/api/[...route]/route.ts": {
-      "maxDuration": 30
+    "app/api/upload/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/simulation/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/*/route.ts": {
+      "maxDuration": 5
     }
   }
 }

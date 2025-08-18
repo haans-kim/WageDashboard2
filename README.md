@@ -1,110 +1,226 @@
 # 인건비 대시보드 (Wage Dashboard)
 
-실시간 인상률 조정 및 인건비 배분 최적화를 위한 대시보드 애플리케이션
+실시간 급여 관리 및 인상률 시뮬레이션 웹 애플리케이션
 
-## 🚀 Vercel 배포 가이드
+## 개요
 
-### 방법 1: Vercel CLI 사용 (추천)
+인건비 대시보드는 조직의 급여 데이터를 체계적으로 관리하고 인상률 시나리오를 시뮬레이션할 수 있는 웹 기반 도구입니다. Excel 데이터를 기반으로 실시간 분석과 의사결정을 지원합니다.
 
-1. **Vercel CLI 설치**
-```bash
-npm i -g vercel
-```
+## 주요 기능
 
-2. **Vercel 로그인**
-```bash
-vercel login
-```
+### 대시보드
+- AI 기반 인상률 추천 시스템
+- 예산 사용 현황 실시간 모니터링
+- 직급별 차등 인상률 적용
+- 경쟁사 대비 보상 수준 비교 분석
 
-3. **프로젝트 배포**
-```bash
-vercel
-```
+### Pay Band 분석
+- 8개 직군별 급여 현황 분석
+- 직군×직급 매트릭스 시각화
+- 경쟁사 대비 포지셔닝 분석
+- 급여 편차 및 분포 차트
 
-첫 배포 시 프로젝트 설정을 물어봅니다:
-- Set up and deploy? **Y**
-- Which scope? **개인 계정 선택**
-- Link to existing project? **N** (새 프로젝트)
-- Project name? **wage-dashboard** (또는 원하는 이름)
-- In which directory is your code? **./** (현재 디렉토리)
-- Want to modify settings? **N**
+### 직원 관리
+- 대규모 직원 데이터 관리
+- 실시간 검색 및 필터링
+- 성과 등급별 가중치 적용
+- Excel 내보내기 기능
 
-### 방법 2: GitHub 연동 (자동 배포)
+### 시뮬레이션
+- 다중 시나리오 생성 및 비교
+- What-if 분석
+- 시나리오별 예산 영향도 분석
 
-1. GitHub에 코드 푸시
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/wage-dashboard.git
-git push -u origin main
-```
+## 시작하기
 
-2. [Vercel 대시보드](https://vercel.com/new) 접속
-3. "Import Git Repository" 클릭
-4. GitHub 저장소 선택
-5. 환경 변수 설정 (아래 참고)
-6. "Deploy" 클릭
+### 요구사항
+- Node.js 18.0+
+- npm 8.0+
+- 모던 브라우저 (Chrome 90+, Edge 90+, Safari 14+, Firefox 88+)
 
-### 🔐 환경 변수 설정
-
-Vercel 대시보드에서 다음 환경 변수를 설정하세요:
-
-```
-DATABASE_URL=file:./dev.db
-```
-
-### 📁 프로젝트 구조
-
-```
-WageDashboard/
-├── src/
-│   ├── app/           # Next.js 앱 라우터 페이지
-│   ├── components/    # React 컴포넌트
-│   ├── hooks/         # 커스텀 React 훅
-│   ├── lib/           # 유틸리티 함수
-│   └── types/         # TypeScript 타입 정의
-├── prisma/            # 데이터베이스 스키마
-├── public/            # 정적 파일
-└── vercel.json        # Vercel 배포 설정
-```
-
-### 🛠️ 로컬 개발
+### 설치
 
 ```bash
+# 저장소 클론
+git clone https://github.com/Yarnoo-git/WageDashboard_YW.git
+cd WageDashboard2
+
 # 의존성 설치
 npm install
-
-# 데이터베이스 설정
-npm run db:generate
-npm run db:push
-npm run db:seed
 
 # 개발 서버 실행
 npm run dev
 ```
 
-### 📱 주요 기능
+개발 서버는 `http://localhost:3000`에서 실행됩니다.
 
-- **AI 기반 인상률 추천**: Base-up과 Merit 인상률 자동 계산
-- **시나리오 관리**: 다양한 인상 시나리오 저장 및 비교
-- **정액 인상 권장 범위**: 커스터마이징 가능한 인상 범위 설정
-- **실시간 예산 추적**: 예산 사용률 및 활용도 모니터링
-- **직급별 분석**: 직급별 인상률 개별 조정 가능
-- **고급 분석**: 직급별, 부서별 상세 분석 차트
+### 프로덕션 빌드
 
-### 🔗 배포 후 확인사항
+```bash
+# 빌드
+npm run build
 
-1. **데이터베이스 초기화**: 첫 배포 후 `/api/health` 엔드포인트로 DB 상태 확인
-2. **시드 데이터**: 필요시 Vercel 함수를 통해 시드 데이터 추가
-3. **성능 모니터링**: Vercel Analytics 활용
+# 프로덕션 실행
+npm run start
+```
 
-### 📝 추가 설정 (선택사항)
+## 데이터 구조
 
-- **커스텀 도메인**: Vercel 대시보드에서 도메인 추가
-- **환경별 설정**: Production/Preview 환경별 환경 변수 설정
-- **팀 협업**: Vercel 팀 계정으로 협업 관리
+### Excel 파일 형식
 
----
+애플리케이션은 다음 시트를 포함한 Excel 파일(.xlsx)을 요구합니다:
 
-배포 관련 문의사항이 있으시면 Issue를 생성해주세요!
+#### 직원기본정보
+필수 컬럼:
+- `사번`: 직원 고유 식별자
+- `이름`: 직원명
+- `부서`: 소속 부서
+- `직군`: 8개 직군 중 하나 (생산, 영업, 생산기술, 경영지원, 품질보증, 기획, 구매&물류, Facility)
+- `직급`: Lv.1 ~ Lv.4
+- `직책`: 직책명
+- `입사일`: YYYY-MM-DD 형식
+- `현재연봉`: 원 단위 숫자
+- `평가등급`: S/A/B/C
+
+#### C사데이터
+경쟁사 직군×직급별 평균 급여 데이터 (천원 단위)
+
+#### AI설정
+AI 추천 인상률 설정값
+
+#### C사인상률
+경쟁사 평균 인상률 정보
+
+## 기술 스택
+
+### Frontend
+- **Framework**: Next.js 14.2 (App Router)
+- **Language**: TypeScript 5
+- **Styling**: TailwindCSS 3.4
+- **Charts**: Recharts 3.1
+
+### Data Management
+- **Storage**: IndexedDB (클라이언트 사이드)
+- **State**: React Context API
+- **Excel Processing**: xlsx 라이브러리
+
+### Development
+- **Package Manager**: npm
+- **Linter**: ESLint
+- **Formatter**: Prettier
+- **Testing**: Jest + React Testing Library
+
+## 프로젝트 구조
+
+```
+src/
+├── app/              # Next.js App Router 페이지
+│   ├── api/         # API 라우트
+│   ├── dashboard/   # 대시보드 페이지
+│   ├── bands/       # Pay Band 분석
+│   ├── employees/   # 직원 관리
+│   └── simulation/  # 시뮬레이션
+├── components/      # React 컴포넌트
+├── context/         # 전역 상태 관리
+├── hooks/          # 커스텀 훅
+├── lib/            # 유틸리티 함수
+├── services/       # 데이터 서비스 레이어
+├── types/          # TypeScript 타입 정의
+└── utils/          # 헬퍼 함수
+```
+
+## API 엔드포인트
+
+### 데이터 관리
+- `GET /api/employees` - 직원 목록 조회
+- `GET /api/dashboard` - 대시보드 데이터
+- `POST /api/upload` - Excel 파일 업로드
+- `GET /api/bands` - Pay Band 데이터
+
+### 시나리오 관리
+- `GET /api/scenarios` - 시나리오 목록
+- `POST /api/scenarios` - 시나리오 저장
+- `DELETE /api/scenarios/:id` - 시나리오 삭제
+
+## 성과 가중치
+
+| 등급 | 가중치 | 설명 |
+|------|--------|------|
+| S | 1.5 | 최우수 |
+| A | 1.2 | 우수 |
+| B | 1.0 | 보통 |
+| C | 0.8 | 개선필요 |
+
+## 환경 변수
+
+```bash
+# .env.local
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+## 배포
+
+### Vercel (권장)
+프로젝트는 Vercel 자동 배포가 설정되어 있습니다. main 브랜치에 push하면 자동으로 배포됩니다.
+
+### Docker
+```bash
+docker build -t wage-dashboard .
+docker run -p 3000:3000 wage-dashboard
+```
+
+## 트러블슈팅
+
+### Excel 업로드 실패
+- 파일 형식이 .xlsx인지 확인
+- 필수 시트가 모두 포함되었는지 확인
+- 컬럼명이 정확히 일치하는지 확인
+
+### 빌드 에러
+```bash
+# 캐시 삭제 후 재빌드
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+### 메모리 부족
+```bash
+# Node.js 메모리 증가
+export NODE_OPTIONS="--max-old-space-size=4096"
+npm run build
+```
+
+## 성능 최적화
+
+- 대용량 데이터는 가상화(virtualization) 적용
+- 이미지 최적화 및 lazy loading
+- 코드 스플리팅 자동 적용
+- IndexedDB를 통한 클라이언트 캐싱
+
+## 보안
+
+- 모든 데이터는 클라이언트에만 저장
+- 서버로 민감한 데이터 전송 없음
+- Content Security Policy 적용
+- XSS 방지 처리
+
+## 버전 관리
+
+[Semantic Versioning](https://semver.org/)을 따릅니다.
+
+- v1.1.3 - README 개선 및 문서화
+- v1.1.2 - 타입 에러 수정
+- v1.1.1 - Vercel 빌드 이슈 해결
+- v1.1.0 - 시나리오 관리 기능 추가
+- v1.0.0 - 초기 릴리즈
+
+## 라이선스
+
+MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일 참조
+
+## 지원
+
+- Issues: [GitHub Issues](https://github.com/Yarnoo-git/WageDashboard_YW/issues)
+- Email: losica97@naver.com

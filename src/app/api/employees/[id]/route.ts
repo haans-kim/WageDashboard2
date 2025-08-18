@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getEmployeeData, updateEmployee as updateEmployeeData } from '@/services/employeeDataService'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const employee = await prisma.employee.findUnique({
-      where: { id: params.id },
-      include: {
-        salaryHistories: {
-          orderBy: { effectiveDate: 'desc' },
-          take: 10,
-        },
-        wageCalculations: {
-          orderBy: { calculationDate: 'desc' },
-          take: 5,
-        },
-      },
-    })
+    const employees = await getEmployeeData()
+    const employee = employees.find(emp => emp.employeeId === params.id)
 
     if (!employee) {
       return NextResponse.json(
@@ -28,28 +20,35 @@ export async function GET(
     }
 
     // 같은 직급의 평균 급여 계산
-    const levelAverage = await prisma.employee.aggregate({
-      where: { level: employee.level },
-      _avg: { currentSalary: true },
-    })
+    const levelEmployees = employees.filter(e => e.level === employee.level)
+    const levelAverage = levelEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / levelEmployees.length
 
     // 같은 부서의 평균 급여 계산
-    const departmentAverage = await prisma.employee.aggregate({
-      where: { department: employee.department },
-      _avg: { currentSalary: true },
-    })
+    const deptEmployees = employees.filter(e => e.department === employee.department)
+    const departmentAverage = deptEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / deptEmployees.length
 
-    return NextResponse.json({
-      employee,
-      comparisons: {
-        levelAverage: levelAverage._avg.currentSalary || 0,
-        departmentAverage: departmentAverage._avg.currentSalary || 0,
-      },
-    })
+    const employeeData = {
+      id: employee.employeeId,
+      employeeNumber: employee.employeeId,
+      name: employee.name,
+      department: employee.department,
+      level: employee.level,
+      currentSalary: employee.currentSalary,
+      hireDate: employee.hireDate,
+      performanceRating: employee.performanceRating || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      salaryHistories: [],
+      wageCalculations: [],
+      levelAverage: Math.round(levelAverage),
+      departmentAverage: Math.round(departmentAverage),
+    }
+
+    return NextResponse.json(employeeData)
   } catch (error) {
-    console.error('Employee API Error:', error)
+    console.error('Employee Detail API Error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch employee data' },
+      { error: 'Failed to fetch employee' },
       { status: 500 }
     )
   }
@@ -63,18 +62,32 @@ export async function PUT(
     const body = await request.json()
     const { currentSalary, performanceRating } = body
 
-    const employee = await prisma.employee.update({
-      where: { id: params.id },
-      data: {
-        currentSalary,
-        performanceRating,
-        updatedAt: new Date(),
-      },
+    const updatedEmployee = await updateEmployeeData(params.id, {
+      currentSalary: currentSalary || undefined,
+      performanceRating: performanceRating || undefined,
     })
 
-    return NextResponse.json(employee)
+    if (!updatedEmployee) {
+      return NextResponse.json(
+        { error: 'Employee not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({
+      id: updatedEmployee.employeeId,
+      employeeNumber: updatedEmployee.employeeId,
+      name: updatedEmployee.name,
+      department: updatedEmployee.department,
+      level: updatedEmployee.level,
+      currentSalary: updatedEmployee.currentSalary,
+      hireDate: updatedEmployee.hireDate,
+      performanceRating: updatedEmployee.performanceRating,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
   } catch (error) {
-    console.error('Employee Update Error:', error)
+    console.error('Employee Update API Error:', error)
     return NextResponse.json(
       { error: 'Failed to update employee' },
       { status: 500 }

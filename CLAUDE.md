@@ -6,50 +6,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Wage Dashboard (인건비 대시보드) project for displaying real-time salary metrics, compensation planning, and wage distribution analysis. The dashboard is designed to show Korean wage data with various visualizations and metrics.
 
-## Key Features Based on Requirements
+## Current Architecture
+
+### Technology Stack (실제 구현)
+- **Frontend Framework**: Next.js 14.2 (App Router)
+- **UI Library**: React 18.3 + TypeScript 5
+- **Styling**: TailwindCSS 3.4 with Pretendard font
+- **Charts**: Recharts 3.1
+- **Data Storage**: Client-side only (IndexedDB + localStorage)
+- **File Processing**: xlsx for Excel, jsPDF for PDF export
+- **Testing**: Jest + React Testing Library
+
+### Data Flow Architecture
+1. **Client-Side First**: All data processing happens in the browser
+2. **No Database**: Uses IndexedDB for persistent storage
+3. **Excel-Based**: Primary data source is Excel file upload
+4. **Server-Less**: Minimal API routes, mainly for data transformation
+
+## Key Features (현재 구현 상태)
 
 1. **AI-Based Wage Planning** (AI 제안 적정 인상률)
-   - Base-up percentage: 3.2%
-   - Merit increase percentage: 2.5%
-   - Total wage increase: 5.7% (Range: 5.7%~5.9%)
+   - Base-up/Merit percentages loaded from Excel
+   - Default values: 0% (changed from hardcoded 3.2%/2.5%)
+   - Dynamic calculation based on uploaded data
 
-2. **Wage Forecast Analysis** (인상 재원 예산 현황)
-   - Total budget: 319억 원
-   - Base salary: 189억 원
-   - Breakdown by employee categories (171명, 43명, 39명)
-   - Percentage allocations (79%, 54%, 13%, 12%)
+2. **Budget Management** (예산 관리)
+   - Total budget from Excel data
+   - Default: 0원 (changed from hardcoded 300억원)
+   - Indirect costs: 17.8% (retirement 4.5% + insurance 11.3% + pension 2.0%)
 
-3. **Performance-Based Compensation** (정액 인상 권장 범위)
-   - Maximum: 98만 원/연
-   - Average: 100만 원/연
-   - Minimum: 120만 원/연
+3. **Performance Weights** (평가 가중치)
+   - S: 1.5, A: 1.2, B: 1.0, C: 0.8 (필수 유지)
+   - Applied to merit increase calculations
 
-4. **Employee Level Distribution** (직급별 분석)
-   - Level 1-4 with different wage increase percentages
-   - Base-up and Merit increase calculations
-   - Total compensation tracking
-
-## Recommended Technology Stack
-
-Since no code exists yet, here are recommended approaches for building this dashboard:
-
-### Frontend Options
-1. **React + TypeScript** with Material-UI or Ant Design for Korean UI support
-2. **Next.js** for server-side rendering and better SEO
-3. **Vue.js** with Vuetify for rapid development
-
-### Backend
-- **Next.js API Routes** for server-side functionality
-- **Prisma ORM** for database operations
-
-### Database
-- **SQLite** for standalone application with embedded database
-- Simple deployment without external database server
-
-### Visualization Libraries
-- Chart.js or Recharts for React
-- D3.js for custom visualizations
-- Apache ECharts for comprehensive charting
+4. **Data Sources**
+   - Employee data from Excel
+   - Competitor (C사) data from Excel
+   - All calculations done client-side
 
 ## Development Setup Commands
 
@@ -57,45 +50,133 @@ Since no code exists yet, here are recommended approaches for building this dash
 # Install dependencies
 npm install
 
-# Database setup
-npm run db:generate  # Generate Prisma client
-npm run db:push      # Create/update database schema
-npm run db:seed      # Seed initial data
-
 # Development
 npm run dev          # Start development server (http://localhost:3000)
 
-# Build
+# Build & Production
 npm run build        # Build for production
 npm run start        # Start production server
+
+# Testing
+npm run test         # Run tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage
+
+# Excel Generation (for testing)
+npm run generate:excel      # Generate dummy Excel file
+npm run generate:test-excel # Generate test Excel file
 ```
 
-## Data Structure Considerations
+## Project Structure
 
-The dashboard will need to handle:
-- Employee hierarchy (Levels 1-4)
-- Wage components (Base salary, Merit increase, Total compensation)
-- Department/division data
-- Historical wage data for trend analysis
-- Budget allocation and forecasting
+```
+/src
+├── /app              # Next.js App Router pages
+│   ├── /api         # API routes (minimal usage)
+│   ├── /dashboard   # Main dashboard page
+│   ├── /bands       # Pay band analysis
+│   ├── /employees   # Employee management
+│   └── /simulation  # Wage simulation
+├── /components      # React components
+│   ├── /dashboard   # Dashboard-specific components
+│   ├── /band        # Pay band components
+│   └── /charts      # Chart components
+├── /context         # React Context (WageContext)
+├── /hooks           # Custom hooks
+├── /lib             # Utility functions
+│   └── clientStorage.ts # IndexedDB management
+├── /services        # Data services
+│   └── employeeDataService.ts # Excel data processing
+└── /utils           # Calculation utilities
+```
+
+## Data Flow
+
+1. **Excel Upload** → `useClientExcelData` hook
+2. **IndexedDB Storage** → `clientStorage.ts`
+3. **Context Distribution** → `WageContext`
+4. **Component Rendering** → Dashboard/Bands/Employees pages
+5. **Export** → PDF/Excel generation
+
+## Important Implementation Notes
+
+- **No Server Database**: All data stored in browser (IndexedDB)
+- **Excel as Primary Source**: All data comes from Excel upload
+- **Dynamic Calculations**: All values calculated from Excel data
+- **Zero Defaults**: Most values default to 0 until Excel is uploaded
+- **Client-Side Processing**: Heavy calculations done in browser
 
 ## Korean Language Support
 
-- Ensure proper UTF-8 encoding throughout the application
-- Use Korean-friendly fonts (Noto Sans KR, Spoqa Han Sans)
-- Implement proper number formatting for Korean currency (원)
-- Consider right-to-left text alignment for numbers in tables
+- UTF-8 encoding throughout
+- Pretendard font for Korean text
+- Number formatting: `toLocaleString('ko-KR')`
+- Currency: 원, 만원, 억원 units
 
-## Security Considerations
+## Current Limitations & Known Issues
 
-- Implement role-based access control for sensitive wage data
-- Encrypt salary information in transit and at rest
-- Add audit logging for all data access
-- Use environment variables for configuration
+1. **No Pagination**: All 4,925+ employees render at once (performance issue)
+2. **No Error Boundaries**: Missing global error handling
+3. **Test Coverage**: Some tests still reference removed Prisma mocks
+4. **Hardcoded Values**: Some indirect cost rates (17.8%) still hardcoded
 
-## Performance Requirements
+## Environment Variables (Optional)
 
-- Dashboard should load within 2 seconds
-- Real-time calculations should update within 500ms
-- Support concurrent users viewing different department data
-- Implement data pagination for large employee lists
+```bash
+# .env.local (example)
+NEXT_PUBLIC_BASE_UP_PERCENTAGE=0
+NEXT_PUBLIC_MERIT_INCREASE_PERCENTAGE=0
+NEXT_PUBLIC_TOTAL_BUDGET=0
+NEXT_PUBLIC_TOTAL_EMPLOYEES=0
+```
+
+Note: Currently not implemented, values are loaded from Excel
+
+## Pages Overview
+
+### 1. Home (`/home`)
+- Excel file upload interface
+- Stored data management
+- Entry point to dashboard
+
+### 2. Dashboard (`/dashboard`)
+- AI recommendation display
+- Budget status monitoring
+- Level-wise salary adjustment
+- Industry comparison
+
+### 3. Pay Bands (`/bands`)
+- 8 bands (생산, 영업, 생산기술, 경영지원, 품질보증, 기획, 구매&물류, Facility)
+- Band×Level matrix analysis
+- Competitiveness index (SBL/CA)
+- Market positioning
+
+### 4. Employees (`/employees`)
+- Employee list with filters
+- Individual salary calculations
+- Performance weight management
+- Export functionality
+
+### 5. Simulation (`/simulation`)
+- What-if analysis
+- Scenario comparison
+- Independent mode for testing
+
+## Key Algorithms
+
+### Merit Calculation
+```typescript
+merit = baseSalary * meritRate * performanceWeight[rating]
+```
+
+### Budget Calculation
+```typescript
+directCost = totalSalary * (baseUp + merit) / 100
+indirectCost = directCost * 0.178
+totalBudget = directCost + indirectCost
+```
+
+### Competitiveness Index
+```typescript
+competitiveness = (ourAvgSalary / competitorAvgSalary) * 100
+```

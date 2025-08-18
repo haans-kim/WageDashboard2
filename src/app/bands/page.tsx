@@ -1,12 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { PayBandCard } from '@/components/band/PayBandCard'
-import { ExcelUploadButton } from '@/components/ExcelUploadButton'
 import { SimpleExportButton } from '@/components/ExportButton'
+import { ScenarioManager } from '@/components/ScenarioManager'
+import { PayBandCompetitivenessHeatmap } from '@/components/analytics/PayBandCompetitivenessHeatmap'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
+import { useMetadata } from '@/hooks/useMetadata'
+import { useBandData } from '@/hooks/useBandData'
 import { BandName } from '@/types/band'
+import { RateInfoCard } from '@/components/common/RateInfoCard'
+import { useWageContext } from '@/context/WageContext'
+import { loadExcelData } from '@/lib/clientStorage'
 
 interface BandData {
   id: string
@@ -43,22 +49,72 @@ interface BandData {
   }>
 }
 
-export default function BandDashboard() {
+function BandDashboardContent() {
   const searchParams = useSearchParams()
+  const { bands: availableBands, loading: metadataLoading } = useMetadata()
+  const { bands: bandsFromHook, loading: bandsLoading } = useBandData()
+  const { 
+    baseUpRate: contextBaseUp, 
+    meritRate: contextMerit, 
+    levelRates,
+    scenarios,
+    activeScenarioId,
+    saveScenario,
+    loadScenario,
+    deleteScenario,
+    renameScenario
+  } = useWageContext()
   const [bands, setBands] = useState<BandData[]>([])
   const [loading, setLoading] = useState(true)
   const [fiscalYear] = useState(2025)
   const [bandBudgetImpacts, setBandBudgetImpacts] = useState<{ [key: string]: number }>({})
   const [selectedBand, setSelectedBand] = useState<string | null>(null)
+  const [aiSettings, setAiSettings] = useState<any>(null)
   
-  // 메인 대시보드에서 전달받은 인상률
-  const initialBaseUp = parseFloat(searchParams.get('baseUp') || '3.2')
-  const initialMerit = parseFloat(searchParams.get('merit') || '2.5')
+  // 직군별 조정값 상태 관리 (경쟁력 분석용) - localStorage에서 초기값 로드
+  const [bandRates, setBandRates] = useState<Record<string, {
+    baseUpAdjustment?: number
+    meritAdjustment?: number
+    // 이전 버전 호환성을 위해 남겨둠
+    baseUpRate?: number
+    additionalRate?: number
+    meritMultipliers?: Record<string, number>
+  }>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bandRates')
+      return saved ? JSON.parse(saved) : {}
+    }
+    return {}
+  })
   
-  // 데이터 로드
+  // 엑셀 데이터에서 AI 설정 로드
   useEffect(() => {
-    fetchBandData()
+    async function loadAiSettings() {
+      const data = await loadExcelData()
+      if (data?.aiSettings) {
+        setAiSettings(data.aiSettings)
+      }
+    }
+    loadAiSettings()
+  }, [])
+  
+  // 인상률 우선순위: 1. WageContext (사용자가 조정한 값), 2. URL 파라미터, 3. AI 설정, 4. 기본값
+  const urlBaseUp = searchParams.get('baseUp') ? parseFloat(searchParams.get('baseUp')!) : null
+  const urlMerit = searchParams.get('merit') ? parseFloat(searchParams.get('merit')!) : null
+  const initialBaseUp = contextBaseUp || urlBaseUp || aiSettings?.baseUpPercentage || 3.2
+  const initialMerit = contextMerit || urlMerit || aiSettings?.meritIncreasePercentage || 2.5
+  
+  // fiscalYear 변경 시 처리 (현재는 사용하지 않음)
+  useEffect(() => {
+    // 클라이언트 데이터를 사용하므로 별도 fetch 불필요
   }, [fiscalYear])
+  
+  // bandRates가 변경될 때 localStorage에 저장
+  useEffect(() => {
+    if (typeof window !== 'undefined' && Object.keys(bandRates).length > 0) {
+      localStorage.setItem('bandRates', JSON.stringify(bandRates))
+    }
+  }, [bandRates])
   
   // 첫 번째 직군을 기본 선택 (전체가 기본)
   useEffect(() => {
@@ -67,53 +123,52 @@ export default function BandDashboard() {
     }
   }, [bands, selectedBand])
   
+  // 전체 직군의 추가 조정으로 인한 총 예산 영향 계산
+  const calculateTotalAdditionalImpact = () => {
+    const { bandAdjustments } = useWageContext()
+    
+    return bands.reduce((total, band) => {
+      const adjustment = bandAdjustments[band.name] || { baseUpAdjustment: 0, meritAdjustment: 0 }
+      const additionalRate = (adjustment.baseUpAdjustment + adjustment.meritAdjustment) / 100
+      
+      // 직군의 각 레벨별 영향 계산
+      const bandImpact = band.levels.reduce((bandTotal, level) => {
+        return bandTotal + (level.meanBasePay * additionalRate * level.headcount)
+      }, 0)
+      
+      return total + bandImpact
+    }, 0)
+  }
+  
   // 선택된 직군 데이터
   const selectedBandData = bands.find(band => band.id === selectedBand)
 
-  const fetchBandData = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/bands?fiscalYear=${fiscalYear}`)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const result = await response.json()
-      console.log('API Response:', result) // 디버깅용
-      
-      if (result.success && result.data) {
-        setBands(result.data.bands || [])
-      } else {
-        console.error('Invalid response format:', result)
-        setBands([])
-      }
-    } catch (error) {
-      console.error('Failed to fetch band data:', error)
-      setBands([])
-    } finally {
+  // 훅에서 가져온 데이터 사용
+  useEffect(() => {
+    if (!bandsLoading && bandsFromHook) {
+      setBands(bandsFromHook)
       setLoading(false)
     }
-  }
+  }, [bandsFromHook, bandsLoading])
 
 
   // 요약 계산 - 업데이트된 예산 영향 포함
   const summary = {
-    totalHeadcount: bands.reduce((sum, band) => sum + band.totalHeadcount, 0),
+    totalHeadcount: bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0),
     totalBudgetImpact: Object.keys(bandBudgetImpacts).length > 0 
       ? Object.values(bandBudgetImpacts).reduce((sum, impact) => sum + impact, 0)
-      : bands.reduce((sum, band) => sum + band.totalBudgetImpact, 0),
+      : bands.reduce((sum, band) => sum + (band?.totalBudgetImpact || 0), 0),
     avgBaseUpRate: bands.length > 0 
-      ? bands.reduce((sum, band) => sum + band.avgBaseUpRate * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgBaseUpRate || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0,
     avgSBLIndex: bands.length > 0
-      ? bands.reduce((sum, band) => sum + band.avgSBLIndex * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgSBLIndex || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0,
     avgCAIndex: bands.length > 0
-      ? bands.reduce((sum, band) => sum + band.avgCAIndex * band.totalHeadcount, 0) / 
-        bands.reduce((sum, band) => sum + band.totalHeadcount, 0)
+      ? bands.reduce((sum, band) => sum + (band?.avgCAIndex || 0) * (band?.totalHeadcount || 0), 0) / 
+        (bands.reduce((sum, band) => sum + (band?.totalHeadcount || 0), 0) || 1)
       : 0
   }
   
@@ -128,41 +183,41 @@ export default function BandDashboard() {
     totalBudgetImpact: summary.totalBudgetImpact,
     levels: ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
       const levelData = bands.flatMap(band => 
-        band.levels.filter(l => l.level === level)
-      )
+        band.levels ? band.levels.filter(l => l && l.level === level) : []
+      ).filter(l => l !== undefined && l !== null)
       
-      const totalHeadcount = levelData.reduce((sum, l) => sum + l.headcount, 0)
-      const totalBasePay = levelData.reduce((sum, l) => sum + l.meanBasePay * l.headcount, 0)
+      const totalHeadcount = levelData.reduce((sum, l) => sum + (l?.headcount || 0), 0)
+      const totalBasePay = levelData.reduce((sum, l) => sum + ((l?.meanBasePay || 0) * (l?.headcount || 0)), 0)
       
       return {
         level,
         headcount: totalHeadcount,
         meanBasePay: totalHeadcount > 0 ? totalBasePay / totalHeadcount : 0,
-        baseUpKRW: levelData.reduce((sum, l) => sum + l.baseUpKRW * l.headcount, 0) / (totalHeadcount || 1),
-        baseUpRate: levelData.reduce((sum, l) => sum + l.baseUpRate * l.headcount, 0) / (totalHeadcount || 1),
-        sblIndex: levelData.reduce((sum, l) => sum + l.sblIndex * l.headcount, 0) / (totalHeadcount || 1),
-        caIndex: levelData.reduce((sum, l) => sum + l.caIndex * l.headcount, 0) / (totalHeadcount || 1),
-        competitiveness: levelData.reduce((sum, l) => sum + l.competitiveness * l.headcount, 0) / (totalHeadcount || 1),
+        baseUpKRW: levelData.reduce((sum, l) => sum + (l?.baseUpKRW || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        baseUpRate: levelData.reduce((sum, l) => sum + (l?.baseUpRate || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        sblIndex: levelData.reduce((sum, l) => sum + (l?.sblIndex || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        caIndex: levelData.reduce((sum, l) => sum + (l?.caIndex || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+        competitiveness: levelData.reduce((sum, l) => sum + (l?.competitiveness || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
         market: {
-          min: Math.min(...levelData.map(l => l.market.min)),
-          q1: levelData.reduce((sum, l) => sum + l.market.q1 * l.headcount, 0) / (totalHeadcount || 1),
-          median: levelData.reduce((sum, l) => sum + l.market.median * l.headcount, 0) / (totalHeadcount || 1),
-          q3: levelData.reduce((sum, l) => sum + l.market.q3 * l.headcount, 0) / (totalHeadcount || 1),
-          max: Math.max(...levelData.map(l => l.market.max))
+          min: levelData.length > 0 ? Math.min(...levelData.map(l => l?.market?.min || 0)) : 0,
+          q1: levelData.reduce((sum, l) => sum + (l?.market?.q1 || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          median: levelData.reduce((sum, l) => sum + (l?.market?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          q3: levelData.reduce((sum, l) => sum + (l?.market?.q3 || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          max: levelData.length > 0 ? Math.max(...levelData.map(l => l?.market?.max || 0)) : 0
         },
         company: {
-          median: levelData.reduce((sum, l) => sum + l.company.median * l.headcount, 0) / (totalHeadcount || 1),
-          mean: levelData.reduce((sum, l) => sum + l.company.mean * l.headcount, 0) / (totalHeadcount || 1),
-          values: levelData.flatMap(l => l.company.values)
+          median: levelData.reduce((sum, l) => sum + (l?.company?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          mean: levelData.reduce((sum, l) => sum + (l?.company?.mean || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1),
+          values: levelData.flatMap(l => l?.company?.values || [])
         },
         competitor: {
-          median: levelData.reduce((sum, l) => sum + l.competitor.median * l.headcount, 0) / (totalHeadcount || 1)
+          median: levelData.reduce((sum, l) => sum + (l?.competitor?.median || 0) * (l?.headcount || 0), 0) / (totalHeadcount || 1)
         }
       }
     })
   }
 
-  if (loading) {
+  if (loading || metadataLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
@@ -179,10 +234,13 @@ export default function BandDashboard() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center h-12 gap-2">
-            <ExcelUploadButton 
-              onUploadSuccess={() => {
-                fetchBandData()
-              }}
+            <ScenarioManager
+              scenarios={scenarios}
+              activeScenarioId={activeScenarioId}
+              onSave={saveScenario}
+              onLoad={loadScenario}
+              onDelete={deleteScenario}
+              onRename={renameScenario}
               isNavigation={true}
             />
             <SimpleExportButton 
@@ -192,68 +250,42 @@ export default function BandDashboard() {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6">
 
-        {/* 상단 요약 패널 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="grid grid-cols-5 gap-6">
-            <div>
-              <p className="text-base text-gray-600">회계연도</p>
-              <p className="text-3xl font-bold text-gray-900">{fiscalYear}</p>
-            </div>
-            <div>
-              <p className="text-base text-gray-600">총 인원</p>
-              <p className="text-3xl font-bold text-gray-900">{summary.totalHeadcount.toLocaleString()}명</p>
-            </div>
-            <div>
-              <p className="text-base text-gray-600">기본 Base-up</p>
-              <p className="text-3xl font-bold text-primary-600">{initialBaseUp}%</p>
-              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
-            </div>
-            <div>
-              <p className="text-base text-gray-600">기본 Merit</p>
-              <p className="text-3xl font-bold text-blue-600">{initialMerit}%</p>
-              <p className="text-sm text-gray-500 mt-1">메인 대시보드 값</p>
-            </div>
-            <div>
-              <p className="text-base text-gray-600">총 예산 영향</p>
-              <p className="text-3xl font-bold text-yellow-600">
-                {formatKoreanCurrency(summary.totalBudgetImpact, '억원', 100000000)}
-              </p>
-            </div>
-          </div>
+        {/* 대시보드 인상률 정보 카드 */}
+        <div className="mb-6">
+          <RateInfoCard />
         </div>
 
         {/* 직군 네비게이션 메뉴 + 선택된 직군 카드 */}
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
-          <div className="w-80 bg-white rounded-lg shadow p-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">직군별 분석</h2>
+          <div className="w-full lg:w-80 bg-white rounded-lg shadow p-2 md:p-4 mb-4 lg:mb-0">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">직군별 분석</h2>
+              {/* 추가 조정 총 영향 - 제목 우측에 깔끔하게 */}
+              <div className="text-right">
+                <div className="text-xs text-gray-500">조정 합계</div>
+                <div className="text-base font-bold text-orange-600">
+                  +{formatKoreanCurrency(calculateTotalAdditionalImpact(), '억원', 100000000)}
+                </div>
+              </div>
+            </div>
             <nav className="space-y-2">
-              {/* 전체 보기 옵션 */}
+              {/* 종합 현황 버튼 - 맨 위 */}
               <button
                 onClick={() => setSelectedBand('all')}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
                   selectedBand === 'all'
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-gray-600 text-white shadow-md'
                     : 'hover:bg-gray-100 text-gray-700'
                 }`}
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold text-base">전체</div>
-                    <div className="text-sm opacity-75">
-                      {summary.totalHeadcount.toLocaleString()}명
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-base font-medium">
-                      {formatPercentage(summary.avgBaseUpRate)}
-                    </div>
-                    <div className="text-sm opacity-75">
-                      Base-up
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="font-semibold text-sm md:text-base">종합 현황</span>
                 </div>
               </button>
               
@@ -265,37 +297,47 @@ export default function BandDashboard() {
                 <button
                   key={band.id}
                   onClick={() => setSelectedBand(band.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
                     selectedBand === band.id
                       ? 'bg-blue-500 text-white shadow-md'
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-base">{band.name}</div>
-                      <div className="text-sm opacity-75">
-                        {band.totalHeadcount.toLocaleString()}명
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-base font-medium">
-                        {formatPercentage(band.avgBaseUpRate)}
-                      </div>
-                      <div className="text-sm opacity-75">
-                        Base-up
-                      </div>
-                    </div>
+                    <span className="font-semibold text-sm md:text-base">{band.name}</span>
+                    <span className="text-sm md:text-base font-medium">
+                      {band.totalHeadcount.toLocaleString()}명
+                    </span>
                   </div>
                 </button>
               ))}
+              
+              {/* 구분선 */}
+              <div className="border-t border-gray-200 my-3"></div>
+              
+              {/* 경쟁력 분석 버튼 */}
+              <button
+                onClick={() => setSelectedBand('competitiveness')}
+                className={`w-full text-left px-3 md:px-4 py-2 md:py-3 rounded-lg transition-all duration-200 ${
+                  selectedBand === 'competitiveness'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="font-semibold text-sm md:text-base">경쟁력 분석</span>
+                </div>
+              </button>
             </nav>
           </div>
           
           {/* 오른쪽: 선택된 직군의 상세 카드 */}
           <div className="flex-1">
             {selectedBand === 'all' ? (
-              // 전체 보기: 직급별로 집계된 통합 카드
+              // 종합 현황: 모든 직군의 조정 결과가 반영된 통합 뷰
               <PayBandCard
                 key="total"
                 bandId="total"
@@ -303,10 +345,22 @@ export default function BandDashboard() {
                 levels={totalBandData.levels}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
+                levelRates={levelRates}
+                isReadOnly={true}  // 읽기 전용 모드
+                bands={bands}  // 모든 밴드 데이터 전달
                 onRateChange={(bandId, data) => {
                   // 전체 집계에서는 예산 영향 업데이트 처리 생략
                   console.log('Total band rate changed:', data)
                 }}
+              />
+            ) : selectedBand === 'competitiveness' ? (
+              // 경쟁력 분석 보기
+              <PayBandCompetitivenessHeatmap 
+                bandRates={bandRates}
+                levelRates={levelRates}
+                initialBaseUp={initialBaseUp}
+                initialMerit={initialMerit}
+                bands={bands}
               />
             ) : selectedBandData ? (
               // 개별 직군 보기
@@ -317,11 +371,22 @@ export default function BandDashboard() {
                 levels={selectedBandData.levels}
                 initialBaseUp={initialBaseUp}
                 initialMerit={initialMerit}
+                levelRates={levelRates}
+                currentRates={bandRates[selectedBandData.name]}  // 저장된 인상률 전달
                 onRateChange={(bandId, data) => {
                   // 인상률 변경 시 예산 영향 업데이트
                   setBandBudgetImpacts(prev => ({
                     ...prev,
                     [bandId]: data.budgetImpact || 0
+                  }))
+                  
+                  // 직군별 조정값 상태 업데이트 (경쟁력 분석용)
+                  setBandRates(prev => ({
+                    ...prev,
+                    [selectedBandData.name]: {
+                      baseUpAdjustment: data.baseUpAdjustment || 0,
+                      meritAdjustment: data.meritAdjustment || 0
+                    }
                   }))
                 }}
               />
@@ -334,5 +399,20 @@ export default function BandDashboard() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function BandDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <BandDashboardContent />
+    </Suspense>
   )
 }

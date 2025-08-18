@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { loadExcelData, hasStoredData } from '@/lib/clientStorage'
 
 interface DashboardData {
   summary: {
@@ -38,6 +39,16 @@ interface DashboardData {
     rating: string
     count: number
   }>
+  competitorData?: Array<{
+    company: string
+    band: string
+    level: string
+    averageSalary: number
+  }> | null
+  industryComparison?: {
+    ourCompany: number
+    competitor: number
+  }
 }
 
 export function useDashboardData() {
@@ -48,9 +59,78 @@ export function useDashboardData() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // 먼저 클라이언트 데이터 확인
+        if (hasStoredData()) {
+          const clientData = await loadExcelData()
+          if (clientData) {
+            // 디버그: 클라이언트 데이터 확인
+            console.log('useDashboardData - 클라이언트 데이터:', {
+              competitorData: clientData.competitorData,
+              competitorIncreaseRate: clientData.competitorIncreaseRate,
+              aiSettings: clientData.aiSettings
+            })
+            
+            // 클라이언트 데이터를 대시보드 형식으로 변환
+            const dashboardData: DashboardData = {
+              summary: {
+                totalEmployees: clientData.employees.length,
+                fiscalYear: new Date().getFullYear(),
+                lastUpdated: clientData.uploadedAt,
+                averageSalary: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / clientData.employees.length),
+                totalPayroll: clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0)
+              },
+              aiRecommendation: clientData.aiSettings,
+              budget: {
+                totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+                usedBudget: '0', // 초기 사용 예산은 0
+                remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+                usagePercentage: 0
+              },
+              levelStatistics: [],
+              departmentDistribution: [],
+              performanceDistribution: [],
+              competitorData: clientData.competitorData,
+              industryComparison: {
+                ourCompany: clientData.aiSettings?.totalPercentage || 0,
+                competitor: clientData.competitorIncreaseRate || 0
+              }
+            }
+            
+            // 직급별 통계 계산
+            const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
+            levels.forEach(level => {
+              const levelEmployees = clientData.employees.filter((e: any) => e.level === level)
+              if (levelEmployees.length > 0) {
+                const avgSalary = Math.round(levelEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / levelEmployees.length)
+                dashboardData.levelStatistics.push({
+                  level,
+                  employeeCount: levelEmployees.length,
+                  averageSalary: avgSalary.toString(),
+                  totalSalary: levelEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0).toString(),
+                  avgBaseUpPercentage: clientData.aiSettings.baseUpPercentage,
+                  avgMeritPercentage: clientData.aiSettings.meritIncreasePercentage,
+                  totalIncreasePercentage: clientData.aiSettings.totalPercentage
+                })
+              }
+            })
+            
+            setData(dashboardData)
+            setLoading(false)
+            return
+          }
+        }
+        
+        // 클라이언트 데이터가 없으면 서버에서 가져오기
         const response = await fetch('/api/dashboard')
         if (!response.ok) throw new Error('Failed to fetch dashboard data')
         const result = await response.json()
+        
+        // 디버그: 서버 데이터 확인
+        console.log('useDashboardData - 서버 데이터:', {
+          competitorData: result.competitorData,
+          industryComparison: result.industryComparison
+        })
+        
         setData(result)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred')
@@ -65,6 +145,62 @@ export function useDashboardData() {
   const refresh = async () => {
     setLoading(true)
     try {
+      // 먼저 클라이언트 데이터 확인
+      if (hasStoredData()) {
+        const clientData = await loadExcelData()
+        if (clientData) {
+          // 클라이언트 데이터를 대시보드 형식으로 변환
+          const dashboardData: DashboardData = {
+            summary: {
+              totalEmployees: clientData.employees.length,
+              fiscalYear: new Date().getFullYear(),
+              lastUpdated: clientData.uploadedAt,
+              averageSalary: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / clientData.employees.length),
+              totalPayroll: clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0)
+            },
+            aiRecommendation: clientData.aiSettings,
+            budget: {
+              totalBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+              usedBudget: '0', // 초기 사용 예산은 0
+              remainingBudget: Math.round(clientData.employees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) * (clientData.aiSettings.totalPercentage / 100) * 1.178).toString(),
+              usagePercentage: 0
+            },
+            levelStatistics: [],
+            departmentDistribution: [],
+            performanceDistribution: [],
+            competitorData: clientData.competitorData,
+            industryComparison: {
+              ourCompany: clientData.aiSettings?.totalPercentage || 0,
+              competitor: clientData.competitorIncreaseRate || 0
+            }
+          }
+          
+          // 직급별 통계 계산
+          const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1']
+          levels.forEach(level => {
+            const levelEmployees = clientData.employees.filter((e: any) => e.level === level)
+            if (levelEmployees.length > 0) {
+              const avgSalary = Math.round(levelEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0) / levelEmployees.length)
+              dashboardData.levelStatistics.push({
+                level,
+                employeeCount: levelEmployees.length,
+                averageSalary: avgSalary.toString(),
+                totalSalary: levelEmployees.reduce((sum: number, e: any) => sum + (e.currentSalary || 0), 0).toString(),
+                avgBaseUpPercentage: clientData.aiSettings.baseUpPercentage,
+                avgMeritPercentage: clientData.aiSettings.meritIncreasePercentage,
+                totalIncreasePercentage: clientData.aiSettings.totalPercentage
+              })
+            }
+          })
+          
+          setData(dashboardData)
+          setError(null)
+          setLoading(false)
+          return
+        }
+      }
+      
+      // 클라이언트 데이터가 없으면 서버에서 가져오기
       const response = await fetch('/api/dashboard')
       if (!response.ok) throw new Error('Failed to fetch dashboard data')
       const result = await response.json()

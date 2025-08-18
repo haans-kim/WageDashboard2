@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadEmployeeExcel, clearCache } from '@/services/employeeDataService'
+import { uploadEmployeeExcel, clearCache, getEmployeeData } from '@/services/employeeDataService'
 import { promises as fs } from 'fs'
 import path from 'path'
 
@@ -30,15 +30,15 @@ export async function POST(request: NextRequest) {
       // 서버 사이드 캐시 초기화 (새로운 데이터로 다시 로드되도록)
       clearCache()
       
-      // 성공한 경우 파일을 temp 폴더에 저장
+      // 파일 저장 (Vercel에서는 /tmp 사용)
       try {
-        const tempPath = path.join(process.cwd(), 'temp')
+        const tempDir = process.env.VERCEL === '1' ? '/tmp' : path.join(process.cwd(), 'temp')
         
         // temp 폴더가 없으면 생성
-        await fs.mkdir(tempPath, { recursive: true })
+        await fs.mkdir(tempDir, { recursive: true })
         
         // 현재 업로드된 파일을 current_data.xlsx로 저장
-        const targetPath = path.join(tempPath, 'current_data.xlsx')
+        const targetPath = path.join(tempDir, 'current_data.xlsx')
         const arrayBuffer = await file.arrayBuffer()
         await fs.writeFile(targetPath, Buffer.from(arrayBuffer))
         
@@ -47,10 +47,16 @@ export async function POST(request: NextRequest) {
         console.log('파일 저장 실패 (캐시만 사용):', saveError)
       }
       
+      // 업로드된 데이터를 메모리에서 직접 가져오기
+      const employees = await getEmployeeData()
+      
       return NextResponse.json({
         success: true,
         message: result.message,
-        data: result.data
+        data: {
+          ...result.data,
+          employees // 업로드된 직원 데이터도 반환
+        }
       })
     } else {
       return NextResponse.json(

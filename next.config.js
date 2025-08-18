@@ -2,12 +2,12 @@
 const nextConfig = {
   // 한글 폰트 최적화
   optimizeFonts: true,
-  // 배포를 위해 타입 체크 건너뛰기
+  // 타입 체크 활성화 (에러 수정 후)
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 }
 

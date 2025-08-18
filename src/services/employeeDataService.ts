@@ -9,6 +9,7 @@ import {
   convertFromExcelFormat,
   generateEmployeeData,
   calculateBandStatistics,
+  calculatePercentile,
   LEVEL_INFO
 } from '@/lib/bandDataGenerator'
 
@@ -21,6 +22,24 @@ let cachedAISettings: {
   maxRange: number
 } | null = null
 
+// 경쟁사 데이터 구조 (집계 데이터)
+interface CompetitorData {
+  company: string      // 회사명 (C사)
+  band: string        // 직군
+  level: string       // 직급
+  averageSalary: number  // 평균연봉
+}
+
+// 경쟁사 데이터 캐시
+let cachedCompetitorData: CompetitorData[] | null = null
+let cachedCompetitorIncrease: number | null = null // C사 인상률 캐시 추가
+
+// 메모리 내 수정된 데이터 저장
+let modifiedEmployeeData: EmployeeRecord[] | null = null
+
+// 업로드된 데이터를 임시로 저장 (Vercel 서버리스 환경)
+const uploadedDataCache = new Map<string, EmployeeRecord[]>()
+
 /**
  * 캐시 초기화 (서버 사이드에서만 사용)
  */
@@ -28,6 +47,8 @@ export function clearCache() {
   if (typeof window === 'undefined') {
     cachedEmployeeData = null
     cachedAISettings = null
+    cachedCompetitorData = null
+    modifiedEmployeeData = null
     console.log('서버 사이드 캐시가 초기화되었습니다.')
   }
 }
@@ -48,12 +69,58 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         const aiData = XLSX.utils.sheet_to_json(aiSheet)
         
         cachedAISettings = {
-          baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-          meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-          totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-          minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-          maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+          baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 0,
+          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과인상률(%)') as any)?.['값'] || 0,
+          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+          minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+          maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
         }
+      }
+      
+      // C사인상률 시트 읽기
+      console.log('C사인상률 시트 확인 중...')
+      if (workbook.SheetNames.includes('C사인상률')) {
+        console.log('C사인상률 시트 발견!')
+        const competitorRateSheet = workbook.Sheets['C사인상률']
+        const competitorRateData = XLSX.utils.sheet_to_json(competitorRateSheet)
+        console.log('C사인상률 데이터:', competitorRateData)
+        const rateRow = competitorRateData.find((row: any) => row['항목'] === 'C사 인상률(%)')
+        if (rateRow) {
+          cachedCompetitorIncrease = (rateRow as any)['값'] || 0
+          console.log('C사 인상률 로드 성공:', cachedCompetitorIncrease, '%')
+        } else {
+          console.log('C사 인상률 행을 찾을 수 없음')
+        }
+      } else {
+        console.log('C사인상률 시트가 없음. 시트 목록:', workbook.SheetNames)
+      }
+      
+      // C사데이터 시트 읽기 (직군×직급 매트릭스)
+      if (workbook.SheetNames.includes('C사데이터')) {
+        const competitorSheet = workbook.Sheets['C사데이터']
+        const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
+        
+        // 집계 데이터 형식으로 변환
+        const competitorData: CompetitorData[] = []
+        competitorRawData.forEach((row: any) => {
+          const band = row['직군']
+          if (band) {
+            // 각 레벨에 대한 데이터 처리
+            ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+              if (row[level]) {
+                competitorData.push({
+                  company: 'C사',
+                  band: band,
+                  level: level,
+                  averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                })
+              }
+            })
+          }
+        })
+        
+        cachedCompetitorData = competitorData
+        console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
       }
       
       // 직원 데이터 읽기 (직원기본정보 시트 우선, 없으면 첫 번째 시트)
@@ -83,7 +150,13 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
  * 캐시된 직원 데이터 가져오기
  */
 export async function getEmployeeData(): Promise<EmployeeRecord[]> {
-  if (cachedEmployeeData) {
+  // 수정된 데이터가 있으면 우선 반환
+  if (modifiedEmployeeData) {
+    return modifiedEmployeeData
+  }
+  
+  // Vercel 환경에서는 캐시를 짧게 유지
+  if (cachedEmployeeData && process.env.VERCEL !== '1') {
     return cachedEmployeeData
   }
   
@@ -96,8 +169,9 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
       const path = await import('path')
       const XLSX = await import('xlsx')
       
-      // 먼저 temp 폴더의 current_data.xlsx 확인
-      const tempPath = path.join(process.cwd(), 'temp', 'current_data.xlsx')
+      // 먼저 temp 폴더의 current_data.xlsx 확인 (Vercel에서는 /tmp 사용)
+      const tempDir = process.env.VERCEL === '1' ? '/tmp' : path.join(process.cwd(), 'temp')
+      const tempPath = path.join(tempDir, 'current_data.xlsx')
       try {
         await fs.access(tempPath)
         const fileBuffer = await fs.readFile(tempPath)
@@ -107,14 +181,74 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
         if (workbook.SheetNames.includes('AI설정')) {
           const aiSheet = workbook.Sheets['AI설정']
           const aiData = XLSX.utils.sheet_to_json(aiSheet)
+          console.log('[서버] AI설정 시트 데이터:', aiData)
+          
+          const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
           
           cachedAISettings = {
-            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
+            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
           }
+          console.log('[서버] AI 설정 로드 완료:', cachedAISettings)
+        } else {
+          console.log('[서버] AI설정 시트가 없음. 기본값 사용')
+          cachedAISettings = {
+            baseUpPercentage: 0,
+            meritIncreasePercentage: 0,
+            totalPercentage: 0,
+            minRange: 0,
+            maxRange: 0
+          }
+        }
+        
+        // C사인상률 시트 읽기
+        console.log('[서버] C사인상률 시트 확인 중...')
+        if (workbook.SheetNames.includes('C사인상률')) {
+          console.log('[서버] C사인상률 시트 발견!')
+          const competitorRateSheet = workbook.Sheets['C사인상률']
+          const competitorRateData = XLSX.utils.sheet_to_json(competitorRateSheet)
+          console.log('[서버] C사인상률 데이터:', competitorRateData)
+          const rateRow = competitorRateData.find((row: any) => row['항목'] === 'C사 인상률(%)')
+          if (rateRow) {
+            cachedCompetitorIncrease = (rateRow as any)['값'] || 0
+            console.log('[서버] C사 인상률 로드 성공:', cachedCompetitorIncrease, '%')
+          } else {
+            console.log('[서버] C사 인상률 행을 찾을 수 없음')
+          }
+        } else {
+          console.log('[서버] C사인상률 시트가 없음. 시트 목록:', workbook.SheetNames)
+        }
+        
+        // C사데이터 시트 읽기
+        if (workbook.SheetNames.includes('C사데이터')) {
+          const competitorSheet = workbook.Sheets['C사데이터']
+          const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
+          
+          // 집계 데이터 형식으로 변환
+          const competitorData: CompetitorData[] = []
+          competitorRawData.forEach((row: any) => {
+            const band = row['직군']
+            if (band) {
+              // 각 레벨에 대한 데이터 처리
+              ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+                if (row[level]) {
+                  competitorData.push({
+                    company: 'C사',
+                    band: band,
+                    level: level,
+                    averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                  })
+                }
+              })
+            }
+          })
+          
+          cachedCompetitorData = competitorData
+          console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
         }
         
         // 직원 데이터 읽기
@@ -133,52 +267,134 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
         // temp 파일이 없으면 기본 파일 시도
       }
       
-      // 초기 로드 시 public 폴더의 기본 파일 시도
-      const publicPath = path.join(process.cwd(), 'public', 'data', 'default_employee_data.xlsx')
-      try {
-        await fs.access(publicPath)
-        const fileBuffer = await fs.readFile(publicPath)
-        const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
+      // 초기 로드 시 기본 파일 시도 - Vercel 환경 고려
+      // Vercel에서는 .next/server/app 경로를 확인
+      const possiblePaths = [
+        path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx'),
+        path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx'),
+        path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp.xlsx')
+      ]
+      
+      let fileBuffer: Buffer | null = null
+      let loadedPath = ''
+      
+      for (const tryPath of possiblePaths) {
+        try {
+          await fs.access(tryPath)
+          fileBuffer = await fs.readFile(tryPath)
+          loadedPath = tryPath
+          console.log('파일 로드 성공:', loadedPath)
+          break
+        } catch {
+          console.log('파일 경로 실패:', tryPath)
+          continue
+        }
+      }
+      
+      if (fileBuffer) {
+        try {
+          const workbook = XLSX.read(fileBuffer, { type: 'buffer' })
         
         // AI설정 시트 읽기
         if (workbook.SheetNames.includes('AI설정')) {
           const aiSheet = workbook.Sheets['AI설정']
           const aiData = XLSX.utils.sheet_to_json(aiSheet)
+          console.log('[서버] AI설정 시트 데이터:', aiData)
+          
+          const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
           
           cachedAISettings = {
-            baseUpPercentage: aiData.find((row: any) => row['항목'] === 'Base-up(%)')?.['값'] || 3.2,
-            meritIncreasePercentage: aiData.find((row: any) => row['항목'] === '성과인상률(%)')?.['값'] || 2.5,
-            totalPercentage: aiData.find((row: any) => row['항목'] === '총인상률(%)')?.['값'] || 5.7,
-            minRange: aiData.find((row: any) => row['항목'] === '최소범위(%)')?.['값'] || 5.7,
-            maxRange: aiData.find((row: any) => row['항목'] === '최대범위(%)')?.['값'] || 5.9
+            baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
+            meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
+            maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
+          }
+          console.log('[서버] AI 설정 로드 완료:', cachedAISettings)
+        } else {
+          console.log('[서버] AI설정 시트가 없음. 기본값 사용')
+          cachedAISettings = {
+            baseUpPercentage: 0,
+            meritIncreasePercentage: 0,
+            totalPercentage: 0,
+            minRange: 0,
+            maxRange: 0
           }
         }
         
-        // 직원 데이터 읽기
-        const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
-          ? '직원기본정보' 
-          : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+        // C사인상률 시트 읽기
+        console.log('[서버] C사인상률 시트 확인 중...')
+        if (workbook.SheetNames.includes('C사인상률')) {
+          console.log('[서버] C사인상률 시트 발견!')
+          const competitorRateSheet = workbook.Sheets['C사인상률']
+          const competitorRateData = XLSX.utils.sheet_to_json(competitorRateSheet)
+          console.log('[서버] C사인상률 데이터:', competitorRateData)
+          const rateRow = competitorRateData.find((row: any) => row['항목'] === 'C사 인상률(%)')
+          if (rateRow) {
+            cachedCompetitorIncrease = (rateRow as any)['값'] || 0
+            console.log('[서버] C사 인상률 로드 성공:', cachedCompetitorIncrease, '%')
+          } else {
+            console.log('[서버] C사 인상률 행을 찾을 수 없음')
+          }
+        } else {
+          console.log('[서버] C사인상률 시트가 없음. 시트 목록:', workbook.SheetNames)
+        }
         
-        const worksheet = workbook.Sheets[employeeSheetName]
-        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+        // C사데이터 시트 읽기
+        if (workbook.SheetNames.includes('C사데이터')) {
+          const competitorSheet = workbook.Sheets['C사데이터']
+          const competitorRawData = XLSX.utils.sheet_to_json(competitorSheet)
+          
+          // 집계 데이터 형식으로 변환
+          const competitorData: CompetitorData[] = []
+          competitorRawData.forEach((row: any) => {
+            const band = row['직군']
+            if (band) {
+              // 각 레벨에 대한 데이터 처리
+              ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].forEach(level => {
+                if (row[level]) {
+                  competitorData.push({
+                    company: 'C사',
+                    band: band,
+                    level: level,
+                    averageSalary: row[level] * 1000 // 천원 단위를 원 단위로
+                  })
+                }
+              })
+            }
+          })
+          
+          cachedCompetitorData = competitorData
+          console.log('C사 데이터 로드:', competitorData.length, '개 직군×직급 데이터')
+        }
         
-        const employees = convertFromExcelFormat(jsonData)
-        cachedEmployeeData = employees
-        console.log('기본 Excel 파일에서 데이터 로드 완료:', employees.length, '명')
-        return employees
-      } catch {
-        console.log('파일 로드 실패, 생성된 데이터 사용')
+          // 직원 데이터 읽기
+          const employeeSheetName = workbook.SheetNames.includes('직원기본정보') 
+            ? '직원기본정보' 
+            : workbook.SheetNames.find(name => name.includes('직원')) || workbook.SheetNames[0]
+          
+          const worksheet = workbook.Sheets[employeeSheetName]
+          const jsonData = XLSX.utils.sheet_to_json(worksheet)
+          
+          const employees = convertFromExcelFormat(jsonData)
+          cachedEmployeeData = employees
+          console.log('기본 Excel 파일에서 데이터 로드 완료:', employees.length, '명')
+          return employees
+        } catch (fileError) {
+          console.log('파일 로드 실패, 생성된 데이터 사용')
+        }
       }
     } catch (error) {
       console.log('서버 사이드 파일 로드 오류:', error)
     }
   }
   
-  // Excel 파일이 없으면 기본 데이터 생성
-  console.log('기본 데이터 생성 중...')
-  const employees = generateEmployeeData(4925)
-  cachedEmployeeData = employees
-  return employees
+  // Excel 파일이 없으면 기본 샘플 데이터 반환
+  console.log('기본 샘플 데이터 사용')
+  const sampleEmployees = generateEmployeeData()
+  cachedEmployeeData = sampleEmployees
+  return sampleEmployees
 }
 
 /**
@@ -192,6 +408,20 @@ export function getAISettings() {
     minRange: 5.7,
     maxRange: 5.9
   }
+}
+
+/**
+ * 경쟁사 데이터 가져오기
+ */
+export function getCompetitorData(): CompetitorData[] {
+  return cachedCompetitorData || []
+}
+
+/**
+ * C사 인상률 가져오기
+ */
+export function getCompetitorIncreaseRate(): number {
+  return cachedCompetitorIncrease || 0
 }
 
 /**
@@ -231,60 +461,128 @@ export async function getBandStatistics() {
  */
 export async function getBandLevelDetails() {
   const employees = await getEmployeeData()
-  const bandStats = calculateBandStatistics(employees)
+  const competitorData = getCompetitorData()
+  const aiSettings = getAISettings()
+  
+  // 실제 데이터에서 유니크한 직군 추출
+  const uniqueBands = Array.from(new Set(employees.map(e => e.band).filter(Boolean))).sort()
   
   const result: any[] = []
   
-  Object.values(bandStats).forEach((band: any) => {
-    const bandData = {
-      id: band.name.toLowerCase().replace(/[&\s]/g, '_'),
-      name: band.name,
-      totalHeadcount: band.totalHeadcount,
-      avgBaseUpRate: 3.2,
-      avgSBLIndex: 95, // 임시값
-      avgCAIndex: 102, // 임시값
-      totalBudgetImpact: band.totalHeadcount * band.avgSalary * 0.057, // 5.7% 인상
-      levels: band.levels.map((level: any) => {
-        // C사 대비 경쟁력 계산을 위한 시장 데이터 (가상)
-        const marketMedian = level.level === 'Lv.4' ? 115000000 :
-                            level.level === 'Lv.3' ? 92000000 :
-                            level.level === 'Lv.2' ? 72000000 :
-                            level.level === 'Lv.1' ? 56000000 : 40000000
-        
-        const competitiveness = (level.meanSalary / marketMedian) * 100
-        
-        return {
-          level: level.level,
-          headcount: level.headcount,
-          meanBasePay: level.meanSalary,
-          baseUpKRW: Math.round(level.meanSalary * 0.032),
-          baseUpRate: 3.2,
-          sblIndex: Math.round(competitiveness),
-          caIndex: Math.round(competitiveness * 1.05),
-          competitiveness: Math.round(competitiveness),
-          market: {
-            min: level.minSalary,
-            q1: level.q1Salary,
-            median: level.medianSalary,
-            q3: level.q3Salary,
-            max: level.maxSalary
-          },
-          company: {
-            median: level.medianSalary,
-            mean: level.meanSalary,
-            values: [] // 개별 급여 값은 제외 (너무 많음)
-          },
-          competitor: {
-            median: marketMedian
-          }
+  // 각 직군별로 통계 계산
+  for (const bandName of uniqueBands) {
+    const bandEmployees = employees.filter(e => e.band === bandName)
+    const levels = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1', '신입']
+    
+    const levelStats = levels.map(level => {
+      const levelEmployees = bandEmployees.filter(e => e.level === level)
+      const salaries = levelEmployees.map(e => e.currentSalary)
+      
+      // 우리 회사 평균 급여
+      const ourAvgSalary = salaries.length > 0 
+        ? salaries.reduce((a, b) => a + b, 0) / salaries.length 
+        : 0
+      
+      // C사 평균 급여 찾기
+      const competitorEntry = competitorData.find(
+        c => c.band === bandName && c.level === level
+      )
+      const competitorAvgSalary = competitorEntry?.averageSalary || 0
+      
+      // 경쟁력 계산 (우리 회사 / C사 * 100)
+      const competitiveness = competitorAvgSalary > 0 
+        ? Math.round((ourAvgSalary / competitorAvgSalary) * 100)
+        : 0
+      
+      // Base-up 금액 계산 - 초기값은 0 (사용자가 조정할 때 계산됨)
+      // Band 페이지에서는 사용자가 슬라이더로 조정한 값을 사용해야 함
+      const baseUpAmount = 0 // 초기값 0
+      
+      return {
+        level,
+        headcount: levelEmployees.length,
+        meanBasePay: ourAvgSalary,
+        baseUpKRW: baseUpAmount,
+        baseUpRate: 0, // 초기값 0
+        sblIndex: competitiveness,  // 우리회사 vs C사 경쟁력
+        caIndex: competitorAvgSalary,  // C사 평균 급여
+        competitiveness: competitiveness,
+        market: {
+          min: salaries.length > 0 ? Math.min(...salaries) : 0,
+          q1: calculatePercentile(salaries, 25),
+          median: calculatePercentile(salaries, 50),
+          q3: calculatePercentile(salaries, 75),
+          max: salaries.length > 0 ? Math.max(...salaries) : 0
+        },
+        company: {
+          median: calculatePercentile(salaries, 50),
+          mean: ourAvgSalary,
+          values: []
+        },
+        competitor: {
+          median: competitorAvgSalary
         }
-      })
+      }
+    }).filter(level => level.level !== '신입') // 신입 제외
+    
+    const totalHeadcount = bandEmployees.length
+    const avgSalary = totalHeadcount > 0
+      ? bandEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / totalHeadcount
+      : 0
+    
+    // 직군 평균 SBL/CA 지수 계산
+    const avgSBLIndex = levelStats.length > 0
+      ? levelStats.reduce((sum, l) => sum + l.sblIndex * l.headcount, 0) / 
+        levelStats.reduce((sum, l) => sum + l.headcount, 0)
+      : 0
+      
+    const avgCAIndex = levelStats.length > 0  
+      ? levelStats.reduce((sum, l) => sum + l.caIndex * l.headcount, 0) /
+        levelStats.reduce((sum, l) => sum + l.headcount, 0)
+      : 0
+    
+    // 직군별 총 예산 영향도 계산 (각 레벨의 base-up 금액 * 인원수 합계)
+    const totalBudgetImpact = levelStats.reduce((sum, l) => {
+      return sum + (l.baseUpKRW * l.headcount)
+    }, 0)
+    
+    // 평균 Base-up 비율 (가중평균)
+    const avgBaseUpRate = levelStats.length > 0
+      ? levelStats.reduce((sum, l) => sum + l.baseUpRate * l.headcount, 0) /
+        levelStats.reduce((sum, l) => sum + l.headcount, 0)
+      : 0
+    
+    const bandData = {
+      id: bandName.toLowerCase().replace(/[&\s]/g, '_'),
+      name: bandName,
+      totalHeadcount,
+      avgBaseUpRate: avgBaseUpRate || 0,
+      avgSBLIndex: avgSBLIndex || 0,
+      avgCAIndex: avgCAIndex || 0,
+      totalBudgetImpact: totalBudgetImpact,
+      levels: levelStats
     }
     
     result.push(bandData)
-  })
+  }
   
   return result
+}
+
+/**
+ * 대시보드 데이터 가져오기 (AI 설정 포함)
+ */
+export async function getDashboardData() {
+  const employees = await getEmployeeData()
+  const aiSettings = getAISettings()
+  const competitorRate = getCompetitorIncreaseRate()
+  
+  return {
+    employees,
+    aiRecommendation: aiSettings,
+    competitorIncreaseRate: competitorRate,
+    totalEmployees: employees.length
+  }
 }
 
 /**
@@ -292,23 +590,74 @@ export async function getBandLevelDetails() {
  */
 export async function getDashboardSummary() {
   const employees = await getEmployeeData()
+  
+  // 데이터가 없으면 빈 응답 반환
+  if (!employees || employees.length === 0) {
+    return {
+      summary: {
+        totalEmployees: 0,
+        averageSalary: 0,
+        totalPayroll: 0,
+        lastUpdated: new Date().toISOString()
+      },
+      aiRecommendation: null,
+      budget: null,
+      levelStatistics: [],
+      departmentDistribution: [],
+      performanceDistribution: [],
+      industryComparison: null
+    }
+  }
+  
   const levelStats = await getLevelStatistics()
+  const competitorData = getCompetitorData()
+  
+  // 부서별 분포 계산
+  const deptMap = new Map()
+  employees.forEach(emp => {
+    const dept = emp.department || '미지정'
+    deptMap.set(dept, (deptMap.get(dept) || 0) + 1)
+  })
+  const departmentDistribution = Array.from(deptMap.entries()).map(([dept, count]) => ({
+    department: dept,
+    _count: { id: count }
+  }))
+  
+  // 성과등급별 분포 계산
+  const perfMap = new Map()
+  employees.forEach(emp => {
+    const rating = emp.performanceRating || 'N/A'
+    perfMap.set(rating, (perfMap.get(rating) || 0) + 1)
+  })
+  const performanceDistribution = Array.from(perfMap.entries()).map(([rating, count]) => ({
+    performanceRating: rating,
+    _count: { id: count }
+  }))
   
   // 전체 평균 급여
   const totalSalary = employees.reduce((sum, e) => sum + e.currentSalary, 0)
   const avgSalary = totalSalary / employees.length
   
-  // AI 제안 인상률 (캐시된 값 또는 기본값)
-  const aiRecommendation = cachedAISettings || {
-    baseUpPercentage: 3.2,
-    meritIncreasePercentage: 2.5,
-    totalPercentage: 5.7,
-    minRange: 5.7,
-    maxRange: 5.9
+  // 경쟁사 평균 급여 계산
+  let competitorAvgSalary = 0
+  if (competitorData && competitorData.length > 0) {
+    const totalCompetitorSalary = competitorData.reduce((sum, c) => sum + c.averageSalary, 0)
+    competitorAvgSalary = totalCompetitorSalary / competitorData.length
   }
   
-  // 예산 정보 (AI 설정값 기반으로 동적 계산)
-  const totalBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
+  // AI 제안 인상률 (캐시된 값 또는 기본값)
+  const aiRecommendation = cachedAISettings || {
+    baseUpPercentage: 0,
+    meritIncreasePercentage: 0,
+    totalPercentage: 0,
+    minRange: 0,
+    maxRange: 0
+  }
+  
+  // 예산 정보 - AI 설정값 기반으로 계산하되, 사용 예산은 0
+  const directBudget = totalSalary * (aiRecommendation.totalPercentage / 100)
+  const indirectCost = directBudget * 0.178 // 간접비용 17.8%
+  const totalBudget = directBudget + indirectCost // 총예산
   
   return {
     summary: {
@@ -319,18 +668,20 @@ export async function getDashboardSummary() {
     },
     aiRecommendation,
     budget: {
-      totalBudget,
+      totalBudget: Math.round(totalBudget).toString(), // 총예산
       baseUpBudget: totalSalary * (aiRecommendation.baseUpPercentage / 100),
       meritBudget: totalSalary * (aiRecommendation.meritIncreasePercentage / 100),
-      usedBudget: 0,
-      remainingBudget: totalBudget
+      usedBudget: 0, // 초기 사용 예산은 0
+      remainingBudget: totalBudget // 잔여 예산 = 총예산
     },
     levelStatistics: levelStats,
+    departmentDistribution,
+    performanceDistribution,
     industryComparison: {
       ourCompany: aiRecommendation.totalPercentage,
-      competitor: 4.2,
-      industry: 4.5
-    }
+      competitor: cachedCompetitorIncrease || 0 // C사 인상률
+    },
+    competitorData: cachedCompetitorData // 경쟁사 데이터
   }
 }
 
@@ -365,6 +716,10 @@ export async function uploadEmployeeExcel(file: File): Promise<{
       }
     }
     
+    // 캐시에 새 데이터 저장
+    cachedEmployeeData = employees
+    modifiedEmployeeData = employees
+    
     // 파일 저장은 API 라우트에서 처리 (서버 사이드에서만 가능)
     
     return {
@@ -382,4 +737,124 @@ export async function uploadEmployeeExcel(file: File): Promise<{
       message: `파일 처리 중 오류가 발생했습니다: ${error}`
     }
   }
+}
+
+/**
+ * 직원 데이터 업데이트
+ */
+export async function updateEmployee(id: string, updates: Partial<EmployeeRecord>): Promise<EmployeeRecord | null> {
+  const employees = await getEmployeeData()
+  const index = employees.findIndex(emp => emp.employeeId === id)
+  
+  if (index === -1) {
+    return null
+  }
+  
+  // 수정된 데이터가 없으면 원본 복사
+  if (!modifiedEmployeeData) {
+    modifiedEmployeeData = [...employees]
+  }
+  
+  // 업데이트
+  modifiedEmployeeData[index] = {
+    ...modifiedEmployeeData[index],
+    ...updates
+  }
+  
+  return modifiedEmployeeData[index]
+}
+
+/**
+ * 직원 검색
+ */
+export async function searchEmployees(params: {
+  page?: number
+  limit?: number
+  level?: string
+  department?: string
+  search?: string
+}): Promise<{
+  employees: EmployeeRecord[]
+  total: number
+  page: number
+  totalPages: number
+}> {
+  const employees = await getEmployeeData()
+  
+  // 필터링
+  let filtered = employees
+  
+  if (params.level) {
+    filtered = filtered.filter(emp => emp.level === params.level)
+  }
+  
+  if (params.department) {
+    filtered = filtered.filter(emp => emp.department === params.department)
+  }
+  
+  if (params.search) {
+    const searchLower = params.search.toLowerCase()
+    filtered = filtered.filter(emp => 
+      emp.name.toLowerCase().includes(searchLower) ||
+      emp.employeeId.toLowerCase().includes(searchLower)
+    )
+  }
+  
+  // 페이지네이션
+  const page = params.page || 1
+  const limit = params.limit || 20
+  const start = (page - 1) * limit
+  const end = start + limit
+  
+  const paginatedEmployees = filtered.slice(start, end)
+  
+  return {
+    employees: paginatedEmployees,
+    total: filtered.length,
+    page,
+    totalPages: Math.ceil(filtered.length / limit)
+  }
+}
+
+/**
+ * 직원별 급여 계산
+ */
+export async function calculateEmployeeSalary(
+  employeeId: string,
+  baseUpPercentage: number,
+  meritPercentage: number
+): Promise<{
+  currentSalary: number
+  baseUpAmount: number
+  meritAmount: number
+  suggestedSalary: number
+  totalIncreasePercentage: number
+} | null> {
+  const employees = await getEmployeeData()
+  const employee = employees.find(emp => emp.employeeId === employeeId)
+  
+  if (!employee) {
+    return null
+  }
+  
+  const baseUpAmount = Math.round(employee.currentSalary * (baseUpPercentage / 100))
+  const meritAmount = Math.round(employee.currentSalary * (meritPercentage / 100))
+  const suggestedSalary = employee.currentSalary + baseUpAmount + meritAmount
+  const totalIncreasePercentage = ((suggestedSalary - employee.currentSalary) / employee.currentSalary) * 100
+  
+  return {
+    currentSalary: employee.currentSalary,
+    baseUpAmount,
+    meritAmount,
+    suggestedSalary,
+    totalIncreasePercentage
+  }
+}
+
+
+/**
+ * 현재 메모리의 데이터를 엑셀로 내보내기
+ */
+export function exportCurrentData(): EmployeeRecord[] {
+  return modifiedEmployeeData || cachedEmployeeData || []
 }

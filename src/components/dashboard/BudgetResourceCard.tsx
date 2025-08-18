@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { formatKoreanCurrency, formatPercentage } from '@/lib/utils'
 
 interface BudgetResourceCardProps {
@@ -24,11 +25,11 @@ interface BudgetResourceCardProps {
   }
 }
 
-export function BudgetResourceCard({ 
-  totalBudget = 30000000000, // 300억원으로 변경
-  baseUpRate = 3.2,
-  meritRate = 2.5,
-  totalEmployees = 4167,
+function BudgetResourceCardComponent({ 
+  totalBudget = 0, // 기본값
+  baseUpRate = 0,
+  meritRate = 0,
+  totalEmployees,
   averageSalary,
   levelRates,
   levelStatistics,
@@ -42,11 +43,11 @@ export function BudgetResourceCard({
     ? customTotalBudget
     : totalBudget
   
-  // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 기본값
-  let aiRecommendationBudget = budgetDetails?.aiRecommendation || 16132940996 // 카드 1: AI 적정 인상률 예산
-  let promotionBudget = budgetDetails?.promotion || 151924823 // 카드 2: 승급/승격 예산
-  let additionalBudget = budgetDetails?.additional || 4499898100 // 카드 3: 추가 인상
-  let indirectCostBudget = budgetDetails?.indirect || 3699687978 // 카드 4: 간접비용
+  // 예산 계산 로직 - budgetDetails가 있으면 사용, 없으면 0
+  let aiRecommendationBudget = budgetDetails?.aiRecommendation || 0 // 카드 1: AI 적정 인상률 예산
+  let promotionBudget = budgetDetails?.promotion || 0 // 카드 2: 승급/승격 예산
+  let additionalBudget = budgetDetails?.additional || 0 // 카드 3: 추가 인상
+  let indirectCostBudget = budgetDetails?.indirect || 0 // 카드 4: 간접비용
   
   // 레벨별 계산이 있고 budgetDetails가 없을 경우만 계산
   if (levelRates && levelStatistics && !budgetDetails) {
@@ -63,13 +64,13 @@ export function BudgetResourceCard({
   
   // 총 사용 예산
   const totalUsedBudget = aiRecommendationBudget + promotionBudget + additionalBudget + indirectCostBudget
-  const usageRate = (totalUsedBudget / actualBudget) * 100
+  const usageRate = Math.round((totalUsedBudget / actualBudget) * 100 * 10) / 10
   
   // 각 항목의 비율 계산
-  const aiPercent = (aiRecommendationBudget / actualBudget) * 100
-  const promotionPercent = (promotionBudget / actualBudget) * 100
-  const additionalPercent = (additionalBudget / actualBudget) * 100
-  const indirectPercent = (indirectCostBudget / actualBudget) * 100
+  const aiPercent = Math.round((aiRecommendationBudget / actualBudget) * 100 * 10) / 10
+  const promotionPercent = Math.round((promotionBudget / actualBudget) * 100 * 10) / 10
+  const additionalPercent = Math.round((additionalBudget / actualBudget) * 100 * 10) / 10
+  const indirectPercent = Math.round((indirectCostBudget / actualBudget) * 100 * 10) / 10
   
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
@@ -86,10 +87,15 @@ export function BudgetResourceCard({
                   <div className="flex items-center gap-1 bg-white rounded-lg border-2 border-blue-300 px-3 py-1.5">
                     <input
                       type="text"
-                      value={customTotalBudget ? customTotalBudget.toLocaleString('ko-KR') : actualBudget.toLocaleString('ko-KR')}
+                      value={customTotalBudget !== null && customTotalBudget !== undefined ? customTotalBudget.toLocaleString('ko-KR') : actualBudget.toLocaleString('ko-KR')}
                       onChange={(e) => {
                         const value = e.target.value.replace(/,/g, '')
-                        onTotalBudgetChange(value ? parseFloat(value) : null)
+                        // 빈 문자열이거나 0을 포함한 모든 숫자를 허용
+                        if (value === '' || value === '0') {
+                          onTotalBudgetChange(0)
+                        } else if (value) {
+                          onTotalBudgetChange(parseFloat(value))
+                        }
                       }}
                       className="w-44 text-xl font-bold text-blue-600 outline-none text-right"
                       placeholder="0"
@@ -185,3 +191,5 @@ export function BudgetResourceCard({
     </div>
   )
 }
+
+export const BudgetResourceCard = React.memo(BudgetResourceCardComponent)

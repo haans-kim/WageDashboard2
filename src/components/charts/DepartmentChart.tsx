@@ -5,21 +5,40 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface DepartmentChartProps {
   data: Array<{
     department: string
-    count: number
+    budget?: number
+    headcount?: number
+    count?: number
   }>
 }
 
 export function DepartmentChart({ data }: DepartmentChartProps) {
-  const sortedData = [...data].sort((a, b) => b.count - a.count)
+  const chartData = data.map(item => ({
+    department: item.department,
+    value: item.budget || item.count || 0,
+    headcount: item.headcount || item.count || 0
+  }))
+  
+  const sortedData = [...chartData].sort((a, b) => b.value - a.value)
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 shadow-lg rounded-lg border">
           <p className="font-semibold">{payload[0].payload.department}</p>
-          <p className="text-sm text-gray-600">
-            인원: {payload[0].value}명
-          </p>
+          {payload[0].payload.value >= 100000000 ? (
+            <>
+              <p className="text-sm text-gray-600">
+                예산: {(payload[0].value / 100000000).toFixed(1)}억원
+              </p>
+              <p className="text-sm text-gray-500">
+                인원: {payload[0].payload.headcount}명
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-gray-600">
+              인원: {payload[0].payload.headcount}명
+            </p>
+          )}
         </div>
       )
     }
@@ -28,7 +47,7 @@ export function DepartmentChart({ data }: DepartmentChartProps) {
 
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full">
-      <h2 className="text-xl font-semibold mb-4">부서별 인원 현황</h2>
+      <h2 className="text-xl font-semibold mb-4">부서별 인건비 현황</h2>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart 
           data={sortedData} 
@@ -39,7 +58,7 @@ export function DepartmentChart({ data }: DepartmentChartProps) {
           <XAxis type="number" />
           <YAxis dataKey="department" type="category" width={60} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="count" fill="#0ea5e9" />
+          <Bar dataKey="value" fill="#0ea5e9" />
         </BarChart>
       </ResponsiveContainer>
     </div>

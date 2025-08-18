@@ -80,19 +80,19 @@ export function CompetitivenessHeatmap({
       </div>
 
       {/* 테이블 */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+        <table className="w-full md:min-w-[600px] text-xs md:text-sm">
           <thead>
             <tr>
-              <th className="text-left px-2 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
+              <th className="text-left px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
                 직군
               </th>
               {levels.map(level => (
-                <th key={level} className="text-center px-2 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
+                <th key={level} className="text-center px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
                   {level}
                 </th>
               ))}
-              <th className="text-center px-2 py-2 text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
+              <th className="text-center px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm font-semibold text-gray-700 border-b-2 border-gray-300">
                 평균
               </th>
             </tr>

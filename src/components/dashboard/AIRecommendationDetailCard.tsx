@@ -77,7 +77,7 @@ export function AIRecommendationDetailCard({
           <p className="text-3xl font-bold text-gray-900">{baseUpBudget}억</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-gray-700 font-medium mb-1">Merit increase 재원</p>
+          <p className="text-sm text-gray-700 font-medium mb-1">성과 인상률 재원</p>
           <p className="text-3xl font-bold text-gray-900">{meritBudget}억</p>
         </div>
         <div className="bg-blue-50 rounded-lg p-4 text-center">

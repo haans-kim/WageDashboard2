@@ -53,7 +53,7 @@ Thumbs.db
 # Database
 *.sqlite
 *.sqlite3
-*.db
+# *.db - Commented out to allow prisma/dev.db to be tracked
 
 # Logs
 logs/

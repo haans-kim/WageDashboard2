@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getEmployeeData } from '@/services/employeeDataService'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
     const currentYear = new Date().getFullYear()
+    const employees = await getEmployeeData()
 
     // 1. 급여 분포 분석
     const salaryRanges = [
@@ -15,32 +19,38 @@ export async function GET() {
       { min: 150000000, max: Infinity, label: '1.5억 이상' },
     ]
 
-    const salaryDistribution = await Promise.all(
-      salaryRanges.map(async (range) => {
-        const count = await prisma.employee.count({
-          where: {
-            currentSalary: {
-              gte: range.min,
-              lt: range.max === Infinity ? undefined : range.max,
-            },
-          },
-        })
-        return {
-          range: range.label,
-          count,
-          min: range.min,
-          max: range.max,
-        }
-      })
-    )
+    const salaryDistribution = salaryRanges.map(range => {
+      const count = employees.filter(emp => {
+        return emp.currentSalary >= range.min && 
+               (range.max === Infinity || emp.currentSalary < range.max)
+      }).length
+      
+      return {
+        range: range.label,
+        count,
+        min: range.min,
+        max: range.max,
+      }
+    })
 
     // 2. 부서별 급여 분석
-    const departments = await prisma.employee.groupBy({
-      by: ['department'],
-      _avg: { currentSalary: true },
-      _min: { currentSalary: true },
-      _max: { currentSalary: true },
-      _count: { id: true },
+    const departmentGroups = employees.reduce((groups, emp) => {
+      if (!groups[emp.department]) {
+        groups[emp.department] = []
+      }
+      groups[emp.department].push(emp)
+      return groups
+    }, {} as Record<string, typeof employees>)
+    
+    const departments = Object.entries(departmentGroups).map(([dept, emps]) => {
+      const salaries = emps.map(e => e.currentSalary)
+      return {
+        department: dept,
+        _avg: { currentSalary: salaries.reduce((a, b) => a + b, 0) / salaries.length },
+        _min: { currentSalary: Math.min(...salaries) },
+        _max: { currentSalary: Math.max(...salaries) },
+        _count: { id: emps.length }
+      }
     })
 
     const departmentAnalysis = departments.map(dept => ({
@@ -55,7 +65,6 @@ export async function GET() {
     // 3. 인상률 효과 분석
     const projections = []
     for (let rate = 0; rate <= 10; rate += 0.5) {
-      const employees = await prisma.employee.findMany()
       const totalCurrent = employees.reduce((sum, emp) => sum + emp.currentSalary, 0)
       const totalProjected = employees.reduce((sum, emp) => 
         sum + Math.round(emp.currentSalary * (1 + rate / 100)), 0
@@ -71,25 +80,30 @@ export async function GET() {
     }
 
     // 4. 성과 등급별 급여 분석
-    const performanceAnalysis = await prisma.employee.groupBy({
-      by: ['performanceRating', 'level'],
-      _avg: { currentSalary: true },
-      _count: { id: true },
-      where: {
-        performanceRating: {
-          not: null,
-        },
-      },
-    })
+    const performanceData = employees.filter(emp => emp.performanceRating)
+    const performanceGroups = performanceData.reduce((groups, emp) => {
+      const key = `${emp.performanceRating}_${emp.level}`
+      if (!groups[key]) {
+        groups[key] = {
+          performanceRating: emp.performanceRating,
+          level: emp.level,
+          salaries: [],
+          count: 0
+        }
+      }
+      groups[key].salaries.push(emp.currentSalary)
+      groups[key].count++
+      return groups
+    }, {} as Record<string, any>)
+    
+    const performanceAnalysis = Object.values(performanceGroups).map((group: any) => ({
+      performanceRating: group.performanceRating,
+      level: group.level,
+      _avg: { currentSalary: group.salaries.reduce((a: number, b: number) => a + b, 0) / group.salaries.length },
+      _count: { id: group.count }
+    }))
 
     // 5. 근속년수별 분석
-    const employees = await prisma.employee.findMany({
-      select: {
-        currentSalary: true,
-        hireDate: true,
-        level: true,
-      },
-    })
 
     const tenureAnalysis = employees.map(emp => {
       const yearsOfService = currentYear - new Date(emp.hireDate).getFullYear()
@@ -125,17 +139,92 @@ export async function GET() {
     })
 
     // 6. 예산 활용률 추이
-    const budget = await prisma.budget.findFirst({
-      where: { fiscalYear: currentYear },
-    })
-
+    const totalSalary = employees.reduce((sum, emp) => sum + emp.currentSalary, 0)
+    const totalBudget = totalSalary * 1.2 // 총 급여의 120%를 예산으로 가정
+    const usedBudget = totalSalary
+    
     const budgetUtilization = {
-      totalBudget: budget?.totalBudget.toString() || '0',
-      usedBudget: budget?.usedBudget.toString() || '0',
-      utilizationRate: budget 
-        ? Number((budget.usedBudget * BigInt(100)) / budget.totalBudget)
-        : 0,
+      totalBudget: totalBudget.toString(),
+      usedBudget: usedBudget.toString(),
+      utilizationRate: (usedBudget / totalBudget) * 100,
     }
+
+    // 7. 평가등급 분포
+    const performanceDistribution = ['S', 'A', 'B', 'C'].map(rating => {
+      const count = employees.filter(emp => emp.performanceRating === rating).length
+      return {
+        rating,
+        count,
+      }
+    })
+    
+    // 8. 평가등급별 평균급여
+    const performanceSalary = ['S', 'A', 'B', 'C'].map(rating => {
+      const ratingEmployees = employees.filter(emp => emp.performanceRating === rating)
+      const avgSalary = ratingEmployees.length > 0
+        ? Math.round(ratingEmployees.reduce((sum, emp) => sum + emp.currentSalary, 0) / ratingEmployees.length)
+        : 0
+      return {
+        rating,
+        averageSalary: avgSalary,
+        count: ratingEmployees.length,
+      }
+    })
+    
+    // 9. 직급×평가등급 히트맵 데이터
+    const levelPerformance = ['Lv.4', 'Lv.3', 'Lv.2', 'Lv.1'].map(level => {
+      const levelData: any = { level }
+      ;['S', 'A', 'B', 'C'].forEach(rating => {
+        levelData[rating] = employees.filter(emp => 
+          emp.level === level && emp.performanceRating === rating
+        ).length
+      })
+      return levelData
+    })
+    
+    // 10. 직급별 통계 (LevelPieChart용)
+    const levelStatistics = ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'].map(level => {
+      const levelEmployees = employees.filter(emp => emp.level === level)
+      const totalSalary = levelEmployees.reduce((sum, emp) => sum + emp.currentSalary, 0)
+      return {
+        level,
+        employeeCount: levelEmployees.length,
+        percentage: (levelEmployees.length / employees.length) * 100,
+        totalSalary: totalSalary.toString(),
+        avgBaseUpPercentage: 3.2,
+        avgMeritPercentage: 2.5,
+        totalIncreasePercentage: 5.7
+      }
+    })
+    
+    // 11. 부서별 예산 (DepartmentChart용)
+    const departmentBudget = Object.entries(departmentGroups).map(([dept, emps]) => ({
+      department: dept,
+      budget: emps.reduce((sum, emp) => sum + emp.currentSalary, 0),
+      headcount: emps.length,
+    }))
+    
+    // 12. 평가등급별 인상액 (PerformanceChart용) 
+    const performanceIncrease = ['ST', 'AT', 'OT', 'BT'].map(rating => {
+      const weights = { ST: 1.5, AT: 1.2, OT: 1.0, BT: 0.8 }
+      const ratingEmployees = employees.filter(emp => emp.performanceRating === rating)
+      const baseUp = 3.2
+      const merit = 2.5
+      
+      const totalIncrease = ratingEmployees.reduce((sum, emp) => {
+        const meritWithWeight = merit * weights[rating as keyof typeof weights]
+        return sum + emp.currentSalary * (baseUp + meritWithWeight) / 100
+      }, 0)
+      
+      return {
+        rating,
+        totalIncrease: Math.round(totalIncrease),
+        averageIncrease: ratingEmployees.length > 0 
+          ? Math.round(totalIncrease / ratingEmployees.length)
+          : 0,
+        count: ratingEmployees.length,
+      }
+    })
 
     return NextResponse.json({
       salaryDistribution,
@@ -149,6 +238,12 @@ export async function GET() {
       })),
       tenureStats,
       budgetUtilization,
+      performanceDistribution,
+      performanceSalary,
+      levelPerformance,
+      levelStatistics,
+      departmentBudget,
+      performanceIncrease,
     })
   } catch (error) {
     console.error('Analytics API Error:', error)
