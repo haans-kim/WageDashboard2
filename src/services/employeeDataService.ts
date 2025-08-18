@@ -68,13 +68,91 @@ export async function loadEmployeeDataFromExcel(file?: File): Promise<EmployeeRe
         const aiSheet = workbook.Sheets['AI설정']
         const aiData = XLSX.utils.sheet_to_json(aiSheet)
         
+        // 상세 디버깅: AI설정 데이터 확인
+        console.log('========== AI설정 데이터 상세 분석 ==========')
+        console.log('전체 데이터 개수:', aiData.length)
+        
+        // 각 행을 자세히 출력
+        aiData.forEach((row: any, index: number) => {
+          console.log(`\n[행 ${index + 1}]`)
+          console.log('  원본 데이터:', row)
+          
+          // 각 키와 값의 타입 확인
+          Object.keys(row).forEach(key => {
+            const value = row[key]
+            console.log(`  - 키: "${key}" (타입: ${typeof key}, 길이: ${key.length})`)
+            console.log(`    값: "${value}" (타입: ${typeof value})`)
+            
+            // 키에 특수문자나 공백 확인
+            if (key.includes(' ')) {
+              console.log(`    -> 키에 공백 포함됨`)
+            }
+            
+            // '항목' 키인 경우 상세 분석
+            if (key === '항목' || key.includes('항목')) {
+              const itemValue = String(value)
+              console.log(`    -> 항목 값 상세: "${itemValue}"`)
+              console.log(`    -> 문자 코드:`, itemValue.split('').map(c => c.charCodeAt(0)))
+              
+              // 특정 문자열 포함 확인
+              if (itemValue.includes('성과')) {
+                console.log(`    -> "성과" 포함됨`)
+              }
+              if (itemValue.includes('인상률')) {
+                console.log(`    -> "인상률" 포함됨`)
+              }
+              if (itemValue.includes('총')) {
+                console.log(`    -> "총" 포함됨`)
+              }
+            }
+          })
+        })
+        
+        console.log('\n========== find() 테스트 ==========')
+        
+        // 각 항목별로 디버깅
+        const testItems = [
+          'Base-up(%)',
+          '성과 인상률(%)',
+          '성과인상률(%)',
+          '총 인상률(%)',
+          '총인상률(%)'
+        ]
+        
+        testItems.forEach(testItem => {
+          const foundRow = aiData.find((row: any) => row['항목'] === testItem)
+          console.log(`\n"${testItem}" 검색 결과:`, foundRow ? '찾음' : '못 찾음')
+          if (foundRow) {
+            console.log('  찾은 데이터:', foundRow)
+          }
+        })
+        
+        // 실제로 찾은 항목들로 설정 - 띄어쓰기 있는 경우와 없는 경우 모두 처리
+        const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
+        const meritRow = aiData.find((row: any) => 
+          row['항목'] === '성과 인상률(%)' || row['항목'] === '성과인상률(%)' || row['항목'] === '성과 인상률 (%)' || row['항목'] === '성과인상률 (%)' || 
+          row['항목'] === '성과인상률(%)' ||
+          row['항목'] === '성과 인상률 (%)' ||
+          row['항목'] === '성과인상률 (%)')
+        const totalRow = aiData.find((row: any) => 
+          row['항목'] === '총 인상률(%)' || row['항목'] === '총인상률(%)' || row['항목'] === '총 인상률 (%)' || row['항목'] === '총인상률 (%)' || 
+          row['항목'] === '총인상률(%)' ||
+          row['항목'] === '총 인상률 (%)' ||
+          row['항목'] === '총인상률 (%)')
+        
         cachedAISettings = {
-          baseUpPercentage: (aiData.find((row: any) => row['항목'] === 'Base-up(%)') as any)?.['값'] || 0,
-          meritIncreasePercentage: (aiData.find((row: any) => row['항목'] === '성과 인상률(%)') as any)?.['값'] || 0,
-          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+          baseUpPercentage: baseUpRow?.['값'] || 0,
+          meritIncreasePercentage: meritRow?.['값'] || 0,
+          totalPercentage: totalRow?.['값'] || 0,
           minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
           maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
         }
+        
+        console.log('\n========== 최종 AI 설정 ==========')
+        console.log('Base-up:', cachedAISettings.baseUpPercentage)
+        console.log('성과 인상률:', cachedAISettings.meritIncreasePercentage)
+        console.log('총 인상률:', cachedAISettings.totalPercentage)
+        console.log('========================================\n')
       }
       
       // C사인상률 시트 읽기
@@ -184,12 +262,12 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           console.log('[서버] AI설정 시트 데이터:', aiData)
           
           const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
-          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)' || row['항목'] === '성과인상률(%)' || row['항목'] === '성과 인상률 (%)' || row['항목'] === '성과인상률 (%)')
           
           cachedAISettings = {
             baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
             meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
-            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총 인상률(%)' || row['항목'] === '총인상률(%)' || row['항목'] === '총 인상률 (%)' || row['항목'] === '총인상률 (%)') as any)?.['값'] || 0,
             minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
             maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
           }
@@ -302,12 +380,12 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
           console.log('[서버] AI설정 시트 데이터:', aiData)
           
           const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
-          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)')
+          const meritRow = aiData.find((row: any) => row['항목'] === '성과 인상률(%)' || row['항목'] === '성과인상률(%)' || row['항목'] === '성과 인상률 (%)' || row['항목'] === '성과인상률 (%)')
           
           cachedAISettings = {
             baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
             meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
-            totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+            totalPercentage: (aiData.find((row: any) => row['항목'] === '총 인상률(%)' || row['항목'] === '총인상률(%)' || row['항목'] === '총 인상률 (%)' || row['항목'] === '총인상률 (%)') as any)?.['값'] || 0,
             minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
             maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
           }

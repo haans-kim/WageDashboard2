@@ -79,7 +79,11 @@ export function useClientExcelData() {
         console.log('[클라이언트] AI설정 시트 데이터:', aiData)
         
         const baseUpRow = aiData.find((row: any) => row['항목'] === 'Base-up(%)')
-        const meritRow = aiData.find((row: any) => row['항목'] === '성과인상률(%)')
+        const meritRow = aiData.find((row: any) => 
+          row['항목'] === '성과 인상률(%)' || 
+          row['항목'] === '성과인상률(%)' ||
+          row['항목'] === '성과 인상률 (%)' ||
+          row['항목'] === '성과인상률 (%)')
         
         console.log('[클라이언트] Base-up 행:', baseUpRow)
         console.log('[클라이언트] Merit 행:', meritRow)
@@ -87,7 +91,11 @@ export function useClientExcelData() {
         aiSettings = {
           baseUpPercentage: baseUpRow ? (baseUpRow as any)['값'] || 0 : 0,
           meritIncreasePercentage: meritRow ? (meritRow as any)['값'] || 0 : 0,
-          totalPercentage: (aiData.find((row: any) => row['항목'] === '총인상률(%)') as any)?.['값'] || 0,
+          totalPercentage: (aiData.find((row: any) => 
+            row['항목'] === '총 인상률(%)' || 
+            row['항목'] === '총인상률(%)' ||
+            row['항목'] === '총 인상률 (%)' ||
+            row['항목'] === '총인상률 (%)') as any)?.['값'] || 0,
           minRange: (aiData.find((row: any) => row['항목'] === '최소범위(%)') as any)?.['값'] || 0,
           maxRange: (aiData.find((row: any) => row['항목'] === '최대범위(%)') as any)?.['값'] || 0
         }
