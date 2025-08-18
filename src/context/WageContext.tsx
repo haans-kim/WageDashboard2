@@ -118,6 +118,7 @@ export function WageProvider({ children }: { children: ReactNode }) {
   // 기본값 설정 - 모두 0으로 초기화
   const [baseUpRate, setBaseUpRate] = useState(0)
   const [meritRate, setMeritRate] = useState(0)
+  const [aiSettings, setAiSettings] = useState<{ baseUpPercentage?: number, meritIncreasePercentage?: number } | null>(null)
   const [performanceWeights, setPerformanceWeights] = useState<PerformanceWeights>({
     ST: 1.5,
     AT: 1.2,
@@ -158,15 +159,77 @@ export function WageProvider({ children }: { children: ReactNode }) {
   }>({})
   const [totalBudget, setTotalBudget] = useState(0)
   
-  // 시나리오 관리
+  // 초기 AI 설정 값 가져오기
+  useEffect(() => {
+    const fetchAISettings = async () => {
+      try {
+        const response = await fetch('/api/metadata')
+        if (response.ok) {
+          const data = await response.json()
+          if (data?.aiRecommendation) {
+            const newAiSettings = {
+              baseUpPercentage: data.aiRecommendation.baseUpPercentage || 0,
+              meritIncreasePercentage: data.aiRecommendation.meritIncreasePercentage || 0
+            }
+            setAiSettings(newAiSettings)
+            
+            // AI 설정이 로드되면 기본 인상률도 설정
+            // localStorage에 저장된 값이 없거나 0인 경우 AI 값으로 설정
+            const savedSettings = localStorage.getItem('wageSettings')
+            let shouldSetDefaults = !savedSettings
+            
+            if (savedSettings) {
+              try {
+                const parsed = JSON.parse(savedSettings)
+                // 저장된 값이 모두 0이면 AI 값으로 설정
+                if (parsed.baseUpRate === 0 && parsed.meritRate === 0) {
+                  shouldSetDefaults = true
+                }
+              } catch {
+                shouldSetDefaults = true
+              }
+            }
+            
+            if (shouldSetDefaults) {
+              setBaseUpRate(newAiSettings.baseUpPercentage)
+              setMeritRate(newAiSettings.meritIncreasePercentage)
+              
+              // 직급별 인상률도 AI 값으로 초기화
+              const aiLevelRates = {
+                'Lv.1': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage },
+                'Lv.2': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage },
+                'Lv.3': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage },
+                'Lv.4': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage }
+              }
+              setLevelRates(aiLevelRates)
+              
+              const aiDetailedRates = {
+                'Lv.1': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                'Lv.2': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                'Lv.3': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
+                'Lv.4': { baseUp: newAiSettings.baseUpPercentage, merit: newAiSettings.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
+              }
+              setDetailedLevelRates(aiDetailedRates)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch AI settings:', error)
+      }
+    }
+    fetchAISettings()
+  }, [])
+
+  // 시나리오 관리 - AI 데이터가 로드되면 전달
   const {
     scenarios,
     activeScenarioId,
     saveScenario: saveScenarioHook,
     loadScenario: loadScenarioHook,
     deleteScenario: deleteScenarioHook,
-    renameScenario: renameScenarioHook
-  } = useScenarios()
+    renameScenario: renameScenarioHook,
+    updateDefaultScenario
+  } = useScenarios(aiSettings)
   
   // localStorage에서 저장된 값 불러오기
   useEffect(() => {
@@ -238,6 +301,44 @@ export function WageProvider({ children }: { children: ReactNode }) {
   
   // 시나리오 불러오기
   const loadScenario = (id: string) => {
+    // Default 시나리오 로드 시 AI 데이터가 있으면 먼저 업데이트
+    if (id === 'default' && aiSettings && updateDefaultScenario) {
+      const updatedData = updateDefaultScenario(aiSettings)
+      if (updatedData) {
+        setBaseUpRate(updatedData.baseUpRate || 0)
+        setMeritRate(updatedData.meritRate || 0)
+        
+        // Default 시나리오는 AI 값으로 직급별 인상률 설정
+        const aiLevelRates = {
+          'Lv.1': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0 },
+          'Lv.2': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0 },
+          'Lv.3': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0 },
+          'Lv.4': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0 }
+        }
+        setLevelRates(aiLevelRates)
+        
+        const aiDetailedRates = {
+          'Lv.1': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.2': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.3': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0, promotion: 0, advancement: 0, additional: 0 },
+          'Lv.4': { baseUp: updatedData.baseUpRate || 0, merit: updatedData.meritRate || 0, promotion: 0, advancement: 0, additional: 0 }
+        }
+        setDetailedLevelRates(aiDetailedRates)
+        
+        setTotalBudget(updatedData.totalBudget || 0)
+        setBandAdjustments({})
+        setEmployeeWeights({})
+        setPerformanceWeights({
+          ST: 1.5,
+          AT: 1.2,
+          OT: 1.0,
+          BT: 0.8
+        })
+        return
+      }
+    }
+    
+    // 일반 시나리오 로드
     const scenarioData = loadScenarioHook(id)
     if (scenarioData) {
       setBaseUpRate(scenarioData.baseUpRate || 0)
@@ -280,6 +381,19 @@ export function WageProvider({ children }: { children: ReactNode }) {
       setTotalBudget(scenarioData.totalBudget || 0)
       setBandAdjustments(scenarioData.bandAdjustments || {})
       setEmployeeWeights(scenarioData.employeeWeights || {})
+      
+      // performanceWeights 복원
+      if (scenarioData.performanceWeights) {
+        setPerformanceWeights(scenarioData.performanceWeights)
+      } else {
+        // 기본값 유지
+        setPerformanceWeights({
+          ST: 1.5,
+          AT: 1.2,
+          OT: 1.0,
+          BT: 0.8
+        })
+      }
     }
   }
   

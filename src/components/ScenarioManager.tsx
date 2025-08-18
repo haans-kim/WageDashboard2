@@ -26,11 +26,24 @@ export function ScenarioManager({
   const [newScenarioName, setNewScenarioName] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(activeScenarioId)
 
   const handleSave = () => {
     if (newScenarioName.trim()) {
       onSave(newScenarioName.trim())
       setNewScenarioName('')
+    }
+  }
+
+  const handleApply = () => {
+    if (selectedScenarioId) {
+      onLoad(selectedScenarioId)
+      setSelectedScenarioId(selectedScenarioId)
+      setIsOpen(false) // 팝업 닫기
+      // 적용 완료 알림
+      setTimeout(() => {
+        alert('시나리오가 적용되었습니다.')
+      }, 100)
     }
   }
 
@@ -89,6 +102,28 @@ export function ScenarioManager({
               </div>
             </div>
 
+            {/* 적용 버튼 영역 */}
+            {selectedScenarioId && selectedScenarioId !== activeScenarioId && (
+              <div className="p-4 bg-blue-50 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <p className="font-medium text-blue-900">
+                      선택된 시나리오: {scenarios.find(s => s.id === selectedScenarioId)?.name}
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      적용 버튼을 클릭하여 이 시나리오를 로드하세요
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleApply}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+                  >
+                    적용
+                  </button>
+                </div>
+              </div>
+            )}
+            
             {/* 시나리오 목록 */}
             <div className="max-h-96 overflow-y-auto">
               {scenarios.length === 0 ? (
@@ -101,22 +136,32 @@ export function ScenarioManager({
                     <div
                       key={scenario.id}
                       className={`p-3 rounded-lg mb-2 border transition-all cursor-pointer ${
-                        activeScenarioId === scenario.id
+                        selectedScenarioId === scenario.id
+                          ? 'bg-blue-50 border-blue-300'
+                          : activeScenarioId === scenario.id
                           ? 'bg-purple-50 border-purple-300'
                           : 'bg-white border-gray-200 hover:bg-gray-50'
                       }`}
-                      onClick={() => onLoad(scenario.id)}
+                      onClick={() => setSelectedScenarioId(scenario.id)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm">{scenario.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-sm">{scenario.name}</h4>
+                            {selectedScenarioId === scenario.id && (
+                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">선택됨</span>
+                            )}
+                            {activeScenarioId === scenario.id && (
+                              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded">적용됨</span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500 mt-1">
-                            전체 인상률: {(scenario.data.weightedAverageRate || (scenario.data.baseUpRate + scenario.data.meritRate)).toFixed(1)}%
-                            {scenario.data.totalBudget && (
+                            전체 인상률: {(scenario.data.weightedAverageRate ?? (scenario.data.baseUpRate + scenario.data.meritRate)).toFixed(1)}%
+                            {scenario.data.totalBudget ? (
                               <span className="ml-2">
                                 | 총 예산: {(scenario.data.totalBudget / 100000000).toFixed(0)}억원
                               </span>
-                            )}
+                            ) : null}
                           </p>
                           <p className="text-xs text-gray-400">
                             {new Date(scenario.updatedAt).toLocaleString('ko-KR', {
@@ -132,7 +177,7 @@ export function ScenarioManager({
                             e.stopPropagation()
                             // 기본 시나리오는 삭제 불가
                             if (scenario.id === 'default') {
-                              alert('기본 초기화 시나리오는 삭제할 수 없습니다.')
+                              alert('Default 시나리오는 삭제할 수 없습니다.')
                               return
                             }
                             if (confirm(`"${scenario.name}" 시나리오를 삭제하시겠습니까?`)) {

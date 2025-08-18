@@ -211,6 +211,32 @@ export default function Home() {
     }
   }, [data?.aiRecommendation, data?.levelStatistics, hasInitialized, contextDetailedLevelRates, contextLevelRates, contextTotalBudget])
   
+  // Context 값이 변경되면 로컬 상태 업데이트 (시나리오 적용 시)
+  useEffect(() => {
+    if (hasInitialized && contextBaseUpRate !== undefined && contextMeritRate !== undefined) {
+      // 시나리오 로드로 인한 Context 변경 감지
+      if (Math.abs(contextBaseUpRate - baseUpRate) > 0.01 || Math.abs(contextMeritRate - meritRate) > 0.01) {
+        setBaseUpRate(contextBaseUpRate)
+        setMeritRate(contextMeritRate)
+        
+        // 직급별 인상률도 업데이트
+        if (contextLevelRates) {
+          setLevelRates(contextLevelRates)
+        }
+        
+        // 상세 인상률도 업데이트
+        if (contextDetailedLevelRates) {
+          setDetailedLevelRates(contextDetailedLevelRates)
+        }
+        
+        // 총예산도 업데이트
+        if (contextTotalBudget) {
+          setTotalBudget(contextTotalBudget)
+        }
+      }
+    }
+  }, [contextBaseUpRate, contextMeritRate, contextLevelRates, contextDetailedLevelRates, contextTotalBudget, hasInitialized])
+  
   // 새로운 인터페이스에 맞춰 수정
   const updateLevelRate = (level: string, rates: any) => {
     // 새로운 GradeSalaryAdjustmentTable에서 전체 rates 객체를 전달받음
@@ -409,6 +435,9 @@ export default function Home() {
                     'Lv.2': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 },
                     'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
                   })
+                  
+                  // Default 시나리오도 AI 값으로 리셋 (loadScenario를 통해)
+                  loadScenarioContext('default')
                 }
                 setPromotionBudgets({ lv1: 0, lv2: 0, lv3: 0, lv4: 0 })
                 setAdditionalBudget(0)
@@ -438,7 +467,7 @@ export default function Home() {
       
       <div className="container mx-auto px-3 md:px-4 py-4">
         
-        {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산활용내역상세 */}
+        {/* 상단 레이아웃: 좌측 2개 카드, 우측 예산 활용 내역 상세 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4 mb-2 md:mb-4">
           <div className="flex flex-col gap-4 h-full">
             {/* AI 제안 적정인상률 */}
@@ -482,7 +511,7 @@ export default function Home() {
             />
           </div>
           
-          {/* 예산활용내역상세 */}
+          {/* 예산 활용 내역 상세 */}
           <BudgetUtilizationDetail
             baseUpRate={baseUpRate}
             meritRate={meritRate}

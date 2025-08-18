@@ -125,7 +125,7 @@ function BudgetUtilizationDetailComponent({
   
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
-      <h2 className="text-xl font-bold mb-4">예산활용내역상세</h2>
+      <h2 className="text-xl font-bold mb-4">예산 활용 내역 상세</h2>
       
       <div className="grid grid-cols-1 gap-4 flex-1">
         {/* 카드 1: AI 적정 인상률 예산 */}
@@ -156,7 +156,7 @@ function BudgetUtilizationDetailComponent({
                   {formatKoreanCurrency(aiTotalBudget, '백만원', 1000000)}
                 </span>
                 <span className="text-sm text-gray-500 ml-1">
-                  ({((aiTotalBudget / totalBudget) * 100).toFixed(1)}% 활용)
+                  ({totalBudget > 0 ? ((aiTotalBudget / totalBudget) * 100).toFixed(1) : '0.0'}% 활용)
                 </span>
               </div>
             </div>
@@ -211,7 +211,7 @@ function BudgetUtilizationDetailComponent({
                   {formatKoreanCurrency(promotionTotal, '억원', 100000000)}
                 </span>
                 <span className="text-sm text-gray-500 ml-1">
-                  ({((promotionTotal / totalBudget) * 100).toFixed(1)}% 활용)
+                  ({totalBudget > 0 ? ((promotionTotal / totalBudget) * 100).toFixed(1) : '0.0'}% 활용)
                 </span>
               </div>
             </div>
@@ -251,7 +251,7 @@ function BudgetUtilizationDetailComponent({
                   {formatKoreanCurrency(currentSetting, '백만원', 1000000)}
                 </span>
                 <span className="text-sm text-gray-500 ml-1">
-                  ({((currentSetting / totalBudget) * 100).toFixed(1)}% 활용)
+                  ({totalBudget > 0 ? ((currentSetting / totalBudget) * 100).toFixed(1) : '0.0'}% 활용)
                 </span>
               </div>
             </div>
@@ -292,7 +292,7 @@ function BudgetUtilizationDetailComponent({
                   {formatKoreanCurrency(indirectTotal, '백만원', 1000000)}
                 </span>
                 <span className="text-sm text-gray-500 ml-1">
-                  ({((indirectTotal / totalBudget) * 100).toFixed(1)}% 활용)
+                  ({totalBudget > 0 ? ((indirectTotal / totalBudget) * 100).toFixed(1) : '0.0'}% 활용)
                 </span>
               </div>
             </div>

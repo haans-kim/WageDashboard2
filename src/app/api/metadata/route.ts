@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getEmployeeData } from '@/services/employeeDataService'
+import { getEmployeeData, getDashboardData } from '@/services/employeeDataService'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -8,6 +8,8 @@ export async function GET() {
   try {
     // 직원 데이터에서 실제 부서 목록 추출
     const employees = await getEmployeeData()
+    // 대시보드 데이터에서 AI 설정 가져오기
+    const dashboardData = await getDashboardData()
     
     // 중복 제거하여 유니크한 부서 목록 생성
     const departmentsSet = new Set<string>()
@@ -55,7 +57,9 @@ export async function GET() {
         levels,
         ratings,
         statistics
-      }
+      },
+      // AI 설정 추가
+      aiRecommendation: dashboardData.aiRecommendation
     })
   } catch (error) {
     console.error('Metadata API Error:', error)
@@ -69,6 +73,14 @@ export async function GET() {
           bands: ['생산', '영업', '생산기술', '경영지원', '품질보증', '기획', '구매&물류', 'Facility'],
           levels: ['Lv.1', 'Lv.2', 'Lv.3', 'Lv.4'],
           ratings: ['S', 'A', 'B', 'C']
+        },
+        // 기본 AI 설정값
+        aiRecommendation: {
+          baseUpPercentage: 3.2,
+          meritIncreasePercentage: 2.5,
+          totalPercentage: 5.7,
+          minRange: 3.0,
+          maxRange: 9.0
         }
       },
       { status: 500 }

@@ -2,43 +2,74 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs/promises'
 import path from 'path'
 import { Scenario } from '@/types/scenario'
+import { getDashboardData } from '@/services/employeeDataService'
 
 const SCENARIOS_DIR = path.join(process.cwd(), 'data', 'scenarios')
 const SCENARIOS_FILE = path.join(SCENARIOS_DIR, 'scenarios.json')
 
-// 기본 초기화 시나리오
-const DEFAULT_SCENARIO: Scenario = {
-  id: 'default',
-  name: '초기화 (기본)',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  data: {
-    baseUpRate: 0,
-    meritRate: 0,
-    levelRates: {
-      'Lv.1': { baseUp: 0, merit: 0 },
-      'Lv.2': { baseUp: 0, merit: 0 },
-      'Lv.3': { baseUp: 0, merit: 0 },
-      'Lv.4': { baseUp: 0, merit: 0 }
-    },
-    totalBudget: 0,
-    promotionBudgets: { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
-    additionalBudget: 0,
-    enableAdditionalIncrease: false,
-    calculatedAdditionalBudget: 0,
-    levelTotalRates: {
-      'Lv.1': 0,
-      'Lv.2': 0,
-      'Lv.3': 0,
-      'Lv.4': 0
-    },
-    weightedAverageRate: 0,
-    meritWeightedAverage: 0,
-    detailedLevelRates: {
-      'Lv.4': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.3': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.2': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 },
-      'Lv.1': { baseUp: 0, merit: 0, promotion: 0, advancement: 0, additional: 0 }
+// AI 설정을 가져오는 함수
+async function getAISettings(): Promise<{ baseUpPercentage: number, meritIncreasePercentage: number }> {
+  try {
+    // 대시보드 데이터에서 AI 설정 직접 가져오기
+    const dashboardData = await getDashboardData()
+    
+    if (dashboardData?.aiRecommendation) {
+      return {
+        baseUpPercentage: dashboardData.aiRecommendation.baseUpPercentage || 3.2,
+        meritIncreasePercentage: dashboardData.aiRecommendation.meritIncreasePercentage || 2.5
+      }
+    }
+  } catch (error) {
+    console.error('Failed to read AI settings:', error)
+  }
+  
+  // 기본값 반환 (엑셀 파일이 없을 경우)
+  return {
+    baseUpPercentage: 3.2,
+    meritIncreasePercentage: 2.5
+  }
+}
+
+// 기본 시나리오 생성 함수
+async function createDefaultScenario(): Promise<Scenario> {
+  const aiSettings = await getAISettings()
+  const baseUp = aiSettings.baseUpPercentage
+  const merit = aiSettings.meritIncreasePercentage
+  const totalRate = baseUp + merit
+  
+  return {
+    id: 'default',
+    name: 'Default (AI 제안)',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    data: {
+      baseUpRate: baseUp,
+      meritRate: merit,
+      levelRates: {
+        'Lv.1': { baseUp, merit },
+        'Lv.2': { baseUp, merit },
+        'Lv.3': { baseUp, merit },
+        'Lv.4': { baseUp, merit }
+      },
+      totalBudget: 0,
+      promotionBudgets: { lv1: 0, lv2: 0, lv3: 0, lv4: 0 },
+      additionalBudget: 0,
+      enableAdditionalIncrease: false,
+      calculatedAdditionalBudget: 0,
+      levelTotalRates: {
+        'Lv.1': totalRate,
+        'Lv.2': totalRate,
+        'Lv.3': totalRate,
+        'Lv.4': totalRate
+      },
+      weightedAverageRate: totalRate,
+      meritWeightedAverage: merit,
+      detailedLevelRates: {
+        'Lv.4': { baseUp, merit, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.3': { baseUp, merit, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.2': { baseUp, merit, promotion: 0, advancement: 0, additional: 0 },
+        'Lv.1': { baseUp, merit, promotion: 0, advancement: 0, additional: 0 }
+      }
     }
   }
 }
@@ -65,14 +96,22 @@ async function readScenarios(): Promise<ScenariosData> {
     // 기본 시나리오가 없으면 추가
     const hasDefault = parsed.scenarios.some((s: Scenario) => s.id === 'default')
     if (!hasDefault) {
-      parsed.scenarios.unshift(DEFAULT_SCENARIO)
+      const defaultScenario = await createDefaultScenario()
+      parsed.scenarios.unshift(defaultScenario)
+    } else {
+      // 기본 시나리오가 있어도 AI 설정으로 업데이트
+      const defaultScenario = await createDefaultScenario()
+      parsed.scenarios = parsed.scenarios.map((s: Scenario) => 
+        s.id === 'default' ? defaultScenario : s
+      )
     }
     
     return parsed
   } catch (error) {
     // Return default data if file doesn't exist
+    const defaultScenario = await createDefaultScenario()
     return {
-      scenarios: [DEFAULT_SCENARIO],
+      scenarios: [defaultScenario],
       activeScenarioId: null
     }
   }

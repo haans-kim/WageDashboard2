@@ -49,6 +49,14 @@ export interface Scenario {
         meritMultiplier: number
       }
     }
+    
+    // 평가등급별 가중치
+    performanceWeights?: {
+      ST: number
+      AT: number
+      OT: number
+      BT: number
+    }
   }
 }
 
