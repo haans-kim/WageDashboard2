@@ -563,7 +563,6 @@ export default function Home() {
             additionalBudget={calculatedAdditionalBudget} // 자동 계산된 값 사용
             onAdditionalBudgetChange={updateAdditionalBudget}
             enableAdditionalIncrease={enableAdditionalIncrease}
-            onEnableAdditionalIncreaseChange={setEnableAdditionalIncrease}
             onBudgetCalculated={setBudgetDetails}
           />
         </div>
@@ -575,12 +574,13 @@ export default function Home() {
             meritRate={meritRate}
             initialRates={detailedLevelRates}
             employeeData={employeeDataForTable}
+            enableAdditionalIncrease={enableAdditionalIncrease}
+            onEnableAdditionalIncreaseChange={setEnableAdditionalIncrease}
             onRateChange={updateLevelRate}
             onTotalBudgetChange={(totalBudget) => {
               console.log('Total budget changed:', totalBudget)
               // 필요시 다른 컴포넌트에 예산 정보 전달
             }}
-            enableAdditionalIncrease={enableAdditionalIncrease}
             onAdditionalBudgetChange={setCalculatedAdditionalBudget}
             onPromotionBudgetChange={updateAllPromotionBudgets}  // 승급/승격 예산 콜백 추가
             onLevelTotalRatesChange={(rates, avgRate) => {

@@ -30,6 +30,7 @@ interface GradeSalaryAdjustmentTableProps {
   onRateChange?: (level: string, rates: LevelRates) => void
   onTotalBudgetChange?: (totalBudget: number) => void
   enableAdditionalIncrease?: boolean  // 추가 인상 활성화 여부
+  onEnableAdditionalIncreaseChange?: (value: boolean) => void  // 추가 인상 활성화 콜백
   onAdditionalBudgetChange?: (additionalBudget: number) => void  // 추가 인상 총액 콜백
   onPromotionBudgetChange?: (levelBudgets: {[key: string]: number}) => void  // 승급/승격 예산 콜백
   onLevelTotalRatesChange?: (levelRates: {[key: string]: number}, weightedAverage: number) => void  // 직급별 총 인상률 및 가중평균 콜백
@@ -100,6 +101,7 @@ function GradeSalaryAdjustmentTableComponent({
   onRateChange,
   onTotalBudgetChange,
   enableAdditionalIncrease = false,
+  onEnableAdditionalIncreaseChange,
   onAdditionalBudgetChange,
   onPromotionBudgetChange,
   onLevelTotalRatesChange,
@@ -123,6 +125,8 @@ function GradeSalaryAdjustmentTableComponent({
   }
   
   const [rates, setRates] = useState<{ [key: string]: LevelRates }>(getInitialRates)
+  const [additionalMode, setAdditionalMode] = useState<'percentage' | 'fixed'>('percentage')
+  const [fixedAmount, setFixedAmount] = useState<number>(0) // 정액 금액 (만원 단위)
   
   // initialRates가 변경되면 rates 상태 업데이트 (시나리오 불러오기 시)
   useEffect(() => {
@@ -145,8 +149,30 @@ function GradeSalaryAdjustmentTableComponent({
         })
         return updated
       })
+      setFixedAmount(0)
     }
   }, [enableAdditionalIncrease])
+  
+  // 정액 모드에서 금액 변경 시 각 직급별 %로 환산
+  useEffect(() => {
+    if (additionalMode === 'fixed' && fixedAmount > 0 && enableAdditionalIncrease) {
+      setRates(prev => {
+        const updated = { ...prev }
+        Object.keys(updated).forEach(level => {
+          const data = employeeData.levels[level]
+          if (data && data.averageSalary > 0) {
+            // 정액을 평균급여로 나누어 %로 환산 (만원 단위로 입력받음)
+            const percentage = (fixedAmount * 10000 / data.averageSalary) * 100
+            updated[level] = {
+              ...updated[level],
+              additional: Math.round(percentage * 100) / 100 // 소수점 2자리까지
+            }
+          }
+        })
+        return updated
+      })
+    }
+  }, [fixedAmount, additionalMode, employeeData, enableAdditionalIncrease])
   
   // 직급별 총계 계산 (① + ③만, 승급/승격은 제외)
   const calculateLevelTotal = (levelRates: LevelRates): number => {
@@ -328,7 +354,58 @@ function GradeSalaryAdjustmentTableComponent({
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-bold">직급별 고정급 인상률 조정</h2>
-        {/* 추후 엑셀 업로드 버튼 추가 위치 */}
+        <div className="flex items-center gap-4">
+          {/* 추가 인상 활성화 체크박스 */}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enableAdditionalIncrease}
+              onChange={(e) => onEnableAdditionalIncreaseChange?.(e.target.checked)}
+              className="w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+            />
+            <span className="text-sm font-medium text-gray-700">추가 인상 활성화</span>
+          </label>
+          
+          {/* 추가 인상 모드 토글 */}
+          {enableAdditionalIncrease && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAdditionalMode('percentage')}
+                className={`px-3 py-1 text-sm rounded-l-lg border ${
+                  additionalMode === 'percentage'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                %
+              </button>
+              <button
+                onClick={() => setAdditionalMode('fixed')}
+                className={`px-3 py-1 text-sm rounded-r-lg border ${
+                  additionalMode === 'fixed'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                정액
+              </button>
+            </div>
+          )}
+          
+          {/* 정액 입력란 */}
+          {enableAdditionalIncrease && additionalMode === 'fixed' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={fixedAmount}
+                onChange={(e) => setFixedAmount(parseFloat(e.target.value) || 0)}
+                placeholder="100"
+                className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700">만원 (전 인원 동일)</span>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
@@ -488,18 +565,30 @@ function GradeSalaryAdjustmentTableComponent({
                   
                   {/* 추가 인상률 */}
                   <td className="border border-gray-300 px-2 py-2 text-center bg-yellow-50">
-                    <div className="text-sm text-gray-600 mb-1">추가 인상률</div>
+                    <div className="text-sm text-gray-600 mb-1">
+                      추가 인상률
+                      {additionalMode === 'fixed' && enableAdditionalIncrease && (
+                        <div className="text-xs text-purple-600">
+                          ({fixedAmount}만원)
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center justify-center">
                       <input
                         type="number"
                         value={levelRates.additional}
-                        onChange={(e) => handleRateChange(level, 'additional', e.target.value)}
+                        onChange={(e) => {
+                          // 정액 모드일 때는 수정 불가
+                          if (additionalMode === 'percentage') {
+                            handleRateChange(level, 'additional', e.target.value)
+                          }
+                        }}
                         step="0.01"
                         min="0"
                         max="10"
-                        disabled={!enableAdditionalIncrease}
+                        disabled={!enableAdditionalIncrease || additionalMode === 'fixed'}
                         className={`w-16 px-2 py-1.5 text-center text-base border rounded font-medium ${
-                          enableAdditionalIncrease 
+                          enableAdditionalIncrease && additionalMode === 'percentage'
                             ? 'border-gray-300 bg-white' 
                             : 'border-gray-200 bg-gray-100 text-gray-400'
                         }`}

@@ -29,9 +29,8 @@ interface BudgetUtilizationDetailProps {
   additionalBudget?: number
   onAdditionalBudgetChange?: (value: number) => void
   
-  // 추가 인상 활성화 여부
+  // 추가 인상 활성화 여부 (읽기 전용)
   enableAdditionalIncrease?: boolean
-  onEnableAdditionalIncreaseChange?: (value: boolean) => void
   
   // 계산된 예산 값들을 부모로 전달
   onBudgetCalculated?: (details: {
@@ -55,7 +54,6 @@ function BudgetUtilizationDetailComponent({
   additionalBudget = 0,
   onAdditionalBudgetChange,
   enableAdditionalIncrease = false,
-  onEnableAdditionalIncreaseChange,
   onBudgetCalculated
 }: BudgetUtilizationDetailProps) {
   
@@ -227,15 +225,9 @@ function BudgetUtilizationDetailComponent({
             <h3 className="text-base font-semibold text-gray-700">
               추가 인상 가능 범위
             </h3>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enableAdditionalIncrease}
-                onChange={(e) => onEnableAdditionalIncreaseChange?.(e.target.checked)}
-                className="w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
-              />
-              <span className="text-base font-medium text-gray-700">지급</span>
-            </label>
+            {enableAdditionalIncrease && (
+              <span className="text-sm font-medium text-purple-600">활성화됨</span>
+            )}
           </div>
           <div className="space-y-2">
             <div className="flex justify-between">
