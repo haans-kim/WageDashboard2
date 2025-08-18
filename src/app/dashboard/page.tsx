@@ -539,7 +539,7 @@ export default function Home() {
               }}
             />
             
-            {/* 인상재원예산현황 */}
+            {/* 인상 재원 예산 현황 */}
             <BudgetResourceCard
               totalBudget={totalBudget || 0}
               baseUpRate={baseUpRate}

@@ -74,7 +74,7 @@ function BudgetResourceCardComponent({
   
   return (
     <div className="bg-white rounded-lg shadow p-6 h-full flex flex-col">
-      <h2 className="text-xl font-bold mb-4">인상재원예산현황</h2>
+      <h2 className="text-xl font-bold mb-4">인상 재원 예산 현황</h2>
       
       <div className="flex-1 flex flex-col justify-between">
         {/* 상단: 총예산, 사용예산, 활용률 */}
