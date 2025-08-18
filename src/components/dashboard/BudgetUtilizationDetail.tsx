@@ -67,7 +67,7 @@ function BudgetUtilizationDetailComponent({
     levelStatistics.forEach((level) => {
       const levelAvgSalary = parseFloat(level.averageSalary)
       const levelBaseUpBudget = level.employeeCount * levelAvgSalary * (baseUpRate / 100)
-      const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+      const effectiveMeritRate = meritWeightedAverage !== undefined && meritWeightedAverage > 0 ? meritWeightedAverage : meritRate
       const levelMeritBudget = level.employeeCount * levelAvgSalary * (effectiveMeritRate / 100)
       
       baseUpBudget += levelBaseUpBudget
@@ -77,7 +77,7 @@ function BudgetUtilizationDetailComponent({
   } else {
     // 레벨 데이터가 없으면 기존 방식 사용 (fallback)
     baseUpBudget = (totalSalaryBase || 0) * (baseUpRate / 100)
-    const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+    const effectiveMeritRate = meritWeightedAverage !== undefined && meritWeightedAverage > 0 ? meritWeightedAverage : meritRate
     meritBudget = (totalSalaryBase || 0) * (effectiveMeritRate / 100)
     aiTotalBudget = baseUpBudget + meritBudget
   }
