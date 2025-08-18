@@ -147,13 +147,13 @@ const dist2 = getPerformanceDistribution(testExcelData)
 console.log('\n✅ 엑셀 파일 생성 완료!')
 console.log(`📁 파일 1: ${file1Path}`)
 console.log(`   - 총 인원: ${standardExcelData.length}명`)
-console.log(`   - 평가등급 분포: S(${dist1.S}명), A(${dist1.A}명), B(${dist1.B}명), C(${dist1.C}명)`)
-console.log(`   - 비율: S(${(dist1.S/standardExcelData.length*100).toFixed(1)}%), A(${(dist1.A/standardExcelData.length*100).toFixed(1)}%), B(${(dist1.B/standardExcelData.length*100).toFixed(1)}%), C(${(dist1.C/standardExcelData.length*100).toFixed(1)}%)`)
+console.log(`   - 평가등급 분포: ST(${dist1.ST}명), AT(${dist1.AT}명), OT(${dist1.OT}명), BT(${dist1.BT}명)`)
+console.log(`   - 비율: ST(${(dist1.ST/standardExcelData.length*100).toFixed(1)}%), AT(${(dist1.AT/standardExcelData.length*100).toFixed(1)}%), OT(${(dist1.OT/standardExcelData.length*100).toFixed(1)}%), BT(${(dist1.BT/standardExcelData.length*100).toFixed(1)}%)`)
 
 console.log(`\n📁 파일 2: ${file2Path}`)
 console.log(`   - 총 인원: ${testExcelData.length}명`)
-console.log(`   - 평가등급 분포: S(${dist2.S}명), A(${dist2.A}명), B(${dist2.B}명), C(${dist2.C}명)`)
-console.log(`   - 비율: S(${(dist2.S/testExcelData.length*100).toFixed(1)}%), A(${(dist2.A/testExcelData.length*100).toFixed(1)}%), B(${(dist2.B/testExcelData.length*100).toFixed(1)}%), C(${(dist2.C/testExcelData.length*100).toFixed(1)}%)`)
+console.log(`   - 평가등급 분포: ST(${dist2.ST}명), AT(${dist2.AT}명), OT(${dist2.OT}명), BT(${dist2.BT}명)`)
+console.log(`   - 비율: ST(${(dist2.ST/testExcelData.length*100).toFixed(1)}%), AT(${(dist2.AT/testExcelData.length*100).toFixed(1)}%), OT(${(dist2.OT/testExcelData.length*100).toFixed(1)}%), BT(${(dist2.BT/testExcelData.length*100).toFixed(1)}%)`)
 
 // 기존 default_employee_data.xlsx도 업데이트
 const defaultPath = path.join(publicDir, 'default_employee_data.xlsx')
