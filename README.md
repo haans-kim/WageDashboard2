@@ -43,7 +43,7 @@
 ```bash
 # 저장소 클론
 git clone https://github.com/Yarnoo-git/WageDashboard_YW.git
-cd WageDashboard2
+cd WageDashboard_YW
 
 # 의존성 설치
 npm install
@@ -86,7 +86,12 @@ npm run start
 경쟁사 직군×직급별 평균 급여 데이터 (천원 단위)
 
 #### AI설정
-AI 추천 인상률 설정값
+AI 추천 인상률 설정값:
+- `항목`: Base-up(%), 성과인상률(%) 또는 성과 인상률(%), 총인상률(%) 또는 총 인상률(%)
+- `값`: 해당 비율 값 (숫자)
+- `설명`: 설명 텍스트 (선택사항)
+
+**Note**: 항목명은 띄어쓰기가 있어도 없어도 모두 지원됩니다.
 
 #### C사인상률
 경쟁사 평균 인상률 정보
@@ -206,10 +211,19 @@ npm run build
 - Content Security Policy 적용
 - XSS 방지 처리
 
+## 최근 업데이트
+
+### v1.2.0 (2025-08-18)
+- Excel 데이터 읽기 유연성 개선 (띄어쓰기 변형 지원)
+- 최대인상가능폭 계산 공식 수정
+- 성과인상률 가중평균 표시 개선
+- UI 텍스트 띄어쓰기 수정 (보상 경쟁력, 인상 재원 예산 현황 등)
+
 ## 버전 관리
 
 [Semantic Versioning](https://semver.org/)을 따릅니다.
 
+- v1.2.0 - Excel 데이터 처리 개선 및 계산 공식 수정
 - v1.1.3 - README 개선 및 문서화
 - v1.1.2 - 타입 에러 수정
 - v1.1.1 - Vercel 빌드 이슈 해결
