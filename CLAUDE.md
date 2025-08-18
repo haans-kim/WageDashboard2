@@ -29,11 +29,13 @@ This is a Wage Dashboard (인건비 대시보드) project for displaying real-ti
    - Base-up/Merit percentages loaded from Excel
    - Default values: 0% (changed from hardcoded 3.2%/2.5%)
    - Dynamic calculation based on uploaded data
+   - Flexible Excel column name matching (handles spacing variations)
 
 2. **Budget Management** (예산 관리)
-   - Total budget from Excel data
+   - Total budget from Excel data or manual input
    - Default: 0원 (changed from hardcoded 300억원)
    - Indirect costs: 17.8% (retirement 4.5% + insurance 11.3% + pension 2.0%)
+   - Maximum possible increase calculation (최대인상가능폭)
 
 3. **Performance Weights** (평가 가중치)
    - S: 1.5, A: 1.2, B: 1.0, C: 0.8 (필수 유지)
@@ -43,6 +45,7 @@ This is a Wage Dashboard (인건비 대시보드) project for displaying real-ti
    - Employee data from Excel
    - Competitor (C사) data from Excel
    - All calculations done client-side
+   - Supports various Excel column name formats
 
 ## Development Setup Commands
 
@@ -174,9 +177,32 @@ merit = baseSalary * meritRate * performanceWeight[rating]
 directCost = totalSalary * (baseUp + merit) / 100
 indirectCost = directCost * 0.178
 totalBudget = directCost + indirectCost
+
+// 최대인상가능폭 계산 (Fixed)
+usedDirectCost = aiTotalBudget + promotionTotal
+usedIndirectCost = usedDirectCost * 0.178
+totalUsedCost = usedDirectCost + usedIndirectCost
+remainingBudget = totalBudget - totalUsedCost
+maxIncreasePossible = remainingBudget / 1.178  // 간접비용 포함 역산
 ```
 
 ### Competitiveness Index
 ```typescript
 competitiveness = (ourAvgSalary / competitorAvgSalary) * 100
 ```
+
+## Excel File Requirements
+
+### AI설정 Sheet
+The following column names are supported (with or without spaces):
+- `Base-up(%)`
+- `성과인상률(%)` or `성과 인상률(%)`
+- `총인상률(%)` or `총 인상률(%)`
+- `최소범위(%)`
+- `최대범위(%)`
+
+### Known Issues (Resolved)
+
+1. **Excel Data Reading** - Fixed flexible column name matching for spacing variations
+2. **Maximum Increase Calculation** - Fixed formula to correctly calculate from remaining budget
+3. **Merit Rate Display** - Shows weighted average when available, falls back to base rate

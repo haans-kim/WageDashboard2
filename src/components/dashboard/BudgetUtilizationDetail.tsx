@@ -67,7 +67,7 @@ function BudgetUtilizationDetailComponent({
     levelStatistics.forEach((level) => {
       const levelAvgSalary = parseFloat(level.averageSalary)
       const levelBaseUpBudget = level.employeeCount * levelAvgSalary * (baseUpRate / 100)
-      const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+      const effectiveMeritRate = meritWeightedAverage !== undefined && meritWeightedAverage > 0 ? meritWeightedAverage : meritRate
       const levelMeritBudget = level.employeeCount * levelAvgSalary * (effectiveMeritRate / 100)
       
       baseUpBudget += levelBaseUpBudget
@@ -77,7 +77,7 @@ function BudgetUtilizationDetailComponent({
   } else {
     // 레벨 데이터가 없으면 기존 방식 사용 (fallback)
     baseUpBudget = (totalSalaryBase || 0) * (baseUpRate / 100)
-    const effectiveMeritRate = meritWeightedAverage !== undefined ? meritWeightedAverage : meritRate
+    const effectiveMeritRate = meritWeightedAverage !== undefined && meritWeightedAverage > 0 ? meritWeightedAverage : meritRate
     meritBudget = (totalSalaryBase || 0) * (effectiveMeritRate / 100)
     aiTotalBudget = baseUpBudget + meritBudget
   }
@@ -94,8 +94,16 @@ function BudgetUtilizationDetailComponent({
   const indirectCostRatio = 0.178
   
   // 최대인상가능폭 계산
-  // 공식: (총예산 - 간접비용비중 * (AI예산 + 승급승격예산)) / 간접비용비중
-  const maxIncreasePossible = (totalBudget - indirectCostRatio * (aiTotalBudget + promotionTotal)) / indirectCostRatio
+  // 현재까지 사용된 직접비용
+  const usedDirectCost = aiTotalBudget + promotionTotal
+  // 현재까지 사용된 간접비용
+  const usedIndirectCost = usedDirectCost * indirectCostRatio
+  // 현재까지 사용된 총비용
+  const totalUsedCost = usedDirectCost + usedIndirectCost
+  // 남은 예산
+  const remainingBudget = totalBudget - totalUsedCost
+  // 최대인상가능폭 (남은 예산을 1.178로 나누어 직접비용만 추출)
+  const maxIncreasePossible = remainingBudget / (1 + indirectCostRatio)
   
   // 현재 설정값 (체크박스 상태에 따라 결정)
   const currentSetting = enableAdditionalIncrease ? additionalBudget : 0
