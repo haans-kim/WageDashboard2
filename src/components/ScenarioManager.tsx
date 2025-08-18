@@ -157,7 +157,11 @@ export function ScenarioManager({
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
                             전체 인상률: {(scenario.data.weightedAverageRate ?? (scenario.data.baseUpRate + scenario.data.meritRate)).toFixed(1)}%
-                            {scenario.data.totalBudget ? (
+                            {scenario.data.usedBudget ? (
+                              <span className="ml-2">
+                                | 사용 예산: {(scenario.data.usedBudget / 100000000).toFixed(0)}억원
+                              </span>
+                            ) : scenario.data.totalBudget ? (
                               <span className="ml-2">
                                 | 총 예산: {(scenario.data.totalBudget / 100000000).toFixed(0)}억원
                               </span>

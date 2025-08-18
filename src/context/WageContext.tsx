@@ -98,7 +98,7 @@ interface WageContextType {
   // 시나리오 관리
   scenarios: Scenario[]
   activeScenarioId: string | null
-  saveScenario: (name: string) => Promise<Scenario>
+  saveScenario: (name: string, additionalData?: { usedBudget?: number }) => Promise<Scenario>
   loadScenario: (id: string) => void
   deleteScenario: (id: string) => Promise<void>
   renameScenario: (id: string, newName: string) => Promise<void>
@@ -285,13 +285,14 @@ export function WageProvider({ children }: { children: ReactNode }) {
   }, [baseUpRate, meritRate, performanceWeights, levelRates, detailedLevelRates, bandAdjustments, bandFinalRates, employeeWeights, totalBudget])
   
   // 시나리오 저장
-  const saveScenario = async (name: string) => {
+  const saveScenario = async (name: string, additionalData?: { usedBudget?: number }) => {
     const scenarioData = {
       baseUpRate,
       meritRate,
       levelRates,
       detailedLevelRates,
       totalBudget,
+      usedBudget: additionalData?.usedBudget,
       bandAdjustments,
       employeeWeights,
       performanceWeights

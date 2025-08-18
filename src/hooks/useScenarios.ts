@@ -131,6 +131,7 @@ export function useScenarios(aiData?: { baseUpPercentage?: number, meritIncrease
   }
 
   const saveScenario = async (name: string, data: Scenario['data']) => {
+    console.log('[useScenarios] 시나리오 저장 - data.usedBudget:', data.usedBudget)
     const newScenario: Scenario = {
       id: Date.now().toString(),
       name,

@@ -119,7 +119,10 @@ async function readScenarios(): Promise<ScenariosData> {
 
 async function writeScenarios(data: ScenariosData): Promise<void> {
   await ensureDirectoryExists()
+  console.log('[writeScenarios] 파일 경로:', SCENARIOS_FILE)
+  console.log('[writeScenarios] 시나리오 개수:', data.scenarios.length)
   await fs.writeFile(SCENARIOS_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  console.log('[writeScenarios] 파일 저장 완료')
 }
 
 // GET /api/scenarios
@@ -137,14 +140,22 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const newScenario: Scenario = await request.json()
+    console.log('[POST /api/scenarios] 새 시나리오 저장:', {
+      id: newScenario.id,
+      name: newScenario.name,
+      usedBudget: newScenario.data.usedBudget,
+      totalBudget: newScenario.data.totalBudget
+    })
+    
     const data = await readScenarios()
     
-    // 기본 시나리오를 제외한 시나리오들만 저장
+    // Default 시나리오는 항상 유지
+    const defaultScenario = data.scenarios.find(s => s.id === 'default') || await createDefaultScenario()
     const nonDefaultScenarios = data.scenarios.filter(s => s.id !== 'default')
     
-    // Add new scenario (기본 시나리오는 저장하지 않음)
+    // Add new scenario
     nonDefaultScenarios.push(newScenario)
-    data.scenarios = nonDefaultScenarios
+    data.scenarios = [defaultScenario, ...nonDefaultScenarios]
     data.activeScenarioId = newScenario.id
     
     await writeScenarios(data)

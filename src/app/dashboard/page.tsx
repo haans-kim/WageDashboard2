@@ -169,9 +169,16 @@ export default function Home() {
           }
         }
         
-        // Context의 totalBudget 사용
+        // Context의 totalBudget 사용하거나 새로 계산
         if (contextTotalBudget > 0) {
           setTotalBudget(contextTotalBudget)
+        } else if (data?.summary?.totalPayroll && aiData) {
+          // Context에 총예산이 없으면 계산
+          const totalPayroll = data.summary.totalPayroll
+          const directBudget = totalPayroll * (aiData.totalPercentage / 100)
+          const indirectCost = directBudget * 0.178 // 간접비용 17.8%
+          const calculatedTotalBudget = directBudget + indirectCost
+          setTotalBudget(Math.round(calculatedTotalBudget))
         }
       } else {
         // Context에 저장된 값이 없으면 AI 데이터로 초기화
@@ -194,8 +201,22 @@ export default function Home() {
           'Lv.1': { baseUp: aiData.baseUpPercentage, merit: aiData.meritIncreasePercentage, promotion: 0, advancement: 0, additional: 0 }
         })
         
-        // 총예산 설정 (엑셀 데이터에서 계산된 값 사용 - 간접비용 포함)
-        if (data.budget?.totalBudget) {
+        // 총예산 설정 - AI 적정인상률 예산 + 간접비용으로 계산
+        if (data?.summary?.totalPayroll && aiData) {
+          const totalPayroll = data.summary.totalPayroll
+          const directBudget = totalPayroll * (aiData.totalPercentage / 100)
+          const indirectCost = directBudget * 0.178 // 간접비용 17.8%
+          const calculatedTotalBudget = directBudget + indirectCost
+          setTotalBudget(Math.round(calculatedTotalBudget))
+          console.log('[대시보드] 총예산 계산:', {
+            totalPayroll,
+            aiTotalPercentage: aiData.totalPercentage,
+            directBudget,
+            indirectCost,
+            totalBudget: calculatedTotalBudget
+          })
+        } else if (data.budget?.totalBudget) {
+          // 백업: API에서 계산된 총예산 사용
           const budgetValue = typeof data.budget.totalBudget === 'string' 
             ? parseFloat(data.budget.totalBudget.replace(/[^0-9.-]/g, ''))
             : data.budget.totalBudget
@@ -283,8 +304,19 @@ export default function Home() {
   
   // 시나리오 저장 핸들러
   const handleSaveScenario = async (name: string) => {
-    // Context로 저장 (모든 페이지 데이터 포함)
-    await saveScenarioContext(name)
+    // 사용 예산 계산
+    const usedBudget = budgetDetails.aiRecommendation + budgetDetails.promotion + budgetDetails.additional + budgetDetails.indirect
+    
+    console.log('[Dashboard] 시나리오 저장 - 사용 예산:', {
+      aiRecommendation: budgetDetails.aiRecommendation,
+      promotion: budgetDetails.promotion,
+      additional: budgetDetails.additional,
+      indirect: budgetDetails.indirect,
+      total: usedBudget
+    })
+    
+    // Context로 저장 (모든 페이지 데이터 + 사용 예산 포함)
+    await saveScenarioContext(name, { usedBudget })
   }
   
   // 시나리오 불러오기 핸들러
@@ -414,8 +446,14 @@ export default function Home() {
                   // 사용자 조정값도 AI 값으로 초기화
                   setBaseUpRate(aiData.baseUpPercentage)
                   setMeritRate(aiData.meritIncreasePercentage)
-                  // 총예산도 리셋 시 재계산된 값 사용
-                  if (data.budget?.totalBudget) {
+                  // 총예산도 리셋 시 재계산
+                  if (data?.summary?.totalPayroll && aiData) {
+                    const totalPayroll = data.summary.totalPayroll
+                    const directBudget = totalPayroll * (aiData.totalPercentage / 100)
+                    const indirectCost = directBudget * 0.178 // 간접비용 17.8%
+                    const calculatedTotalBudget = directBudget + indirectCost
+                    setTotalBudget(Math.round(calculatedTotalBudget))
+                  } else if (data.budget?.totalBudget) {
                     const budgetValue = typeof data.budget.totalBudget === 'string' 
                       ? parseFloat(data.budget.totalBudget.replace(/[^0-9.-]/g, ''))
                       : data.budget.totalBudget
