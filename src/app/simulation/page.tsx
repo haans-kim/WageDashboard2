@@ -13,27 +13,23 @@ export default function SimulationPage() {
     meritRate: contextMeritRate,
     setBaseUpRate: setContextBaseUpRate,
     setMeritRate: setContextMeritRate,
+    detailedLevelRates: contextDetailedLevelRates,
+    setDetailedLevelRates: setContextDetailedLevelRates,
   } = useWageContext()
   
-  // 시뮬레이션용 상태
-  const [baseUpRate, setBaseUpRate] = useState(contextBaseUpRate || 3.2)
-  const [meritRate, setMeritRate] = useState(contextMeritRate || 2.5)
+  // Context의 값을 직접 사용
+  const baseUpRate = contextBaseUpRate || 3.2
+  const meritRate = contextMeritRate || 2.5
   const [enableAdditionalIncrease, setEnableAdditionalIncrease] = useState(false)
   const [meritWeightedAverage, setMeritWeightedAverage] = useState(0)
   
-  // 직급별 상세 인상률 상태
-  const [detailedLevelRates, setDetailedLevelRates] = useState<Record<string, {
-    baseUp: number
-    merit: number
-    promotion: number
-    advancement: number
-    additional: number
-  }>>({
+  // Context의 detailedLevelRates 사용 (시나리오 저장/불러오기와 연동)
+  const detailedLevelRates = contextDetailedLevelRates || {
     'Lv.4': { baseUp: 3.2, merit: 2.5, promotion: 0, advancement: 0, additional: 0 },
     'Lv.3': { baseUp: 3.2, merit: 2.5, promotion: 0, advancement: 0, additional: 0 },
     'Lv.2': { baseUp: 3.2, merit: 2.5, promotion: 0, advancement: 0, additional: 0 },
     'Lv.1': { baseUp: 3.2, merit: 2.5, promotion: 0, advancement: 0, additional: 0 }
-  })
+  }
   
   // 직급별 총 인상률 및 가중평균 상태
   const [levelTotalRates, setLevelTotalRates] = useState<{[key: string]: number}>({
@@ -64,7 +60,8 @@ export default function SimulationPage() {
   const updateLevelRate = (level: string, rates: any) => {
     console.log(`Level ${level} rates updated:`, rates)
     if (rates) {
-      setDetailedLevelRates(prev => ({
+      // Context의 setDetailedLevelRates 사용
+      setContextDetailedLevelRates(prev => ({
         ...prev,
         [level]: rates
       }))
@@ -79,8 +76,8 @@ export default function SimulationPage() {
       const avgBaseUp = levels.reduce((sum, lv) => sum + allLevelRates[lv].baseUp, 0) / levels.length
       const avgMerit = levels.reduce((sum, lv) => sum + allLevelRates[lv].merit, 0) / levels.length
       
-      setBaseUpRate(avgBaseUp)
-      setMeritRate(avgMerit)
+      setContextBaseUpRate(avgBaseUp)
+      setContextMeritRate(avgMerit)
     }
   }
   
