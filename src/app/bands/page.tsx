@@ -230,25 +230,6 @@ function BandDashboardContent() {
 
   return (
     <main className="min-h-screen bg-gray-100">
-      {/* 네비게이션 바 아래에 버튼 영역 추가 */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-end items-center h-12 gap-2">
-            <ScenarioManager
-              scenarios={scenarios}
-              activeScenarioId={activeScenarioId}
-              onSave={saveScenario}
-              onLoad={loadScenario}
-              onDelete={deleteScenario}
-              onRename={renameScenario}
-              isNavigation={true}
-            />
-            <SimpleExportButton 
-              isNavigation={true}
-            />
-          </div>
-        </div>
-      </div>
       
       <div className="container mx-auto px-3 md:px-4 py-4 md:py-6">
 

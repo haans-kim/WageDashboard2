@@ -7,12 +7,6 @@ export function RateInfoCard() {
   
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-      <div className="px-6 py-4 border-b border-slate-100">
-        <h3 className="text-base font-semibold text-slate-800">
-          대시보드 인상률
-        </h3>
-      </div>
-      
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* 주요 인상률 지표 */}

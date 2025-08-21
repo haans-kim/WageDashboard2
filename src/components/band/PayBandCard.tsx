@@ -235,13 +235,6 @@ export function PayBandCard({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-3 md:p-6">
-      {/* 헤더 */}
-      <div className="mb-3 md:mb-4 pb-2 md:pb-3 border-b border-gray-200">
-        <h3 className="text-lg md:text-2xl font-bold text-gray-900">{bandName}</h3>
-        <p className="text-sm md:text-base text-gray-500 mt-1">
-          총 {levels.reduce((sum, l) => sum + l.headcount, 0)}명
-        </p>
-      </div>
 
       {/* 메인 컨텐츠 */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">

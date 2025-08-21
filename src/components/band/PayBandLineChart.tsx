@@ -27,19 +27,11 @@ interface PayBandLineChartProps {
 }
 
 export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
-  // Y축 범위 계산 - 고정된 범위로 설정
+  // Y축 범위 계산 - 4500-13500 만원으로 고정
   const yAxisDomain = useMemo(() => {
-    // 초기 데이터의 모든 값을 기준으로 계산
-    const allValues = data.flatMap(d => [
-      d.sblMedian,
-      d.caMedian,
-      // 조정 후 값이 있다면 최대 20% 인상까지 고려
-      d.sblMedian * 1.2
-    ])
-    const maxValue = Math.max(...allValues)
-    // 최소값은 0, 최대값은 가장 큰 값의 1.3배로 여유 있게 설정
-    return [0, Math.ceil(maxValue * 1.3 / 10000000) * 10000000]
-  }, [data[0]?.sblMedian]) // 초기 데이터 기준으로만 계산
+    // 데이터 범위를 더 효과적으로 보여주기 위해 고정 범위 사용
+    return [45000000, 135000000] // 4500만원 ~ 13500만원
+  }, [])
 
   // 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
