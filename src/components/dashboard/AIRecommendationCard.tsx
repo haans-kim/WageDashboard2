@@ -41,15 +41,6 @@ function AIRecommendationCardComponent({
         AI 제안 적정 인상률
       </h2>
       
-      {/* 중앙 상단: 총 인원 표시 */}
-      <div className="text-center mb-4 md:mb-8 pb-4 md:pb-6 border-b">
-        <span className="text-sm md:text-base text-gray-600">총 인원</span>
-        <p className="text-xl md:text-3xl font-bold text-gray-900 mt-1">
-          {(totalEmployees || 0).toLocaleString('ko-KR')}명
-        </p>
-        <span className="text-xs md:text-sm text-gray-500">({new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')} 기준)</span>
-      </div>
-      
       {/* 좌측: 최적 인상률, 우측: Base-up과 성과인상률 */}
       <div className="grid grid-cols-2 gap-6 flex-1">
         {/* 좌측: 최적 인상률 */}

@@ -150,17 +150,17 @@ function IndustryComparisonSectionComponent({
     }
   ]
   
-  // 경쟁력 차트 데이터
+  // 경쟁력 차트 데이터 - 경쟁력 비율로 표시
   const chartData = competitivenessData.map(item => ({
     level: item.level,
-    'C사': item.cCompany / 1000, // 백만원 단위로 변환
-    '우리회사(현재)': item.ourCompany / 1000,
-    '우리회사(인상후)': item.ourCompanyToBe / 1000,
+    'C사': 100, // C사를 100% 기준으로
+    '우리회사(현재)': item.competitiveness, // 현재 경쟁력 %
+    '우리회사(인상후)': item.competitivenessToBe, // 인상 후 경쟁력 %
     competitiveness: item.competitiveness,
     competitivenessToBe: item.competitivenessToBe
   }))
   
-  // 차트 Y축 범위 동적 계산
+  // 차트 Y축 범위 동적 계산 - 경쟁력 % 기준
   const allChartValues = chartData.flatMap(item => [
     item['C사'], 
     item['우리회사(현재)'], 
@@ -168,9 +168,9 @@ function IndustryComparisonSectionComponent({
   ])
   const chartMinValue = Math.min(...allChartValues)
   const chartMaxValue = Math.max(...allChartValues)
-  const chartPadding = (chartMaxValue - chartMinValue) * 0.1 // 10% 여백
-  const chartYMin = Math.max(0, Math.floor(chartMinValue - chartPadding))
-  const chartYMax = Math.ceil(chartMaxValue + chartPadding)
+  // 경쟁력 차트는 90-110% 범위로 설정하여 차이를 명확히 표시
+  const chartYMin = Math.floor(Math.min(90, chartMinValue - 2))
+  const chartYMax = Math.ceil(Math.max(110, chartMaxValue + 2))
   
   // 디버그용 로그
   console.log('Debug - 인상률:', companyIncrease)
@@ -210,7 +210,7 @@ function IndustryComparisonSectionComponent({
       </div>
       
       {/* 3열 구조: 막대차트(좁음) | 테이블(넓음) | 꺾은선 그래프 */}
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-9 gap-3">
         {/* 1열: 인상률 막대 차트 (2칸) */}
         <div className="bg-gray-50 rounded-lg p-3 col-span-2">
           <h3 className="text-base font-bold text-gray-800 mb-3">인상률 비교</h3>
@@ -280,20 +280,20 @@ function IndustryComparisonSectionComponent({
           </ResponsiveContainer>
         </div>
         
-        {/* 2열: 직급별 경쟁력 테이블 (3칸) */}
-        <div className="bg-gray-50 rounded-lg p-3 col-span-3 flex flex-col" style={{height: '320px'}}>
+        {/* 2열: 직급별 경쟁력 테이블 (5칸) */}
+        <div className="bg-gray-50 rounded-lg p-3 col-span-5 flex flex-col">
           <h3 className="text-sm font-bold text-gray-800 mb-3">직급별 보상 경쟁력</h3>
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
-              <table className="w-full text-xs">
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-gray-400">
-                    <th className="text-left py-2 px-1 font-bold text-gray-800">직급</th>
-                    <th className="text-right py-2 px-1 font-bold text-gray-800">C사</th>
-                    <th className="text-right py-2 px-1 font-bold text-gray-800">현재</th>
-                    <th className="text-right py-2 px-1 font-bold text-gray-800">경쟁력</th>
-                    <th className="text-right py-2 px-1 font-bold text-blue-700">인상후</th>
-                    <th className="text-right py-2 px-1 font-bold text-blue-700">경쟁력</th>
+                    <th className="text-left py-2 px-2 font-semibold text-gray-800">직급</th>
+                    <th className="text-right py-2 px-2 font-semibold text-gray-800">C사</th>
+                    <th className="text-right py-2 px-2 font-semibold text-gray-800">현재</th>
+                    <th className="text-right py-2 px-2 font-semibold text-gray-800">경쟁력</th>
+                    <th className="text-right py-2 px-2 font-semibold text-blue-600">인상후</th>
+                    <th className="text-right py-2 px-2 font-semibold text-blue-600">경쟁력</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -354,7 +354,7 @@ function IndustryComparisonSectionComponent({
         {/* 3열: 직급별 보상 비교 꺾은선 그래프 (2칸) */}
         <div className="bg-gray-50 rounded-lg p-3 col-span-2">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-bold text-gray-800">직급별 보상 비교</h3>
+            <h3 className="text-sm font-bold text-gray-800">직급별 경쟁력 비교</h3>
             <div className="flex gap-3 text-xs font-bold">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-0.5 bg-green-600 rounded"></div>
@@ -371,7 +371,7 @@ function IndustryComparisonSectionComponent({
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData} margin={{ top: 5, right: 2, left: 2, bottom: 5 }}>
+            <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
               <XAxis 
                 dataKey="level" 
@@ -380,12 +380,15 @@ function IndustryComparisonSectionComponent({
                 axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
               />
               <YAxis 
-                hide={true}
                 domain={[chartYMin, chartYMax]} 
                 type="number"
+                tick={{ fontSize: 10, fill: '#6b7280' }}
+                tickFormatter={(value) => `${value}%`}
+                axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
+                width={40}
               />
               <Tooltip 
-                formatter={(value: number, name: string) => [`${value.toFixed(1)}백만원`, name]} 
+                formatter={(value: number, name: string) => [`${value}%`, name]} 
                 labelFormatter={(label) => `직급: ${label}`}
                 contentStyle={{ 
                   backgroundColor: 'white', 

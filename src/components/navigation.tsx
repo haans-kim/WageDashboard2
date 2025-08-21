@@ -18,7 +18,8 @@ export function Navigation({ children }: NavigationProps) {
   }
 
   const navItems = [
-    { href: '/dashboard', label: '대시보드' },
+    { href: '/dashboard', label: 'Summary' },
+    { href: '/simulation', label: 'Simulation' },
     { href: '/bands', label: 'Pay Band' },
     { href: '/employees', label: '직원 관리' },
   ]
@@ -48,19 +49,8 @@ export function Navigation({ children }: NavigationProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            {/* 홈으로 돌아가기 버튼 */}
-            <Link
-              href="/home"
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors text-sm font-medium"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              홈으로 돌아가기
-            </Link>
-            
-            {/* 우측 버튼 영역 - 대시보드와 Pay Band 페이지에서 표시 */}
-            {(pathname === '/dashboard' || pathname === '/bands') && children && (
+            {/* 우측 버튼 영역 - 대시보드 페이지에서 표시 */}
+            {pathname === '/dashboard' && (
               <div className="hidden md:flex items-center gap-2">
                 {children}
               </div>
@@ -99,19 +89,6 @@ export function Navigation({ children }: NavigationProps) {
                 {item.label}
               </Link>
             ))}
-            {/* 모바일에서 홈으로 돌아가기 */}
-            <Link
-              href="/home"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors mt-2 border-t pt-4"
-            >
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                홈으로 돌아가기
-              </div>
-            </Link>
             {/* 모바일에서 버튼들 */}
             {(pathname === '/dashboard' || pathname === '/bands') && children && (
               <div className="flex flex-col gap-2 px-3 py-2 mt-2 border-t">

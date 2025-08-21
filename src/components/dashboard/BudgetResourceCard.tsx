@@ -145,20 +145,8 @@ function BudgetResourceCardComponent({
                 </div>
               </div>
               <div className="flex justify-between items-center relative pl-10">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-green-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                  2
-                </div>
-                <span className="text-base text-gray-700">승급/승격 인상</span>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 text-base">
-                    {formatKoreanCurrency(promotionBudget, '백만원', 1000000)}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-1">{formatPercentage(promotionPercent)}</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center relative pl-10">
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-purple-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                  3
+                  2
                 </div>
                 <span className="text-base text-gray-700">추가 인상</span>
                 <div className="text-right">
@@ -175,7 +163,7 @@ function BudgetResourceCardComponent({
           <div className="bg-orange-50 rounded-lg p-4">
             <div className="flex justify-between items-center relative pl-10">
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                4
+                3
               </div>
               <span className="text-base font-semibold text-gray-700">간접비용 인상</span>
               <div className="text-right">

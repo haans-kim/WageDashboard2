@@ -8,8 +8,6 @@ import { ScenarioManager } from '@/components/ScenarioManager'
 import { AIRecommendationCard } from '@/components/dashboard/AIRecommendationCard'
 import { BudgetResourceCard } from '@/components/dashboard/BudgetResourceCard'
 import { BudgetUtilizationDetail } from '@/components/dashboard/BudgetUtilizationDetail'
-import { GradeSalaryAdjustmentTable } from '@/components/dashboard/GradeSalaryAdjustmentTable'
-import { IndustryComparisonSection } from '@/components/dashboard/IndustryComparisonSection'
 import { ExportButton, SimpleExportButton } from '@/components/ExportButton'
 import { prepareExportData } from '@/lib/exportHelpers'
 
@@ -572,48 +570,6 @@ export default function Home() {
           />
         </div>
         
-        {/* 중앙: 직급별 고정급 인상률 조정 테이블 */}
-        <div className="mb-4">
-          <GradeSalaryAdjustmentTable
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-            initialRates={detailedLevelRates}
-            employeeData={employeeDataForTable}
-            enableAdditionalIncrease={enableAdditionalIncrease}
-            onEnableAdditionalIncreaseChange={setEnableAdditionalIncrease}
-            onRateChange={updateLevelRate}
-            onTotalBudgetChange={(totalBudget) => {
-              console.log('Total budget changed:', totalBudget)
-              // 필요시 다른 컴포넌트에 예산 정보 전달
-            }}
-            onAdditionalBudgetChange={setCalculatedAdditionalBudget}
-            onPromotionBudgetChange={updateAllPromotionBudgets}  // 승급/승격 예산 콜백 추가
-            onLevelTotalRatesChange={(rates, avgRate) => {
-              setLevelTotalRates(rates)
-              setWeightedAverageRate(avgRate)
-            }}
-            onMeritWeightedAverageChange={setMeritWeightedAverage}
-            onTotalSummaryChange={(summary) => {
-              // GradeSalaryAdjustmentTable의 전체 평균값을 WageContext에만 반영
-              // 대시보드 AI 추천값은 유지하고, 조정값만 Context로 전달
-              setContextBaseUpRate(summary.avgBaseUp)
-              setContextMeritRate(summary.avgMerit)
-            }}
-          />
-        </div>
-        
-        {/* 하단: C사 대비 비교 */}
-        <div className="mb-4">
-          <IndustryComparisonSection
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
-            levelTotalRates={levelTotalRates}
-            weightedAverageRate={weightedAverageRate}
-            levelStatistics={data?.levelStatistics || []}
-            competitorData={data?.competitorData}  // 엑셀에서 C사 데이터 가져오기
-            competitorIncreaseRate={data?.industryComparison?.competitor || 0}  // C사 인상률
-          />
-        </div>
 
 
 
