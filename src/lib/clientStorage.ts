@@ -95,18 +95,28 @@ export async function saveExcelData(data: StoredData): Promise<void> {
  */
 export async function loadExcelData(): Promise<StoredData | null> {
   if (typeof window === 'undefined') {
+    console.log('[clientStorage] SSR 환경에서 실행 중')
     return null
   }
   
   try {
+    console.log('[clientStorage] IndexedDB 열기 시작')
     const db = await openDB()
+    console.log('[clientStorage] IndexedDB 열기 성공')
     const transaction = db.transaction([STORE_NAME], 'readonly')
     const store = transaction.objectStore(STORE_NAME)
     
     return new Promise((resolve, reject) => {
       const request = store.get('current')
-      request.onsuccess = () => resolve(request.result || null)
-      request.onerror = () => reject(request.error)
+      request.onsuccess = () => {
+        const result = request.result || null
+        console.log('[clientStorage] 데이터 로드 결과:', result ? '데이터 있음' : '데이터 없음')
+        resolve(result)
+      }
+      request.onerror = () => {
+        console.error('[clientStorage] 데이터 로드 에러:', request.error)
+        reject(request.error)
+      }
     })
   } catch (error) {
     console.error('데이터 불러오기 실패:', error)

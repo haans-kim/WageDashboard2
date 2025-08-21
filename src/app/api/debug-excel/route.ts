@@ -9,9 +9,12 @@ export async function GET() {
     
     // 가능한 경로들
     const possiblePaths = [
+      path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp_grade.xlsx'),
+      path.join(process.cwd(), 'data', 'SBL_employee_data_comp_grade.xlsx'),
+      path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp_grade.xlsx'),
+      // Fallback to old filename
       path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx'),
-      path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx'),
-      path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp.xlsx')
+      path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx')
     ]
     
     for (const tryPath of possiblePaths) {

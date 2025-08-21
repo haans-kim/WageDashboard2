@@ -348,9 +348,12 @@ export async function getEmployeeData(): Promise<EmployeeRecord[]> {
       // 초기 로드 시 기본 파일 시도 - Vercel 환경 고려
       // Vercel에서는 .next/server/app 경로를 확인
       const possiblePaths = [
+        path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp_grade.xlsx'),
+        path.join(process.cwd(), 'data', 'SBL_employee_data_comp_grade.xlsx'),
+        path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp_grade.xlsx'),
+        // Fallback to old filename
         path.join(process.cwd(), 'public', 'data', 'SBL_employee_data_comp.xlsx'),
-        path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx'),
-        path.join(process.cwd(), '.next/server/app', 'public', 'data', 'SBL_employee_data_comp.xlsx')
+        path.join(process.cwd(), 'data', 'SBL_employee_data_comp.xlsx')
       ]
       
       let fileBuffer: Buffer | null = null
@@ -540,7 +543,7 @@ export async function getBandStatistics() {
 export async function getBandLevelDetails() {
   const employees = await getEmployeeData()
   const competitorData = getCompetitorData()
-  const aiSettings = getAISettings()
+  // const aiSettings = getAISettings() // Currently unused, keeping for future use
   
   // 실제 데이터에서 유니크한 직군 추출
   const uniqueBands = Array.from(new Set(employees.map(e => e.band).filter(Boolean))).sort()
@@ -604,9 +607,9 @@ export async function getBandLevelDetails() {
     }).filter(level => level.level !== '신입') // 신입 제외
     
     const totalHeadcount = bandEmployees.length
-    const avgSalary = totalHeadcount > 0
-      ? bandEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / totalHeadcount
-      : 0
+    // const avgSalary = totalHeadcount > 0
+    //   ? bandEmployees.reduce((sum, e) => sum + e.currentSalary, 0) / totalHeadcount
+    //   : 0
     
     // 직군 평균 SBL/CA 지수 계산
     const avgSBLIndex = levelStats.length > 0
@@ -717,11 +720,11 @@ export async function getDashboardSummary() {
   const avgSalary = totalSalary / employees.length
   
   // 경쟁사 평균 급여 계산
-  let competitorAvgSalary = 0
-  if (competitorData && competitorData.length > 0) {
-    const totalCompetitorSalary = competitorData.reduce((sum, c) => sum + c.averageSalary, 0)
-    competitorAvgSalary = totalCompetitorSalary / competitorData.length
-  }
+  // let competitorAvgSalary = 0
+  // if (competitorData && competitorData.length > 0) {
+  //   const totalCompetitorSalary = competitorData.reduce((sum, c) => sum + c.averageSalary, 0)
+  //   competitorAvgSalary = totalCompetitorSalary / competitorData.length
+  // }
   
   // AI 제안 인상률 (캐시된 값 또는 기본값)
   const aiRecommendation = cachedAISettings || {

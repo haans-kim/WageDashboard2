@@ -34,8 +34,10 @@ export function useClientExcelData() {
 
   const loadStoredData = async () => {
     try {
+      console.log('[useClientExcelData] 데이터 로드 시작')
       setLoading(true)
       const storedData = await loadExcelData()
+      console.log('[useClientExcelData] 로드된 데이터:', storedData ? '있음' : '없음')
       if (storedData) {
         setData({
           employees: storedData.employees,
@@ -51,6 +53,7 @@ export function useClientExcelData() {
       console.error('데이터 로드 실패:', err)
       setError('저장된 데이터를 불러올 수 없습니다.')
     } finally {
+      console.log('[useClientExcelData] 로딩 완료')
       setLoading(false)
     }
   }
