@@ -241,7 +241,7 @@ export function PayBandCard({
         {/* 좌측: 차트와 테이블 - 읽기 전용 모드일 때는 더 좁게 */}
         <div className={`${isReadOnly ? 'xl:col-span-7' : 'xl:col-span-8'} space-y-4`}>
           {/* 꺾은선 차트 */}
-          <div className="p-1 md:p-2 bg-gray-50 rounded-lg min-h-[280px] md:min-h-[450px]">
+          <div className="p-1 md:p-2 bg-gray-50 rounded-lg min-h-[220px] md:min-h-[320px]">
             <h4 className="text-sm md:text-base font-semibold text-gray-700 mb-1 px-1 md:px-2 pt-1 md:pt-2">보상 경쟁력 분석</h4>
             <PayBandLineChart 
               key={`chart-${baseUpAdjustment}-${meritAdjustment}`}

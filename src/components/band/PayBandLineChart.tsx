@@ -27,10 +27,10 @@ interface PayBandLineChartProps {
 }
 
 export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
-  // Y축 범위 계산 - 4500-13500 만원으로 고정
+  // Y축 범위 계산 - 5000-12000 만원으로 고정
   const yAxisDomain = useMemo(() => {
     // 데이터 범위를 더 효과적으로 보여주기 위해 고정 범위 사용
-    return [45000000, 135000000] // 4500만원 ~ 13500만원
+    return [50000000, 120000000] // 5000만원 ~ 12000만원
   }, [])
 
   // 커스텀 툴팁
@@ -72,7 +72,7 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
   }
 
   // 화면 크기에 따른 차트 높이
-  const chartHeight = typeof window !== 'undefined' && window.innerWidth < 768 ? 250 : 400
+  const chartHeight = typeof window !== 'undefined' && window.innerWidth < 768 ? 200 : 300
   
   return (
     <div className="w-full">

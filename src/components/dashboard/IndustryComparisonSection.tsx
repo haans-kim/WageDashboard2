@@ -150,27 +150,19 @@ function IndustryComparisonSectionComponent({
     }
   ]
   
-  // 경쟁력 차트 데이터 - 경쟁력 비율로 표시
+  // 경쟁력 차트 데이터 - 급여액으로 표시
   const chartData = competitivenessData.map(item => ({
     level: item.level,
-    'C사': 100, // C사를 100% 기준으로
-    '우리회사(현재)': item.competitiveness, // 현재 경쟁력 %
-    '우리회사(인상후)': item.competitivenessToBe, // 인상 후 경쟁력 %
+    'C사': item.cCompany * 1000, // 천원 → 원 단위
+    '우리회사(현재)': item.ourCompany * 1000, // 천원 → 원 단위
+    '우리회사(인상후)': Math.round(item.ourCompanyToBe * 1000), // 천원 → 원 단위
     competitiveness: item.competitiveness,
     competitivenessToBe: item.competitivenessToBe
   }))
   
-  // 차트 Y축 범위 동적 계산 - 경쟁력 % 기준
-  const allChartValues = chartData.flatMap(item => [
-    item['C사'], 
-    item['우리회사(현재)'], 
-    item['우리회사(인상후)']
-  ])
-  const chartMinValue = Math.min(...allChartValues)
-  const chartMaxValue = Math.max(...allChartValues)
-  // 경쟁력 차트는 90-110% 범위로 설정하여 차이를 명확히 표시
-  const chartYMin = Math.floor(Math.min(90, chartMinValue - 2))
-  const chartYMax = Math.ceil(Math.max(110, chartMaxValue + 2))
+  // 차트 Y축 범위 - 5천만원 ~ 1억2천만원 고정
+  const chartYMin = 50000000  // 5천만원
+  const chartYMax = 120000000 // 1억 2천만원
   
   // 디버그용 로그
   console.log('Debug - 인상률:', companyIncrease)
@@ -383,12 +375,18 @@ function IndustryComparisonSectionComponent({
                 domain={[chartYMin, chartYMax]} 
                 type="number"
                 tick={{ fontSize: 10, fill: '#6b7280' }}
-                tickFormatter={(value) => `${value}%`}
+                tickFormatter={(value) => {
+                  if (value >= 100000000) {
+                    return `${(value / 100000000).toFixed(1)}억`
+                  }
+                  return `${(value / 10000000).toFixed(0)}천만`
+                }}
                 axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
-                width={40}
+                width={50}
+                ticks={[50000000, 60000000, 70000000, 80000000, 90000000, 100000000, 110000000, 120000000]}
               />
               <Tooltip 
-                formatter={(value: number, name: string) => [`${value}%`, name]} 
+                formatter={(value: number, name: string) => [`${value.toLocaleString('ko-KR')}원`, name]} 
                 labelFormatter={(label) => `직급: ${label}`}
                 contentStyle={{ 
                   backgroundColor: 'white', 
