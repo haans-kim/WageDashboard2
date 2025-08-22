@@ -17,7 +17,7 @@ export default function SimulationPage() {
     setDetailedLevelRates: setContextDetailedLevelRates,
   } = useWageContext()
   
-  // Context의 값을 직접 사용
+  // Context의 값을 직접 사용 (조정용)
   const baseUpRate = contextBaseUpRate || 3.2
   const meritRate = contextMeritRate || 2.5
   const [enableAdditionalIncrease, setEnableAdditionalIncrease] = useState(false)
@@ -31,14 +31,14 @@ export default function SimulationPage() {
     'Lv.1': { baseUp: 3.2, merit: 2.5, promotion: 0, advancement: 0, additional: 0 }
   }
   
-  // 직급별 총 인상률 및 가중평균 상태
+  // 직급별 총 인상률 및 가중평균 상태 - 실제 조정된 값 반영
   const [levelTotalRates, setLevelTotalRates] = useState<{[key: string]: number}>({
-    'Lv.1': 5.7,
-    'Lv.2': 5.7,
-    'Lv.3': 5.7,
-    'Lv.4': 5.7
+    'Lv.1': baseUpRate + meritRate,
+    'Lv.2': baseUpRate + meritRate,
+    'Lv.3': baseUpRate + meritRate,
+    'Lv.4': baseUpRate + meritRate
   })
-  const [weightedAverageRate, setWeightedAverageRate] = useState(5.7)
+  const [weightedAverageRate, setWeightedAverageRate] = useState(baseUpRate + meritRate)
   const [calculatedAdditionalBudget, setCalculatedAdditionalBudget] = useState(0)
   
   // GradeSalaryAdjustmentTable용 직원 데이터
@@ -112,10 +112,10 @@ export default function SimulationPage() {
         {/* C사 대비 비교 */}
         <div className="mb-2">
           <IndustryComparisonSection
-            baseUpRate={baseUpRate}
-            meritRate={meritRate}
+            baseUpRate={data?.aiSettings?.baseUpPercentage || 3.2}  // AI 제안값 (고정)
+            meritRate={data?.aiSettings?.meritIncreasePercentage || 2.5}  // AI 제안값 (고정)
             levelTotalRates={levelTotalRates}
-            weightedAverageRate={weightedAverageRate}
+            weightedAverageRate={weightedAverageRate}  // 실제 조정된 가중평균
             levelStatistics={data?.levelStatistics || []}
             competitorData={data?.competitorData}
             competitorIncreaseRate={data?.industryComparison?.competitor || 0}

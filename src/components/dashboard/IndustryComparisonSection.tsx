@@ -139,7 +139,7 @@ function IndustryComparisonSectionComponent({
     {
       name: '우리 회사',
       value: companyIncrease,
-      adjustedValue: Math.round(weightedAverageRate * 10) / 10,
+      adjustedValue: Math.round(weightedAverageRate * 100) / 100,  // 소수점 2자리
       color: '#3B82F6'
     },
     {
@@ -191,7 +191,7 @@ function IndustryComparisonSectionComponent({
         </div>
         <div className="bg-purple-50 rounded-lg p-2 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(조정)</p>
-          <p className="text-3xl font-bold text-purple-600">{formatPercentage(weightedAverageRate)}</p>
+          <p className="text-3xl font-bold text-purple-600">{formatPercentage(weightedAverageRate, 2)}</p>
           <p className="text-sm text-gray-600">직급별 가중평균</p>
         </div>
         <div className="bg-green-50 rounded-lg p-2 text-center">
@@ -262,7 +262,7 @@ function IndustryComparisonSectionComponent({
                         fontWeight="bold" 
                         textAnchor="middle"
                       >
-                        조정: {Math.round(payload.adjustedValue * 10) / 10}%
+                        조정: {payload.adjustedValue.toFixed(2)}%
                       </text>
                     </g>
                   )
