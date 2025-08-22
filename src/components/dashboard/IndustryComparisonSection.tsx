@@ -183,18 +183,18 @@ function IndustryComparisonSectionComponent({
       <h2 className="text-lg font-bold mb-2">C사 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="bg-blue-50 rounded-lg p-3 text-center">
+      <div className="grid grid-cols-3 gap-3 mb-3">
+        <div className="bg-blue-50 rounded-lg p-2 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(AI제안)</p>
           <p className="text-3xl font-bold text-blue-600">{formatPercentage(companyIncrease)}</p>
           <p className="text-sm text-gray-600">Base-up {formatPercentage(baseUpRate)} + 성과 인상률 {formatPercentage(meritRate)}</p>
         </div>
-        <div className="bg-purple-50 rounded-lg p-3 text-center">
+        <div className="bg-purple-50 rounded-lg p-2 text-center">
           <p className="text-base text-gray-700 font-medium">우리 회사(조정)</p>
           <p className="text-3xl font-bold text-purple-600">{formatPercentage(weightedAverageRate)}</p>
           <p className="text-sm text-gray-600">직급별 가중평균</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-3 text-center">
+        <div className="bg-green-50 rounded-lg p-2 text-center">
           <p className="text-base text-gray-700 font-medium">C사</p>
           <p className="text-3xl font-bold text-green-600">{formatPercentage(cCompanyIncrease)}</p>
           <p className="text-sm text-gray-600">경쟁사 인상률</p>
