@@ -231,15 +231,15 @@ function BandDashboardContent() {
   return (
     <main className="min-h-screen bg-gray-100">
       
-      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6">
+      <div className="container mx-auto px-3 md:px-4 py-2 md:py-3">
 
         {/* 대시보드 인상률 정보 카드 */}
-        <div className="mb-6">
+        <div className="mb-3">
           <RateInfoCard />
         </div>
 
         {/* 직군 네비게이션 메뉴 + 선택된 직군 카드 */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-3">
           {/* 왼쪽: 직군 네비게이션 메뉴 */}
           <div className="w-full lg:w-80 bg-white rounded-lg shadow p-2 md:p-4 mb-4 lg:mb-0">
             <div className="flex justify-between items-center mb-4">

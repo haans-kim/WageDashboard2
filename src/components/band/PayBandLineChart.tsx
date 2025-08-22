@@ -92,10 +92,14 @@ export function PayBandLineChart({ data, bandName }: PayBandLineChartProps) {
           
           <YAxis 
             domain={yAxisDomain}
-            tickFormatter={(value) => `${(value / 10000).toFixed(0)}`}
+            tickFormatter={(value) => {
+              const thousand = value / 10000000
+              return thousand >= 1 ? `${thousand.toFixed(1).replace('.0', '')}천만` : `${(value / 10000000).toFixed(1)}천만`
+            }}
             tick={{ fontSize: 9 }}
             axisLine={{ stroke: '#9ca3af' }}
-            width={35}
+            width={45}
+            ticks={[50000000, 60000000, 70000000, 80000000, 90000000, 100000000, 110000000, 120000000]}
           />
           
           <Tooltip content={<CustomTooltip />} />

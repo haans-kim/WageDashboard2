@@ -179,8 +179,8 @@ function IndustryComparisonSectionComponent({
   ]
   
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-xl font-bold mb-3">C사 대비 비교</h2>
+    <div className="bg-white rounded-lg shadow p-3">
+      <h2 className="text-lg font-bold mb-2">C사 대비 비교</h2>
       
       {/* 상단: 인상률 비교 요약 */}
       <div className="grid grid-cols-3 gap-4 mb-4">

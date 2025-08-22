@@ -108,9 +108,9 @@ export default function SimulationPage() {
   
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-3">
         {/* C사 대비 비교 */}
-        <div className="mb-4">
+        <div className="mb-2">
           <IndustryComparisonSection
             baseUpRate={baseUpRate}
             meritRate={meritRate}
@@ -123,7 +123,7 @@ export default function SimulationPage() {
         </div>
         
         {/* 직급별 고정급 인상률 조정 테이블 */}
-        <div className="mb-4">
+        <div className="mb-2">
           <GradeSalaryAdjustmentTable
             baseUpRate={baseUpRate}
             meritRate={meritRate}
